@@ -16,7 +16,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
@@ -25,7 +24,6 @@ import com.mindyhsu.minmap.databinding.FragmentMapsBinding
 
 
 class MapsFragment : Fragment(),
-    OnMyLocationButtonClickListener,
     OnRequestPermissionsResultCallback {
 
     private lateinit var binding: FragmentMapsBinding
@@ -41,6 +39,8 @@ class MapsFragment : Fragment(),
         map = googleMap
     }
 
+    var viewStatus = -1
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -55,6 +55,10 @@ class MapsFragment : Fragment(),
         }
 
         binding.functionMenu.setOnClickListener {
+            advancedFunction()
+        }
+
+        binding.functionPlanning.setOnClickListener {
             viewModel.getDirection(map)
         }
 
@@ -95,7 +99,6 @@ class MapsFragment : Fragment(),
     }
 
     private fun getMyLocation() {
-
         val service = context?.getSystemService(LOCATION_SERVICE) as LocationManager?
         val provider = service?.getBestProvider(Criteria(), false)
         val location = provider?.let {
@@ -123,13 +126,31 @@ class MapsFragment : Fragment(),
         }
     }
 
-
-    override fun onMyLocationButtonClick(): Boolean {
-        return false
-    }
-
     companion object {
         const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
+
+    private fun advancedFunction() {
+        when (viewStatus) {
+            -1 -> {
+                viewStatus = 0
+                binding.functionChat.visibility = View.VISIBLE
+                binding.functionPlanning.visibility = View.VISIBLE
+                binding.backToPosition.visibility = View.GONE
+                map.uiSettings.setAllGesturesEnabled(false)
+            }
+            0 -> {
+                viewStatus = -1
+                binding.functionChat.visibility = View.GONE
+                binding.functionPlanning.visibility = View.GONE
+                binding.backToPosition.visibility = View.VISIBLE
+                map.uiSettings.setAllGesturesEnabled(true)
+            }
+        }
+
+
+    }
 }
+
+
 

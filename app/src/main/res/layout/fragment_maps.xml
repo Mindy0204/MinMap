@@ -11,16 +11,42 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/home_notice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_16dp"
+            android:backgroundTint="@color/white"
+            android:text="You have an appointment!"
+            android:textAlignment="center"
+            app:borderWidth="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/drawer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/light_tiffany_green"
+            app:borderWidth="0dp"
+            app:fabSize="mini"
+            app:layout_constraintBottom_toBottomOf="@+id/home_notice"
+            app:layout_constraintStart_toStartOf="@+id/home_notice"
+            app:layout_constraintTop_toTopOf="@+id/home_notice" />
+
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/back_to_position"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/margin_16dp"
             android:backgroundTint="@color/white"
+            android:src="@mipmap/icon_gps"
             app:borderWidth="0dp"
             app:fabSize="mini"
             app:layout_constraintBottom_toTopOf="@+id/function_menu"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="@id/function_menu"
+            app:layout_constraintStart_toStartOf="@+id/function_menu" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/function_menu"
@@ -28,16 +54,43 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/margin_16dp"
             android:backgroundTint="@color/white"
+            android:src="@mipmap/icon_plus"
             app:borderWidth="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/function_chat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_16dp"
+            android:backgroundTint="@color/white"
+            android:src="@mipmap/icon_chat"
+            android:visibility="gone"
+            app:borderWidth="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/function_menu"
+            app:layout_constraintEnd_toEndOf="@+id/function_menu"
+            app:layout_constraintStart_toStartOf="@+id/function_menu" />
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/function_planning"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin_16dp"
+            android:backgroundTint="@color/white"
+            android:src="@mipmap/icon_planning"
+            android:visibility="gone"
+            app:borderWidth="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/function_chat"
+            app:layout_constraintEnd_toEndOf="@+id/function_menu"
+            app:layout_constraintStart_toStartOf="@+id/function_menu" />
 
         <fragment xmlns:map="http://schemas.android.com/apk/res-auto"
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:context=".MapsFragment"
-            map:cameraZoom="13" />
+            map:cameraZoom="13"
+            tools:context=".MapsFragment" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
