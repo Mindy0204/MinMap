@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context.LOCATION_SERVICE
 import android.content.pm.PackageManager
 import android.location.Criteria
-import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,12 +13,10 @@ import android.view.ViewGroup
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMyLocationButtonClickListener
-import com.google.android.gms.maps.GoogleMap.OnMyLocationClickListener
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
@@ -32,12 +29,10 @@ class MapsFragment : Fragment(),
     OnRequestPermissionsResultCallback {
 
     private lateinit var binding: FragmentMapsBinding
+    private lateinit var viewModel: MapsViewModel
 
     private var permissionDenied = false
     private lateinit var map: GoogleMap
-
-//    private var viewModelJob = Job()
-//    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     private val callback = OnMapReadyCallback { googleMap ->
         val taipei = LatLng(25.0330, 121.5654)
@@ -52,15 +47,15 @@ class MapsFragment : Fragment(),
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentMapsBinding.inflate(inflater, container, false)
-
-
+        viewModel = MapsViewModel()
 
         binding.backToPosition.setOnClickListener {
-//            coroutineScope.launch {
-//                MinMapApi.retrofitService.getDirection()
-//            }
             enableMyLocation()
             getMyLocation()
+        }
+
+        binding.functionMenu.setOnClickListener {
+            viewModel.getDirection()
         }
 
         return binding.root
@@ -99,51 +94,6 @@ class MapsFragment : Fragment(),
         }
     }
 
-//    override fun onRequestPermissionsResult(
-//        requestCode: Int,
-//        permissions: Array<String>,
-//        grantResults: IntArray
-//    ) {
-//        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-//            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-//                Toast.makeText(context, "We don't have permission to use your location.", Toast.LENGTH_SHORT).show()
-//            }
-//        }
-
-
-
-//        Toast.makeText(context, "We don't have permission to use your location.", Toast.LENGTH_SHORT).show()
-//        if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-//
-//        }
-//        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
-//            super.onRequestPermissionsResult(
-//                requestCode,
-//                permissions,
-//                grantResults
-//            )
-//            return
-//        }
-//
-//        if (isPermissionGranted(
-//                permissions,
-//                grantResults,
-//                Manifest.permission.ACCESS_FINE_LOCATION
-//            ) || isPermissionGranted(
-//                permissions,
-//                grantResults,
-//                Manifest.permission.ACCESS_COARSE_LOCATION
-//            )
-//        ) {
-//            // Enable the my location layer if the permission has been granted.
-//            enableMyLocation()
-//        } else {
-//            // Permission was denied. Display an error message
-//            // Display the missing permission error dialog when the fragments resume.
-//            permissionDenied = true
-//        }
-//    }
-
     private fun getMyLocation() {
 
         val service = context?.getSystemService(LOCATION_SERVICE) as LocationManager?
@@ -163,8 +113,8 @@ class MapsFragment : Fragment(),
                     enableMyLocation()
                 }
             }
-            service.getLastKnownLocation(it) }
-//        location?.let { getMyLocation(it.latitude, location.longitude) }
+            service.getLastKnownLocation(it)
+        }
 
         val latLng = location?.let { LatLng(it.latitude, location.longitude) }
         val cameraUpdate = latLng?.let { CameraUpdateFactory.newLatLngZoom(it, 15F) }
@@ -182,42 +132,4 @@ class MapsFragment : Fragment(),
         const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
 }
-
-//class MyLocationDemoActivity : AppCompatActivity(){
-//
-//
-//
-//
-//    override fun onMyLocationButtonClick(): Boolean {
-//        Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT)
-//            .show()
-//        // Return false so that we don't consume the event and the default behavior still occurs
-//        // (the camera animates to the user's current position).
-//        return false
-//    }
-//
-//    override fun onMyLocationClick(location: Location) {
-//        Toast.makeText(this, "Current location:\n$location", Toast.LENGTH_LONG)
-//            .show()
-//    }
-//
-
-//
-//    override fun onResumeFragments() {
-//        super.onResumeFragments()
-//        if (permissionDenied) {
-//            // Permission was not granted, display error dialog.
-//            showMissingPermissionError()
-//            permissionDenied = false
-//        }
-//    }
-//
-//    /**
-//     * Displays a dialog with error message explaining that the location permission is missing.
-//     */
-//    private fun showMissingPermissionError() {
-//        newInstance(true).show(supportFragmentManager, "dialog")
-//    }
-//
-//}
 

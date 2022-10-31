@@ -1,6 +1,8 @@
 package com.mindyhsu.minmap
 
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
+import com.mindyhsu.minmap.data.Direction
+import com.mindyhsu.minmap.data.MapDirection
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Interceptor
@@ -9,12 +11,13 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
+import retrofit2.http.Query
+import javax.security.auth.Destroyable
 
-private const val API_KEY = "***REMOVED***"
-private const val ORIGIN = "台北市大安區新生南路一段10652忠孝新生站"
-private const val DESTINATION = "台北市中正區仁愛路二段AppWorks+School"
-private const val DIRECTIONS_URL = "https://maps.googleapis.com/maps/api/directions/json?origin=%E5%8F%B0%E5%8C%97%E5%B8%82%E5%A4%A7%E5%AE%89%E5%8D%80%E6%96%B0%E7%94%9F%E5%8D%97%E8%B7%AF%E4%B8%80%E6%AE%B510652%E5%BF%A0%E5%AD%9D%E6%96%B0%E7%94%9F%E7%AB%99&destination=%E5%8F%B0%E5%8C%97%E5%B8%82%E4%B8%AD%E6%AD%A3%E5%8D%80%E4%BB%81%E6%84%9B%E8%B7%AF%E4%BA%8C%E6%AE%B5AppWorks+School&key=***REMOVED***"
-//    "https://maps.googleapis.com/maps/api/directions/json?origin=${ORIGIN}&destination=${DESTINATION}&key=$API_KEY/"
+private const val origin = "台北市大安區新生南路一段10652忠孝新生站"
+private const val destination = "台北市中正區仁愛路二段AppWorks+School"
+private const val DIRECTIONS_URL = "https://maps.googleapis.com/maps/api/directions/"
 
 private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
@@ -41,8 +44,12 @@ private val retrofit = Retrofit.Builder().addConverterFactory(MoshiConverterFact
     .baseUrl(DIRECTIONS_URL).client(client).build()
 
 interface MinMapApiService {
-    @GET(".")
-    suspend fun getDirection()
+    @GET("json")
+    suspend fun getDirection(
+        @Query("origin") startLocation: String,
+        @Query("destination") endLocation: String,
+        @Query("key") apiKey: String
+    ): MapDirection
 }
 
 object MinMapApi {
