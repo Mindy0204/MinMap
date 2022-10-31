@@ -35,8 +35,8 @@ class MapsFragment : Fragment(),
     private lateinit var map: GoogleMap
 
     private val callback = OnMapReadyCallback { googleMap ->
-        val taipei = LatLng(25.0330, 121.5654)
-        googleMap.addMarker(MarkerOptions().position(taipei).title("Marker in Taipei"))
+        val taipei = LatLng(25.03850539224151, 121.53237404271704)
+        googleMap.addMarker(MarkerOptions().position(taipei).title("Marker in AppWorks School"))
         googleMap.moveCamera(CameraUpdateFactory.newLatLng(taipei))
         map = googleMap
     }
@@ -55,7 +55,7 @@ class MapsFragment : Fragment(),
         }
 
         binding.functionMenu.setOnClickListener {
-            viewModel.getDirection()
+            viewModel.getDirection(map)
         }
 
         return binding.root
