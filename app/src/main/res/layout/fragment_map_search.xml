@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".MapSearchFragment">
+
+        <TextView
+            android:id="@+id/search_page_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/margin_16dp"
+            android:text="@string/meeting_point"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.SearchView
+            android:id="@+id/choose_day"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_16dp"
+            app:layout_constraintEnd_toEndOf="@+id/search_page_title"
+            app:layout_constraintStart_toStartOf="@+id/search_page_title"
+            app:layout_constraintTop_toBottomOf="@+id/search_page_title" />
+
+        <fragment
+            android:id="@+id/autocomplete_fragment"
+            android:name="com.google.android.libraries.places.widget.AutocompleteSupportFragment"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_16dp"
+            app:layout_constraintEnd_toEndOf="@+id/choose_day"
+            app:layout_constraintStart_toStartOf="@+id/choose_day"
+            app:layout_constraintTop_toBottomOf="@+id/choose_day" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/check_location_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/view_and_button_height"
+            android:layout_margin="@dimen/margin_16dp"
+            android:background="@color/light_tiffany_green"
+            android:text="@string/continue_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

@@ -7,6 +7,7 @@ import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +15,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -59,7 +61,8 @@ class MapsFragment : Fragment(),
         }
 
         binding.functionPlanning.setOnClickListener {
-            viewModel.getDirection(map)
+//            viewModel.getDirection(map)
+            findNavController().navigate(MapSearchFragmentDirections.navigateToSearchMapFragment())
         }
 
         return binding.root
@@ -69,6 +72,17 @@ class MapsFragment : Fragment(),
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync(callback)
+
+        if (MapsFragmentArgs.fromBundle(requireArguments()).endLocation != null) {
+            val selectedLocation = MapsFragmentArgs.fromBundle(requireArguments()).endLocation
+            Log.d("Mindy", "$selectedLocation")
+
+            selectedLocation?.latLng?.let {
+                val maker = LatLng(it.latitude, it.longitude)
+//                map.addMarker(MarkerOptions().position(maker))
+//                map.moveCamera(CameraUpdateFactory.newLatLng(maker))
+            }
+        }
     }
 
     @SuppressLint("MissingPermission")

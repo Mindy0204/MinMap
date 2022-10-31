@@ -6,6 +6,7 @@ buildscript {
         version_okhttp3 = '5.0.0-alpha.5'
         version_retrofit_coroutines_adapter = '0.9.2'
         version_moshi = '1.13.0'
+        version_navigation = '2.5.3'
     }
 
     repositories {
@@ -19,6 +20,9 @@ buildscript {
     dependencies {
         // kt lint
         classpath "org.jlleitschuh.gradle:ktlint-gradle:$version_ktlint"
+
+        // navigation args
+        classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$version_navigation"
     }
 }
 

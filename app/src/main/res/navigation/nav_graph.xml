@@ -9,5 +9,23 @@
         android:id="@+id/mapsFragment"
         android:name="com.mindyhsu.minmap.MapsFragment"
         android:label="fragment_maps"
-        tools:layout="@layout/fragment_maps" />
+        tools:layout="@layout/fragment_maps" >
+        <argument
+            android:name="endLocation"
+            app:argType="com.google.android.libraries.places.api.model.Place"
+            app:nullable="true"
+            android:defaultValue="@null"/>
+    </fragment>
+    <fragment
+        android:id="@+id/mapSearchFragment"
+        android:name="com.mindyhsu.minmap.MapSearchFragment"
+        android:label="fragment_map_search"
+        tools:layout="@layout/fragment_map_search" />
+    <action
+        android:id="@+id/navigate_to_map_fragment"
+        app:destination="@id/mapsFragment"
+        app:popUpTo="@id/nav_graph" />
+    <action
+        android:id="@+id/navigate_to_search_map_fragment"
+        app:destination="@id/mapSearchFragment"/>
 </navigation>

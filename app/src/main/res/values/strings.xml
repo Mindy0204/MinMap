@@ -1,6 +1,7 @@
 <resources>
-    <string name="API_KEY">***REMOVED***</string>
-
     <string name="app_name">MinMap</string>
     <string name="title_activity_main">MainActivity</string>
+
+    <string name="meeting_point">Meeting Point</string>
+    <string name="continue_button">Continue</string>
 </resources>
