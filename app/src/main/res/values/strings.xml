@@ -4,4 +4,5 @@
 
     <string name="meeting_point">Meeting Point</string>
     <string name="continue_button">Continue</string>
+    <string name="send_invitation">Send Invitation</string>
 </resources>

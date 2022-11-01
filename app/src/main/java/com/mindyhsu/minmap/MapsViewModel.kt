@@ -6,6 +6,10 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.PolylineOptions
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.mindyhsu.minmap.data.Direction
 import kotlinx.coroutines.*
 
@@ -13,7 +17,9 @@ class MapsViewModel : ViewModel() {
     private var viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
-    fun getDirection(map: GoogleMap, ) {
+    private val db = Firebase.firestore
+
+    fun getRoute(map: GoogleMap) {
         coroutineScope.launch {
             // parameter: startLocation: LatLng, endLocation: LatLng
 //            val start = "${startLocation.latitude},${startLocation.longitude}"
@@ -36,9 +42,21 @@ class MapsViewModel : ViewModel() {
             val polylineOptions = PolylineOptions()
             for (routeItem in directionResult.routes) {
                 for (legItem in routeItem.legs) {
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(LatLng(legItem.startLocation.lat, legItem.startLocation.lng), 15F))
+                    map.moveCamera(
+                        CameraUpdateFactory.newLatLngZoom(
+                            LatLng(
+                                legItem.startLocation.lat,
+                                legItem.startLocation.lng
+                            ), 15F
+                        )
+                    )
                     for (stepItem in legItem.steps) {
-                        polylineOptions.add(LatLng(stepItem.startLocation.lat, stepItem.startLocation.lng))
+                        polylineOptions.add(
+                            LatLng(
+                                stepItem.startLocation.lat,
+                                stepItem.startLocation.lng
+                            )
+                        )
                     }
                 }
             }
@@ -54,6 +72,19 @@ class MapsViewModel : ViewModel() {
             totalLat += location.latitude
             totalLon += location.longitude
         }
-        return LatLng(totalLat/listSize, totalLon/listSize)
+        return LatLng(totalLat / listSize, totalLon / listSize)
+    }
+
+    fun setEvent(latLng: LatLng) {
+        val documentRef = db.collection("events").document()
+
+        val event = hashMapOf(
+            "id" to documentRef.id,
+            "status" to "0", // ing
+            "participants" to listOf("Mindy", "Wayne"),
+            "geoHash" to GeoPoint(latLng.latitude, latLng.longitude)
+        )
+
+        db.collection("events").document(documentRef.id).set(event)
     }
 }

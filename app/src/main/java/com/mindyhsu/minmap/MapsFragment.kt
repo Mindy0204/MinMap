@@ -1,7 +1,6 @@
 package com.mindyhsu.minmap
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context.LOCATION_SERVICE
 import android.content.pm.PackageManager
 import android.location.Criteria
@@ -18,7 +17,6 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -32,6 +30,8 @@ class MapsFragment : Fragment(),
     private lateinit var viewModel: MapsViewModel
 
     private lateinit var map: GoogleMap
+
+    var marker = LatLng(0.0, 0.0)
 
     var viewStatus = -1
 
@@ -53,8 +53,9 @@ class MapsFragment : Fragment(),
         }
 
         binding.functionPlanning.setOnClickListener {
-            viewModel.getDirection(map)
-//            findNavController().navigate(MapSearchFragmentDirections.navigateToSearchMapFragment())
+            // Draw Route
+//            viewModel.getRoute(map)
+            findNavController().navigate(MapSearchFragmentDirections.navigateToSearchMapFragment())
         }
 
         binding.functionChat.setOnClickListener {
@@ -78,9 +79,14 @@ class MapsFragment : Fragment(),
             val midPoint = viewModel.getMidPoint(locationList)
             Log.i("Mindy", "$midPoint")
 
-            val maker = LatLng(midPoint.latitude, midPoint.longitude)
-            map.addMarker(MarkerOptions().position(maker))
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(maker, 15F))
+            val markerFriend = LatLng(midPoint.latitude, midPoint.longitude)
+            map.addMarker(MarkerOptions().position(markerFriend))
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(markerFriend, 15F))
+        }
+
+        binding.sendInvitaion.setOnClickListener {
+            viewModel.setEvent(marker)
+            binding.sendInvitaion.visibility = View.GONE
         }
 
         return binding.root
@@ -182,13 +188,14 @@ class MapsFragment : Fragment(),
 
     private fun markAtSelectedLocation() {
         if (MapsFragmentArgs.fromBundle(requireArguments()).endLocation != null) {
+            binding.sendInvitaion.visibility = View.VISIBLE
             val selectedLocation = MapsFragmentArgs.fromBundle(requireArguments()).endLocation
             Log.d("Mindy", "$selectedLocation")
 
             selectedLocation?.latLng?.let {
-                val maker = LatLng(it.latitude, it.longitude)
-                map.addMarker(MarkerOptions().position(maker))
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(maker, 15F))
+                marker = LatLng(it.latitude, it.longitude)
+                map.addMarker(MarkerOptions().position(marker))
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker, 15F))
 
 //                getMyLocation()?.let { Latlng ->
 //                    viewModel.getDirection(map, startLocation = Latlng, endLocation = maker)

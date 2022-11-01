@@ -85,6 +85,19 @@
             app:layout_constraintEnd_toEndOf="@+id/function_menu"
             app:layout_constraintStart_toStartOf="@+id/function_menu" />
 
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/send_invitaion"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/view_and_button_height"
+            android:backgroundTint="@color/light_tiffany_green"
+            android:text="@string/send_invitation"
+            android:textAlignment="center"
+            app:layout_constraintBottom_toBottomOf="@+id/function_menu"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/function_menu"
+            android:visibility="gone"/>
+
         <fragment xmlns:map="http://schemas.android.com/apk/res-auto"
             android:id="@+id/map"
             android:name="com.google.android.gms.maps.SupportMapFragment"

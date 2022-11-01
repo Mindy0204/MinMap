@@ -23,6 +23,7 @@ buildscript {
 
         // navigation args
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$version_navigation"
+        classpath 'com.google.gms:google-services:4.3.14'
     }
 }
 
