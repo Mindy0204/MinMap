@@ -48,7 +48,8 @@ interface MinMapApiService {
     suspend fun getDirection(
         @Query("origin") startLocation: String,
         @Query("destination") endLocation: String,
-        @Query("key") apiKey: String
+        @Query("key") apiKey: String,
+        @Query("mode") mode: String
     ): MapDirection
 }
 

@@ -53,7 +53,8 @@ class MapsFragment : Fragment(),
         }
 
         binding.functionPlanning.setOnClickListener {
-            findNavController().navigate(MapSearchFragmentDirections.navigateToSearchMapFragment())
+            viewModel.getDirection(map)
+//            findNavController().navigate(MapSearchFragmentDirections.navigateToSearchMapFragment())
         }
 
         binding.functionChat.setOnClickListener {
