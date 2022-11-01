@@ -56,6 +56,32 @@ class MapsFragment : Fragment(),
             findNavController().navigate(MapSearchFragmentDirections.navigateToSearchMapFragment())
         }
 
+        binding.functionChat.setOnClickListener {
+            // Test function: catch mid-point
+            // Friend's location: 37.403653074962094, -122.10227753865775 Mora Part
+            // My location: getMyLocation()
+//            val friendLocation = LatLng(37.403653074962094, -122.10227753865775)
+
+            // Mock Data 2
+            // AppWorks School, Regent Taipei
+            val friendLocation = LatLng(25.03850539224151, 121.53237404271704)
+            val friend2Location = LatLng(25.05445587415607, 121.52420733306852)
+            // Taipei Main Station
+            val myLocation = LatLng(25.047605887381874, 121.51708580765687)
+
+            val locationList: MutableList<LatLng> = mutableListOf()
+            locationList.add(myLocation)
+            locationList.add(friendLocation)
+            locationList.add(friend2Location)
+
+            val midPoint = viewModel.getMidPoint(locationList)
+            Log.i("Mindy", "$midPoint")
+
+            val maker = LatLng(midPoint.latitude, midPoint.longitude)
+            map.addMarker(MarkerOptions().position(maker))
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(maker, 15F))
+        }
+
         return binding.root
     }
 
@@ -126,6 +152,7 @@ class MapsFragment : Fragment(),
         if (cameraUpdate != null) {
             map.animateCamera(cameraUpdate)
         }
+        Log.i("Mindy", "${latLng?.latitude}")
         return latLng
     }
 
