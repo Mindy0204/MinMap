@@ -17,14 +17,16 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.mindyhsu.minmap.databinding.FragmentMapsBinding
 
 
 class MapsFragment : Fragment(),
-    OnRequestPermissionsResultCallback {
+    OnRequestPermissionsResultCallback, OnMapClickListener {
 
     private lateinit var binding: FragmentMapsBinding
     private lateinit var viewModel: MapsViewModel
@@ -100,6 +102,7 @@ class MapsFragment : Fragment(),
 //            googleMap.addMarker(MarkerOptions().position(taipei).title("Marker in AppWorks School"))
 //            googleMap.moveCamera(CameraUpdateFactory.newLatLng(taipei))
             map = googleMap
+            map.setOnMapClickListener(this)
 
             markAtSelectedLocation()
         }
@@ -203,6 +206,11 @@ class MapsFragment : Fragment(),
             }
 
         }
+    }
+
+    override fun onMapClick(latlng: LatLng) {
+        map.clear()
+        map.addMarker(MarkerOptions().position(latlng))
     }
 }
 
