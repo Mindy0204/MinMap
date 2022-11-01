@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.databinding.ItemChatRoomBinding
 
-class ChatRoomAdapter() :
+class ChatRoomAdapter(private val onClickListener: OnClickListener) :
     ListAdapter<ChatRoom, ChatRoomAdapter.ChatRoomViewHolder>(ChatRoomDiffCallback()) {
 
     class ChatRoomViewHolder(private var binding: ItemChatRoomBinding) :
@@ -45,7 +45,16 @@ class ChatRoomAdapter() :
     }
 
     override fun onBindViewHolder(holder: ChatRoomViewHolder, position: Int) {
-        val chatRooms = getItem(position)
-        holder.bind(chatRooms)
+        val chatRoom = getItem(position)
+
+        holder.itemView.setOnClickListener {
+            onClickListener.onClick(chatRoom)
+        }
+
+        holder.bind(chatRoom)
+    }
+
+    class OnClickListener(val clickListener: (chatRoom: ChatRoom) -> Unit) {
+        fun onClick(chatRoom: ChatRoom) = clickListener(chatRoom)
     }
 }

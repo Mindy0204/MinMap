@@ -9,9 +9,15 @@
         <item name="android:layout_marginTop">@dimen/margin_24dp</item>
     </style>
 
-    <style name="chat_text">
+    <style name="chat_list_text">
         <item name="fontFamily">@font/noto_sans</item>
-        <item name="android:textSize">@dimen/chat_text_size</item>
+        <item name="android:textSize">@dimen/chat_list_text_size</item>
+        <item name="android:textColor">@color/gray</item>
+    </style>
+
+    <style name="dialog_text">
+        <item name="fontFamily">@font/noto_sans</item>
+        <item name="android:textSize">@dimen/dialog_text_size</item>
         <item name="android:textColor">@color/gray</item>
     </style>
 </resources>

@@ -9,5 +9,11 @@
     <string name="chat_room">Chat Room</string>
     <string name="chat_room_search">Search Friend or Dialog</string>
 
+    <string name="don_not_move">Don\'t Move!</string>
+    <string name="where_are_you">Where are you?</string>
+    <string name="im_here">I\'m here.</string>
+    <string name="im_at">I\'m at %s.</string>
+    <string name="ill_be_there_in">I\'ll be there in %s minutes.</string>
+
     <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
