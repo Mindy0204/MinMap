@@ -13,8 +13,17 @@ class MapsViewModel : ViewModel() {
     private var viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
-    fun getDirection(map: GoogleMap) {
+    fun getDirection(map: GoogleMap, startLocation: LatLng, endLocation: LatLng) {
         coroutineScope.launch {
+            val start = "${startLocation.latitude},${startLocation.longitude}"
+            val end = "${endLocation.latitude},${endLocation.longitude}"
+
+//            val directionResult = MinMapApi.retrofitService.getDirection(
+//                startLocation = start,
+//                endLocation = end,
+//                apiKey = "***REMOVED***"
+//            )
+
             val directionResult = MinMapApi.retrofitService.getDirection(
                 startLocation = "25.042544669012685,121.5328892693387",
                 endLocation = "25.03850539224151,121.53237404271704",

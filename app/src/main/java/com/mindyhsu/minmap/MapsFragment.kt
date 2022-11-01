@@ -31,15 +31,7 @@ class MapsFragment : Fragment(),
     private lateinit var binding: FragmentMapsBinding
     private lateinit var viewModel: MapsViewModel
 
-    private var permissionDenied = false
     private lateinit var map: GoogleMap
-
-    private val callback = OnMapReadyCallback { googleMap ->
-        val taipei = LatLng(25.03850539224151, 121.53237404271704)
-        googleMap.addMarker(MarkerOptions().position(taipei).title("Marker in AppWorks School"))
-        googleMap.moveCamera(CameraUpdateFactory.newLatLng(taipei))
-        map = googleMap
-    }
 
     var viewStatus = -1
 
@@ -61,7 +53,6 @@ class MapsFragment : Fragment(),
         }
 
         binding.functionPlanning.setOnClickListener {
-//            viewModel.getDirection(map)
             findNavController().navigate(MapSearchFragmentDirections.navigateToSearchMapFragment())
         }
 
@@ -71,21 +62,18 @@ class MapsFragment : Fragment(),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync(callback)
+        mapFragment?.getMapAsync { googleMap ->
+//            val taipei = LatLng(25.03850539224151, 121.53237404271704)
+//            googleMap.addMarker(MarkerOptions().position(taipei).title("Marker in AppWorks School"))
+//            googleMap.moveCamera(CameraUpdateFactory.newLatLng(taipei))
+            map = googleMap
 
-        if (MapsFragmentArgs.fromBundle(requireArguments()).endLocation != null) {
-            val selectedLocation = MapsFragmentArgs.fromBundle(requireArguments()).endLocation
-            Log.d("Mindy", "$selectedLocation")
-
-            selectedLocation?.latLng?.let {
-                val maker = LatLng(it.latitude, it.longitude)
-//                map.addMarker(MarkerOptions().position(maker))
-//                map.moveCamera(CameraUpdateFactory.newLatLng(maker))
-            }
+            markAtSelectedLocation()
         }
+
+
     }
 
-    @SuppressLint("MissingPermission")
     private fun enableMyLocation() {
         context?.let { context ->
             if (ContextCompat.checkSelfPermission(
@@ -112,7 +100,7 @@ class MapsFragment : Fragment(),
         }
     }
 
-    private fun getMyLocation() {
+    private fun getMyLocation(): LatLng? {
         val service = context?.getSystemService(LOCATION_SERVICE) as LocationManager?
         val provider = service?.getBestProvider(Criteria(), false)
         val location = provider?.let {
@@ -125,7 +113,7 @@ class MapsFragment : Fragment(),
                         Manifest.permission.ACCESS_COARSE_LOCATION
                     ) != PackageManager.PERMISSION_GRANTED
                 ) {
-                    return
+//                    return
                 } else {
                     enableMyLocation()
                 }
@@ -133,11 +121,12 @@ class MapsFragment : Fragment(),
             service.getLastKnownLocation(it)
         }
 
-        val latLng = location?.let { LatLng(it.latitude, location.longitude) }
+        val latLng = location?.let { LatLng(it.latitude, it.longitude) }
         val cameraUpdate = latLng?.let { CameraUpdateFactory.newLatLngZoom(it, 15F) }
         if (cameraUpdate != null) {
             map.animateCamera(cameraUpdate)
         }
+        return latLng
     }
 
     companion object {
@@ -161,8 +150,24 @@ class MapsFragment : Fragment(),
                 map.uiSettings.setAllGesturesEnabled(true)
             }
         }
+    }
 
+    private fun markAtSelectedLocation() {
+        if (MapsFragmentArgs.fromBundle(requireArguments()).endLocation != null) {
+            val selectedLocation = MapsFragmentArgs.fromBundle(requireArguments()).endLocation
+            Log.d("Mindy", "$selectedLocation")
 
+            selectedLocation?.latLng?.let {
+                val maker = LatLng(it.latitude, it.longitude)
+                map.addMarker(MarkerOptions().position(maker))
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(maker, 15F))
+
+//                getMyLocation()?.let { Latlng ->
+//                    viewModel.getDirection(map, startLocation = Latlng, endLocation = maker)
+//                }
+            }
+
+        }
     }
 }
 
