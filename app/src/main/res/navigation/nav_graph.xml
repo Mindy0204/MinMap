@@ -28,4 +28,12 @@
     <action
         android:id="@+id/navigate_to_search_map_fragment"
         app:destination="@id/mapSearchFragment"/>
+    <fragment
+        android:id="@+id/chatRoomFragment"
+        android:name="com.mindyhsu.minmap.chat.ChatRoomFragment"
+        android:label="fragment_chat_room"
+        tools:layout="@layout/fragment_chat_room" />
+    <action
+        android:id="@+id/navigate_to_chat_room_fragment"
+        app:destination="@id/chatRoomFragment" />
 </navigation>

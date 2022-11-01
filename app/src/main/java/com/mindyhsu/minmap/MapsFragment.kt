@@ -20,8 +20,8 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
+import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapsBinding
 
 
@@ -61,12 +61,8 @@ class MapsFragment : Fragment(),
         }
 
         binding.functionChat.setOnClickListener {
-            // Test function: catch mid-point
-            // Friend's location: 37.403653074962094, -122.10227753865775 Mora Part
-            // My location: getMyLocation()
-//            val friendLocation = LatLng(37.403653074962094, -122.10227753865775)
-
-            // Mock Data 2
+            /*  // Test function: catch mid-point
+            // Mock Data
             // AppWorks School, Regent Taipei
             val friendLocation = LatLng(25.03850539224151, 121.53237404271704)
             val friend2Location = LatLng(25.05445587415607, 121.52420733306852)
@@ -83,7 +79,9 @@ class MapsFragment : Fragment(),
 
             val markerFriend = LatLng(midPoint.latitude, midPoint.longitude)
             map.addMarker(MarkerOptions().position(markerFriend))
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(markerFriend, 15F))
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(markerFriend, 15F))*/
+
+            findNavController().navigate(ChatRoomFragmentDirections.navigateToChatRoomFragment())
         }
 
         binding.sendInvitaion.setOnClickListener {
@@ -106,8 +104,6 @@ class MapsFragment : Fragment(),
 
             markAtSelectedLocation()
         }
-
-
     }
 
     private fun enableMyLocation() {

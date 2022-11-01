@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="margin_8dp">8dp</dimen>
     <dimen name="margin_16dp">16dp</dimen>
     <dimen name="margin_24dp">24dp</dimen>
-    <dimen name="view_and_button_height">48dp</dimen>
+
     <dimen name="page_title_text_size">24sp</dimen>
+    <dimen name="chat_text_size">18sp</dimen>
+
+    <dimen name="view_and_button_height">48dp</dimen>
+    <dimen name="profile_pic">48dp</dimen>
+    <dimen name="chat_room_icon">20dp</dimen>
+    <dimen name="chat_room_icon_small">16dp</dimen>
 </resources>
