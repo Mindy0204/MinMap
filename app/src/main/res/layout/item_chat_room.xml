@@ -1,45 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
 
-    <data>
+    <ImageView
+        android:id="@+id/friend_profile"
+        android:layout_width="@dimen/profile_pic"
+        android:layout_height="@dimen/profile_pic"
+        android:layout_marginBottom="@dimen/margin_16dp"
+        android:src="@mipmap/icon_profile"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    </data>
+    <ImageView
+        android:id="@+id/event_reminder"
+        android:layout_width="@dimen/chat_room_icon_small"
+        android:layout_height="@dimen/chat_room_icon_small"
+        android:src="@mipmap/icon_circle"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="@+id/friend_profile"
+        app:layout_constraintTop_toTopOf="@+id/friend_profile" />
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/friend_name"
+        style="@style/general_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_16dp"
+        android:text="Wayne"
+        app:layout_constraintBottom_toBottomOf="@+id/friend_profile"
+        app:layout_constraintStart_toEndOf="@+id/friend_profile"
+        app:layout_constraintTop_toTopOf="@+id/friend_profile" />
 
-        <ImageView
-            android:id="@+id/friend_profile"
-            android:layout_width="@dimen/profile_pic"
-            android:layout_height="@dimen/profile_pic"
-            android:layout_marginBottom="@dimen/margin_16dp"
-            android:src="@mipmap/icon_profile"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <ImageView
-            android:id="@+id/event_reminder"
-            android:layout_width="@dimen/chat_room_icon_small"
-            android:layout_height="@dimen/chat_room_icon_small"
-            android:src="@mipmap/icon_circle"
-            app:layout_constraintStart_toStartOf="@+id/friend_profile"
-            app:layout_constraintTop_toTopOf="@+id/friend_profile"
-            android:visibility="gone"/>
-
-        <TextView
-            android:id="@+id/friend_name"
-            style="@style/general_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/margin_16dp"
-            android:text="Wayne"
-            app:layout_constraintBottom_toBottomOf="@+id/friend_profile"
-            app:layout_constraintStart_toEndOf="@+id/friend_profile"
-            app:layout_constraintTop_toTopOf="@+id/friend_profile" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+</androidx.constraintlayout.widget.ConstraintLayout>

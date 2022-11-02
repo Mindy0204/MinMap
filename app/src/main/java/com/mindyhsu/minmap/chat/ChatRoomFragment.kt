@@ -32,8 +32,6 @@ class ChatRoomFragment : Fragment() {
             }
         )
         binding.chatRoomRecyclerview.adapter = adapter
-        // Allows Data Binding to Observe LiveData with the lifecycle of this Fragment
-        binding.lifecycleOwner = this
 
         viewModel.navigateToDialog.observe(viewLifecycleOwner) {
             findNavController().navigate(
