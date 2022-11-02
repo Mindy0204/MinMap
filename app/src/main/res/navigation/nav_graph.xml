@@ -7,27 +7,14 @@
 
     <fragment
         android:id="@+id/mapsFragment"
-        android:name="com.mindyhsu.minmap.MapsFragment"
+        android:name="com.mindyhsu.minmap.MapFragment"
         android:label="fragment_maps"
-        tools:layout="@layout/fragment_maps">
-        <argument
-            android:name="endLocation"
-            android:defaultValue="@null"
-            app:argType="com.google.android.libraries.places.api.model.Place"
-            app:nullable="true" />
+        tools:layout="@layout/fragment_map">
     </fragment>
-    <fragment
-        android:id="@+id/mapSearchFragment"
-        android:name="com.mindyhsu.minmap.MapSearchFragment"
-        android:label="fragment_map_search"
-        tools:layout="@layout/fragment_map_search" />
     <action
         android:id="@+id/navigate_to_map_fragment"
         app:destination="@id/mapsFragment"
         app:popUpTo="@id/nav_graph" />
-    <action
-        android:id="@+id/navigate_to_search_map_fragment"
-        app:destination="@id/mapSearchFragment" />
     <fragment
         android:id="@+id/chatRoomFragment"
         android:name="com.mindyhsu.minmap.chat.ChatRoomFragment"
@@ -48,4 +35,16 @@
 <!--            android:name="chatRoomId"-->
 <!--            app:argType="com.mindyhsu.minmap.data.Message" />-->
     </fragment>
+    <dialog
+        android:id="@+id/checkEventFragment"
+        android:name="com.mindyhsu.minmap.CheckEventFragment"
+        android:label="fragment_check_event"
+        tools:layout="@layout/fragment_check_event" >
+        <argument
+            android:name="eventDetail"
+            app:argType="com.mindyhsu.minmap.data.Event"/>
+    </dialog>
+    <action
+        android:id="@+id/navigate_to_check_event_fragment"
+        app:destination="@id/checkEventFragment" />
 </navigation>

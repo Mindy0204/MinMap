@@ -9,13 +9,13 @@
         <item name="android:layout_marginTop">@dimen/margin_24dp</item>
     </style>
 
-    <style name="chat_list_text">
+    <style name="general_text">
         <item name="fontFamily">@font/noto_sans</item>
         <item name="android:textSize">@dimen/chat_list_text_size</item>
         <item name="android:textColor">@color/gray</item>
     </style>
 
-    <style name="dialog_text">
+    <style name="general_small_text">
         <item name="fontFamily">@font/noto_sans</item>
         <item name="android:textSize">@dimen/dialog_text_size</item>
         <item name="android:textColor">@color/gray</item>

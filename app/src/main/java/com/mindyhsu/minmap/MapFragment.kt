@@ -1,7 +1,9 @@
 package com.mindyhsu.minmap
 
 import android.Manifest
+import android.app.Activity
 import android.content.Context.LOCATION_SERVICE
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.LocationManager
@@ -10,6 +12,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
@@ -21,29 +24,66 @@ import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.AutocompleteActivity
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
-import com.mindyhsu.minmap.databinding.FragmentMapsBinding
+import com.mindyhsu.minmap.databinding.FragmentMapBinding
 
 
-class MapsFragment : Fragment(),
+class MapFragment : Fragment(),
     OnRequestPermissionsResultCallback, OnMapClickListener {
 
-    private lateinit var binding: FragmentMapsBinding
-    private lateinit var viewModel: MapsViewModel
+    private lateinit var binding: FragmentMapBinding
+    private lateinit var viewModel: MapViewModel
 
     private lateinit var map: GoogleMap
+    private val AUTOCOMPLETE_REQUEST_CODE = 1
 
     var marker = LatLng(0.0, 0.0)
 
-    var viewStatus = -1
+    var mapStatus = -1
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentMapsBinding.inflate(inflater, container, false)
-        viewModel = MapsViewModel()
+        binding = FragmentMapBinding.inflate(inflater, container, false)
+        viewModel = MapViewModel()
+
+        viewModel.hasCurrentEvent.observe(viewLifecycleOwner) {
+            if (!it) {
+                binding.homeNotice.text = context?.getString(R.string.create_new_event)
+                binding.homeNotice.setOnClickListener {
+                    searchPlace()
+                }
+            } else {
+                binding.homeNotice.text =
+                    context?.getString(R.string.show_event, viewModel.currentEventWith)
+                binding.homeNotice.setOnClickListener {
+                    viewModel.getLocation(map, null)
+                }
+            }
+        }
+
+        viewModel.eventDetail.observe(viewLifecycleOwner) {
+            findNavController().navigate(
+                CheckEventFragmentDirections.navigateToCheckEventFragment(
+                    viewModel.eventDetail.value!!
+                )
+            )
+        }
+
+        viewModel.isInviting.observe(viewLifecycleOwner) {
+            if (it) {
+                binding.sendInvitaion.visibility = View.VISIBLE
+            } else {
+                binding.sendInvitaion.visibility = View.GONE
+            }
+        }
 
         binding.backToPosition.setOnClickListener {
             enableMyLocation()
@@ -51,13 +91,11 @@ class MapsFragment : Fragment(),
         }
 
         binding.functionMenu.setOnClickListener {
-            advancedFunction()
+            showAdvancedFunction()
         }
 
         binding.functionPlanning.setOnClickListener {
-            // Draw Route
-//            viewModel.getRoute(map)
-            findNavController().navigate(MapSearchFragmentDirections.navigateToSearchMapFragment())
+            searchPlace()
         }
 
         binding.functionChat.setOnClickListener {
@@ -96,13 +134,10 @@ class MapsFragment : Fragment(),
         super.onViewCreated(view, savedInstanceState)
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync { googleMap ->
-//            val taipei = LatLng(25.03850539224151, 121.53237404271704)
-//            googleMap.addMarker(MarkerOptions().position(taipei).title("Marker in AppWorks School"))
-//            googleMap.moveCamera(CameraUpdateFactory.newLatLng(taipei))
             map = googleMap
+            map.uiSettings.setAllGesturesEnabled(true)
+            mapStatus = -1
             map.setOnMapClickListener(this)
-
-            markAtSelectedLocation()
         }
     }
 
@@ -166,17 +201,17 @@ class MapsFragment : Fragment(),
         const val LOCATION_PERMISSION_REQUEST_CODE = 1
     }
 
-    private fun advancedFunction() {
-        when (viewStatus) {
+    private fun showAdvancedFunction() {
+        when (mapStatus) {
             -1 -> {
-                viewStatus = 0
+                mapStatus = 0
                 binding.functionChat.visibility = View.VISIBLE
                 binding.functionPlanning.visibility = View.VISIBLE
                 binding.backToPosition.visibility = View.GONE
                 map.uiSettings.setAllGesturesEnabled(false)
             }
             0 -> {
-                viewStatus = -1
+                mapStatus = -1
                 binding.functionChat.visibility = View.GONE
                 binding.functionPlanning.visibility = View.GONE
                 binding.backToPosition.visibility = View.VISIBLE
@@ -185,23 +220,51 @@ class MapsFragment : Fragment(),
         }
     }
 
-    private fun markAtSelectedLocation() {
-        if (MapsFragmentArgs.fromBundle(requireArguments()).endLocation != null) {
-            binding.sendInvitaion.visibility = View.VISIBLE
-            val selectedLocation = MapsFragmentArgs.fromBundle(requireArguments()).endLocation
-            Log.d("Mindy", "$selectedLocation")
+    private fun searchPlace() {
+        // Initialize Places SDK
+        context?.let { Places.initialize(it, BuildConfig.MAPS_API_KEY) }
 
-            selectedLocation?.latLng?.let {
-                marker = LatLng(it.latitude, it.longitude)
-                map.addMarker(MarkerOptions().position(marker))
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker, 15F))
+        // Set the fields to specify which types of place data to return after the user has made a selection
+        val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
 
-//                getMyLocation()?.let { Latlng ->
-//                    viewModel.getDirection(map, startLocation = Latlng, endLocation = maker)
-//                }
+        // Start the autocomplete intent
+        val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+            .build(context)
+        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
+            when (resultCode) {
+                Activity.RESULT_OK -> {
+                    data?.let {
+                        val place = Autocomplete.getPlaceFromIntent(data)
+                        Log.i("Mindy", "Place: ${place.name}, ${place.id}, ${place.latLng}")
+                        place.latLng?.let { latLng -> viewModel.getLocation(map, latLng) }
+                    }
+                }
+                AutocompleteActivity.RESULT_ERROR -> {
+                    data?.let {
+                        Toast.makeText(
+                            context,
+                            context?.getString(R.string.search_error),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
+                Activity.RESULT_CANCELED -> {
+                }
             }
-
+            return
         }
+        super.onActivityResult(requestCode, resultCode, data)
+    }
+
+    private fun markLocation(latLng: LatLng) {
+        binding.sendInvitaion.visibility = View.VISIBLE
+        marker = latLng
+        map.addMarker(MarkerOptions().position(marker))
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker, 15F))
     }
 
     override fun onMapClick(latlng: LatLng) {

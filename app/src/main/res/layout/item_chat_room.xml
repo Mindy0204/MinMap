@@ -32,7 +32,7 @@
 
         <TextView
             android:id="@+id/friend_name"
-            style="@style/chat_list_text"
+            style="@style/general_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/margin_16dp"

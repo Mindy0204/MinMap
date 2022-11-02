@@ -5,6 +5,7 @@ plugins {
     id 'org.jlleitschuh.gradle.ktlint'
     id 'androidx.navigation.safeargs'
     id 'com.google.gms.google-services'
+    id 'kotlin-parcelize'
 }
 
 ktlint {

@@ -11,24 +11,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-            android:id="@+id/home_notice"
+        <fragment xmlns:map="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/map"
+            android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/margin_16dp"
-            android:backgroundTint="@color/white"
-            android:text="You have an appointment!"
-            android:textAlignment="center"
-            app:borderWidth="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            android:layout_height="match_parent"
+            map:cameraZoom="13"
+            tools:context=".MapFragment" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/drawer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:backgroundTint="@color/light_tiffany_green"
+            android:visibility="gone"
             app:borderWidth="0dp"
             app:fabSize="mini"
             app:layout_constraintBottom_toBottomOf="@+id/home_notice"
@@ -91,19 +87,26 @@
             android:layout_height="@dimen/view_and_button_height"
             android:backgroundTint="@color/light_tiffany_green"
             android:text="@string/send_invitation"
-            android:textAlignment="center"
+            android:gravity="center"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/function_menu"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/function_menu"
-            android:visibility="gone"/>
+            app:layout_constraintTop_toTopOf="@+id/function_menu" />
 
-        <fragment xmlns:map="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/map"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
+        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+            android:id="@+id/home_notice"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            map:cameraZoom="13"
-            tools:context=".MapsFragment" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin_16dp"
+            android:layout_marginStart="@dimen/margin_24dp"
+            android:layout_marginEnd="@dimen/margin_24dp"
+            android:backgroundTint="@color/white"
+            android:gravity="center"
+            app:borderWidth="0dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>
