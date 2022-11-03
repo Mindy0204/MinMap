@@ -10,6 +10,10 @@
         android:name="com.mindyhsu.minmap.MapFragment"
         android:label="fragment_maps"
         tools:layout="@layout/fragment_map">
+        <argument
+            android:name="startNavigation"
+            app:argType="boolean"
+            android:defaultValue="false"/>
     </fragment>
     <action
         android:id="@+id/navigate_to_map_fragment"

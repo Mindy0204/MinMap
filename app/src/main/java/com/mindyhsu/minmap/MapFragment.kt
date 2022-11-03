@@ -54,6 +54,13 @@ class MapFragment : Fragment(),
         binding = FragmentMapBinding.inflate(inflater, container, false)
         viewModel = MapViewModel()
 
+        viewModel.isStartNavigation = MapFragmentArgs.fromBundle(requireArguments()).startNavigation
+//        viewModel.isStartNavigation.observe(viewLifecycleOwner) {
+//            if (viewModel.isStartNavigation.value == true) {
+//                viewModel.getRoute(map, getMyLocation()!!)
+//            }
+//        }
+
         viewModel.hasCurrentEvent.observe(viewLifecycleOwner) {
             if (!it) {
                 binding.homeNotice.text = context?.getString(R.string.create_new_event)
@@ -69,10 +76,10 @@ class MapFragment : Fragment(),
             }
         }
 
-        viewModel.eventDetail.observe(viewLifecycleOwner) {
+        viewModel.hasEventDetail.observe(viewLifecycleOwner) {
             findNavController().navigate(
                 CheckEventFragmentDirections.navigateToCheckEventFragment(
-                    viewModel.eventDetail.value!!
+                    viewModel.hasEventDetail.value!!
                 )
             )
         }
@@ -138,6 +145,10 @@ class MapFragment : Fragment(),
             map.uiSettings.setAllGesturesEnabled(true)
             mapStatus = -1
             map.setOnMapClickListener(this)
+
+            if (viewModel.isStartNavigation) {
+                getMyLocation()?.let { myLocation -> viewModel.getRoute(map, myLocation) }
+            }
         }
     }
 

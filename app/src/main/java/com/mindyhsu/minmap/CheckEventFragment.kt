@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.mindyhsu.minmap.databinding.FragmentCheckEventBinding
 
@@ -28,6 +29,10 @@ class CheckEventFragment : BottomSheetDialogFragment() {
 
         binding.checkMeetTime.text = getString(R.string.meeting_time_at, viewModel.eventTime.toString())
         binding.checkMeetLocation.text = getString(R.string.meeting_point_at, viewModel.eventLocation)
+
+        binding.checkEventButton.setOnClickListener {
+            findNavController().navigate(MapFragmentDirections.navigateToMapFragment(true))
+        }
 
         return binding.root
     }

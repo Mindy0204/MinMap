@@ -7,7 +7,7 @@
     tools:context=".CheckEventFragment">
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/extendedFloatingActionButton"
+        android:id="@+id/check_event_button"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/view_and_button_height"
         android:layout_marginStart="@dimen/margin_16dp"
@@ -38,7 +38,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/margin_16dp"
-        app:layout_constraintBottom_toTopOf="@+id/extendedFloatingActionButton"
+        app:layout_constraintBottom_toTopOf="@+id/check_event_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

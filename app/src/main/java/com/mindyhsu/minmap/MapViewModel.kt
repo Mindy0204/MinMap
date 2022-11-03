@@ -32,13 +32,15 @@ class MapViewModel : ViewModel() {
     val hasCurrentEvent: LiveData<Boolean>
         get() = _hasCurrentEvent
 
-    private val _eventDetail = MutableLiveData<Event>()
-    val eventDetail: LiveData<Event>
-        get() = _eventDetail
+    private val _hasEventDetail = MutableLiveData<Event>()
+    val hasEventDetail: LiveData<Event>
+        get() = _hasEventDetail
 
     var currentEventId = ""
     var currentEventWith = ""
     lateinit var eventGeoPoint: GeoPoint
+
+    var isStartNavigation: Boolean = false
 
     private var _isInviting = MutableLiveData<Boolean>()
     val isInviting: LiveData<Boolean>
@@ -78,38 +80,11 @@ class MapViewModel : ViewModel() {
             }
     }
 
-    fun getEventDetail() {
-        db.collection("events").document(currentEventId)
-            .get().addOnSuccessListener { event ->
-                event.data?.let { it ->
-                    _eventDetail.value = Event(
-                        id = it["id"] as String,
-                        status = it["status"] as String,
-                        participants = it["participants"] as List<String>,
-                        place = it["place"] as String,
-                        geoHash = it["geoHash"] as GeoPoint,
-                        time = it["time"] as Timestamp
-                    )
-
-                    val participants = it["participants"] as List<String>
-                    _eventDetail.value?.let { event ->
-                        for (participant in event.participants) {
-
-                            currentEventWith
-                            eventGeoPoint = event.geoHash
-//                        eventGeoPoint = it["geoHash"] as GeoPoint
-                        }
-                    }
-
-                }
-            }
-    }
-
     fun getLocation(map: GoogleMap, latLng: LatLng?) {
         db.collection("events").document(currentEventId)
             .get().addOnSuccessListener { event ->
                 event.data?.let {
-                    _eventDetail.value = Event(
+                    _hasEventDetail.value = Event(
                         id = it["id"] as String,
                         status = it["status"] as String,
                         participants = it["participants"] as List<String>,
@@ -117,8 +92,6 @@ class MapViewModel : ViewModel() {
                         geoHash = it["geoHash"] as GeoPoint,
                         time = it["time"] as Timestamp
                     )
-//                    eventGeoPoint = it["geoHash"] as GeoPoint
-
                 }
 
                 eventGeoPoint = event.data?.get("geoHash") as GeoPoint
@@ -136,49 +109,64 @@ class MapViewModel : ViewModel() {
             }
     }
 
-    fun getRoute(map: GoogleMap) {
-        coroutineScope.launch {
-            // parameter: startLocation: LatLng, endLocation: LatLng
-//            val start = "${startLocation.latitude},${startLocation.longitude}"
-//            val end = "${endLocation.latitude},${endLocation.longitude}"
+    fun getRoute(map: GoogleMap, myLocation: LatLng) {
+        var eventDetail: Event? = null
 
-//            val directionResult = MinMapApi.retrofitService.getDirection(
-//                startLocation = start,
-//                endLocation = end,
-//                apiKey = "***REMOVED***",
-//                mode = "walking"
-//            )
-
-            val directionResult = MinMapApi.retrofitService.getDirection(
-                startLocation = "25.042544669012685,121.5328892693387",
-                endLocation = "25.054456266969456, 121.52410146733696",
-                apiKey = "***REMOVED***",
-                mode = "walking"
-            )
-
-            val polylineOptions = PolylineOptions()
-            for (routeItem in directionResult.routes) {
-                for (legItem in routeItem.legs) {
-                    map.moveCamera(
-                        CameraUpdateFactory.newLatLngZoom(
-                            LatLng(
-                                legItem.startLocation.lat,
-                                legItem.startLocation.lng
-                            ), 15F
-                        )
+        db.collection("events").document(currentEventId)
+            .get().addOnSuccessListener { event ->
+                event.data?.let {
+                    eventDetail = Event(
+                        id = it["id"] as String,
+                        status = it["status"] as String,
+                        participants = it["participants"] as List<String>,
+                        place = it["place"] as String,
+                        geoHash = it["geoHash"] as GeoPoint,
+                        time = it["time"] as Timestamp
                     )
-                    for (stepItem in legItem.steps) {
-                        polylineOptions.add(
-                            LatLng(
-                                stepItem.startLocation.lat,
-                                stepItem.startLocation.lng
+                }
+
+
+                coroutineScope.launch {
+                    val directionResult = MinMapApi.retrofitService.getDirection(
+                        startLocation = "${myLocation.latitude}, ${myLocation.longitude}",
+                        endLocation = "${eventDetail?.geoHash?.latitude}, ${eventDetail?.geoHash?.longitude}",
+                        apiKey = BuildConfig.MAPS_API_KEY,
+                        mode = "walking"
+                    )
+
+                    // mock data
+//                    val directionResult = MinMapApi.retrofitService.getDirection(
+//                        startLocation = "25.042544669012685,121.5328892693387",
+//                        endLocation = "25.054456266969456, 121.52410146733696",
+//                        apiKey = BuildConfig.MAPS_API_KEY,
+//                        mode = "walking"
+//                    )
+
+                    val polylineOptions = PolylineOptions()
+                    for (routeItem in directionResult.routes) {
+                        for (legItem in routeItem.legs) {
+                            map.moveCamera(
+                                CameraUpdateFactory.newLatLngZoom(
+                                    LatLng(
+                                        legItem.startLocation.lat,
+                                        legItem.startLocation.lng
+                                    ), 15F
+                                )
                             )
-                        )
+                            for (stepItem in legItem.steps) {
+                                polylineOptions.add(
+                                    LatLng(
+                                        stepItem.startLocation.lat,
+                                        stepItem.startLocation.lng
+                                    )
+                                )
+                            }
+                        }
                     }
+                    map.addPolyline(polylineOptions)
                 }
             }
-            map.addPolyline(polylineOptions)
-        }
+        isStartNavigation = false
     }
 
     fun getMidPoint(locationList: MutableList<LatLng>): LatLng {
