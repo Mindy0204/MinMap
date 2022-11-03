@@ -10,6 +10,7 @@
     <string name="continue_button">Continue</string>
     <string name="send_invitation">Send Invitation</string>
     <string name="check">Check</string>
+    <string name="start_guide">Start Guide</string>
     <string name="meeting_point_at">Meeting Point: %s</string>
     <string name="meeting_time_at">Meeting Time: %s</string>
 

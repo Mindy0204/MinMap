@@ -1,6 +1,8 @@
 package com.mindyhsu.minmap
 
-import android.util.Log
+import android.content.Context
+import android.location.LocationManager
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,6 +16,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.mindyhsu.minmap.data.Event
+import com.mindyhsu.minmap.data.MapDirection
 import com.mindyhsu.minmap.data.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +38,9 @@ class MapViewModel : ViewModel() {
     private val _hasEventDetail = MutableLiveData<Event>()
     val hasEventDetail: LiveData<Event>
         get() = _hasEventDetail
+
+    var eventDetail: Event? = null
+    var directionResult: MapDirection? = null
 
     var currentEventId = ""
     var currentEventWith = ""
@@ -110,8 +116,6 @@ class MapViewModel : ViewModel() {
     }
 
     fun getRoute(map: GoogleMap, myLocation: LatLng) {
-        var eventDetail: Event? = null
-
         db.collection("events").document(currentEventId)
             .get().addOnSuccessListener { event ->
                 event.data?.let {
@@ -125,41 +129,34 @@ class MapViewModel : ViewModel() {
                     )
                 }
 
-
                 coroutineScope.launch {
-                    val directionResult = MinMapApi.retrofitService.getDirection(
+                    directionResult = MinMapApi.retrofitService.getDirection(
                         startLocation = "${myLocation.latitude}, ${myLocation.longitude}",
                         endLocation = "${eventDetail?.geoHash?.latitude}, ${eventDetail?.geoHash?.longitude}",
                         apiKey = BuildConfig.MAPS_API_KEY,
                         mode = "walking"
                     )
 
-                    // mock data
-//                    val directionResult = MinMapApi.retrofitService.getDirection(
-//                        startLocation = "25.042544669012685,121.5328892693387",
-//                        endLocation = "25.054456266969456, 121.52410146733696",
-//                        apiKey = BuildConfig.MAPS_API_KEY,
-//                        mode = "walking"
-//                    )
-
                     val polylineOptions = PolylineOptions()
-                    for (routeItem in directionResult.routes) {
-                        for (legItem in routeItem.legs) {
-                            map.moveCamera(
-                                CameraUpdateFactory.newLatLngZoom(
-                                    LatLng(
-                                        legItem.startLocation.lat,
-                                        legItem.startLocation.lng
-                                    ), 15F
-                                )
-                            )
-                            for (stepItem in legItem.steps) {
-                                polylineOptions.add(
-                                    LatLng(
-                                        stepItem.startLocation.lat,
-                                        stepItem.startLocation.lng
+                    directionResult?.routes?.let {
+                        for (routeItem in it) {
+                            for (legItem in routeItem.legs) {
+                                map.moveCamera(
+                                    CameraUpdateFactory.newLatLngZoom(
+                                        LatLng(
+                                            legItem.startLocation.lat,
+                                            legItem.startLocation.lng
+                                        ), 15F
                                     )
                                 )
+                                for (stepItem in legItem.steps) {
+                                    polylineOptions.add(
+                                        LatLng(
+                                            stepItem.startLocation.lat,
+                                            stepItem.startLocation.lng
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -167,6 +164,24 @@ class MapViewModel : ViewModel() {
                 }
             }
         isStartNavigation = false
+    }
+
+    fun startLocationUpdates() {
+        val locationManager = GlobalContext.applicationContext()
+            .getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0F) {
+            Toast.makeText(GlobalContext.applicationContext(), "myLocation", Toast.LENGTH_SHORT).show()
+            showRouteGuide(LatLng(it.latitude, it.longitude))
+            updateMyLocation(GeoPoint(it.latitude, it.longitude))
+        }
+    }
+
+    private fun updateMyLocation(userGeo: GeoPoint) {
+        db.collection("users").document("D7uCAaCvEsUSM5hl5yeK").update("geoHash", userGeo)
+    }
+
+    private fun showRouteGuide(myLocation: LatLng) {
+        eventDetail
     }
 
     fun getMidPoint(locationList: MutableList<LatLng>): LatLng {

@@ -4,10 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.Context.LOCATION_SERVICE
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.LocationManager
 import android.os.Bundle
+import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -16,14 +18,18 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.common.api.ResolvableApiException
+import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
@@ -55,11 +61,6 @@ class MapFragment : Fragment(),
         viewModel = MapViewModel()
 
         viewModel.isStartNavigation = MapFragmentArgs.fromBundle(requireArguments()).startNavigation
-//        viewModel.isStartNavigation.observe(viewLifecycleOwner) {
-//            if (viewModel.isStartNavigation.value == true) {
-//                viewModel.getRoute(map, getMyLocation()!!)
-//            }
-//        }
 
         viewModel.hasCurrentEvent.observe(viewLifecycleOwner) {
             if (!it) {
@@ -77,11 +78,13 @@ class MapFragment : Fragment(),
         }
 
         viewModel.hasEventDetail.observe(viewLifecycleOwner) {
-            findNavController().navigate(
-                CheckEventFragmentDirections.navigateToCheckEventFragment(
-                    viewModel.hasEventDetail.value!!
+            viewModel.hasEventDetail.value?.let {
+                findNavController().navigate(
+                    CheckEventFragmentDirections.navigateToCheckEventFragment(
+                        it
+                    )
                 )
-            )
+            }
         }
 
         viewModel.isInviting.observe(viewLifecycleOwner) {
@@ -134,6 +137,12 @@ class MapFragment : Fragment(),
             binding.sendInvitaion.visibility = View.GONE
         }
 
+        binding.startGuide.setOnClickListener {
+            binding.guideText.text = "Test"
+            binding.routeGuideView.visibility = View.VISIBLE
+            viewModel.startLocationUpdates()
+        }
+
         return binding.root
     }
 
@@ -146,8 +155,12 @@ class MapFragment : Fragment(),
             mapStatus = -1
             map.setOnMapClickListener(this)
 
+            enableMyLocation()
+
             if (viewModel.isStartNavigation) {
                 getMyLocation()?.let { myLocation -> viewModel.getRoute(map, myLocation) }
+                binding.homeNotice.visibility = View.GONE
+                binding.startGuide.visibility = View.VISIBLE
             }
         }
     }
@@ -163,6 +176,7 @@ class MapFragment : Fragment(),
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 map.isMyLocationEnabled = true
+//                viewModel.startLocationUpdates()
                 map.uiSettings.isMyLocationButtonEnabled = false
                 return
             } else {
@@ -204,7 +218,6 @@ class MapFragment : Fragment(),
         if (cameraUpdate != null) {
             map.animateCamera(cameraUpdate)
         }
-        Log.i("Mindy", "${latLng?.latitude}")
         return latLng
     }
 
