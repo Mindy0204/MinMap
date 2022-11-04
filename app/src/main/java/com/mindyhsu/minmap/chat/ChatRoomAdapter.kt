@@ -1,5 +1,6 @@
 package com.mindyhsu.minmap.chat
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,20 +10,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.databinding.ItemChatRoomBinding
 
-class ChatRoomAdapter(private val onClickListener: OnClickListener) :
+class ChatRoomAdapter(private val uiState: ChatRoomUiState) :
     ListAdapter<ChatRoom, ChatRoomAdapter.ChatRoomViewHolder>(ChatRoomDiffCallback()) {
 
     class ChatRoomViewHolder(private var binding: ItemChatRoomBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: ChatRoom) {
-            var chatRoomName = ""
-            for (participant in item.participants) {
-                chatRoomName = "$chatRoomName $participant"
-            }
-            binding.friendName.text = chatRoomName
+        fun bind(item: ChatRoom, uiState: ChatRoomUiState) {
+            binding.friendName.text = uiState.roomTitleDisplay(item.participants)
+            binding.lastMessage.text = item.lastMessage
 
-            if (item.eventId != "") {
+            if (item.eventId.isNotEmpty()) {
                 binding.eventReminder.visibility = View.VISIBLE
             }
         }
@@ -46,15 +44,6 @@ class ChatRoomAdapter(private val onClickListener: OnClickListener) :
 
     override fun onBindViewHolder(holder: ChatRoomViewHolder, position: Int) {
         val chatRoom = getItem(position)
-
-        holder.itemView.setOnClickListener {
-            onClickListener.onClick(chatRoom)
-        }
-
-        holder.bind(chatRoom)
-    }
-
-    class OnClickListener(val clickListener: (chatRoom: ChatRoom) -> Unit) {
-        fun onClick(chatRoom: ChatRoom) = clickListener(chatRoom)
+        holder.bind(chatRoom, uiState)
     }
 }

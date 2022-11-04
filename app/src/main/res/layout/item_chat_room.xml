@@ -13,7 +13,8 @@
         android:src="@mipmap/icon_profile"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:alpha="0.4"/>
 
     <ImageView
         android:id="@+id/event_reminder"
@@ -31,8 +32,18 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_16dp"
         android:text="Wayne"
-        app:layout_constraintBottom_toBottomOf="@+id/friend_profile"
         app:layout_constraintStart_toEndOf="@+id/friend_profile"
-        app:layout_constraintTop_toTopOf="@+id/friend_profile" />
+        app:layout_constraintTop_toTopOf="@+id/friend_profile"
+        app:layout_constraintBottom_toTopOf="@+id/last_message"/>
+
+    <TextView
+        android:id="@+id/last_message"
+        style="@style/general_small_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="hi"
+        app:layout_constraintBottom_toBottomOf="@+id/friend_profile"
+        app:layout_constraintStart_toStartOf="@+id/friend_name"
+        app:layout_constraintTop_toBottomOf="@+id/friend_name" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

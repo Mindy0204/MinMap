@@ -27,12 +27,12 @@ class DialogFragment : Fragment() {
         val adapter = DialogAdapter()
         binding.dialogRecyclerview.adapter = adapter
 
-        val chatList = mutableListOf<Message>()
-        val message1 = Message(id = "GnGMAzxQq3xLrBpYA6rP", senderId = "Wayne", text = "Hi, how are you")
-        val message2 = Message(id = "JvotWfs0w81xQyBUNC1s", senderId = "Mindy", text = "i'm fine, thank you, and you")
-        chatList.add(message1)
-        chatList.add(message2)
-        adapter.submitList(chatList)
+//        val chatList = mutableListOf<Message>()
+//        val message1 = Message(id = "GnGMAzxQq3xLrBpYA6rP", senderId = "Wayne", text = "Hi, how are you")
+//        val message2 = Message(id = "JvotWfs0w81xQyBUNC1s", senderId = "Mindy", text = "i'm fine, thank you, and you")
+//        chatList.add(message1)
+//        chatList.add(message2)
+//        adapter.submitList(chatList)
 
         return binding.root
     }
