@@ -1,7 +1,9 @@
 package com.mindyhsu.minmap
 
 import android.content.Context
+import android.location.Location
 import android.location.LocationManager
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -17,6 +19,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.mindyhsu.minmap.data.Event
 import com.mindyhsu.minmap.data.MapDirection
+import com.mindyhsu.minmap.data.Step
 import com.mindyhsu.minmap.data.User
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +32,7 @@ class MapViewModel : ViewModel() {
 
     private val db = Firebase.firestore
 
-    lateinit var userData: User
+    private lateinit var userData: User
 
     private var _hasCurrentEvent = MutableLiveData<Boolean>()
     val hasCurrentEvent: LiveData<Boolean>
@@ -41,6 +44,12 @@ class MapViewModel : ViewModel() {
 
     var eventDetail: Event? = null
     var directionResult: MapDirection? = null
+    private var routeSteps = listOf<Step>()
+    var step = 0
+
+    private var _instruction = MutableLiveData<String>()
+    val instruction: LiveData<String>
+        get() = _instruction
 
     var currentEventId = ""
     var currentEventWith = ""
@@ -58,7 +67,6 @@ class MapViewModel : ViewModel() {
     }
 
     private fun getUser() {
-        // user id: D7uCAaCvEsUSM5hl5yeK
         db.collection("users").document("D7uCAaCvEsUSM5hl5yeK")
             .get().addOnSuccessListener { user ->
                 user.data?.let {
@@ -149,6 +157,8 @@ class MapViewModel : ViewModel() {
                                         ), 15F
                                     )
                                 )
+                                routeSteps = legItem.steps
+
                                 for (stepItem in legItem.steps) {
                                     polylineOptions.add(
                                         LatLng(
@@ -170,8 +180,9 @@ class MapViewModel : ViewModel() {
         val locationManager = GlobalContext.applicationContext()
             .getSystemService(Context.LOCATION_SERVICE) as LocationManager
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0L, 0F) {
-            Toast.makeText(GlobalContext.applicationContext(), "myLocation", Toast.LENGTH_SHORT).show()
-            showRouteGuide(LatLng(it.latitude, it.longitude))
+            Toast.makeText(GlobalContext.applicationContext(), "myLocation", Toast.LENGTH_SHORT)
+                .show()
+            showRouteGuide(it)
             updateMyLocation(GeoPoint(it.latitude, it.longitude))
         }
     }
@@ -180,8 +191,23 @@ class MapViewModel : ViewModel() {
         db.collection("users").document("D7uCAaCvEsUSM5hl5yeK").update("geoHash", userGeo)
     }
 
-    private fun showRouteGuide(myLocation: LatLng) {
-        eventDetail
+    private fun showRouteGuide(myLocation: Location) {
+        val stepEndLocation = Location("stepEndLocation")
+        stepEndLocation.latitude = routeSteps[step].endLocation.lat
+        stepEndLocation.longitude = routeSteps[step].endLocation.lng
+
+        if (myLocation.distanceTo(stepEndLocation) <= 50) { // 50 meter
+            if (step != routeSteps.size - 1) {
+                step += 1
+            }
+
+            var direction = ""
+            routeSteps[step].maneuver?.let {
+                Log.i("nextManeuver", it)
+                direction = "Direction: $it"
+            }
+            _instruction.value = direction + "\nDuration: " + routeSteps[step].duration.text
+        }
     }
 
     fun getMidPoint(locationList: MutableList<LatLng>): LatLng {

@@ -138,9 +138,14 @@ class MapFragment : Fragment(),
         }
 
         binding.startGuide.setOnClickListener {
-            binding.guideText.text = "Test"
+            binding.startGuide.visibility = View.GONE
+            binding.guideText.text = "Start Navigation"
             binding.routeGuideView.visibility = View.VISIBLE
             viewModel.startLocationUpdates()
+        }
+
+        viewModel.instruction.observe(viewLifecycleOwner) {
+            binding.guideText.text = viewModel.instruction.value
         }
 
         return binding.root
