@@ -23,14 +23,24 @@ class DialogFragment : Fragment() {
     ): View? {
         val chatRoomDetail = DialogFragmentArgs.fromBundle(requireArguments()).chatRoomDetail
         viewModel = DialogViewModel(chatRoomDetail)
-        Log.d("Minddddddy", "chatRoomDetail=${chatRoomDetail}")
 
         binding = FragmentDialogBinding.inflate(inflater, container, false)
 
         binding.dialogPageTitle.text = viewModel.roomTitle
 
         val adapter = DialogAdapter()
-        binding.dialogRecyclerview.adapter = adapter
+        binding.dialogRecyclerView.adapter = adapter
+
+        viewModel.dialogs.observe(viewLifecycleOwner) {
+            adapter.submitList(it)
+        }
+
+        // Chips
+        binding.donNotMove.setOnClickListener {  }
+        binding.illBeThereIn.setOnClickListener {  }
+        binding.imAt.setOnClickListener {  }
+        binding.whereAreYou.setOnClickListener {  }
+        binding.imHere.setOnClickListener {  }
 
         return binding.root
     }

@@ -1,9 +1,12 @@
 package com.mindyhsu.minmap.chat
 
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.mindyhsu.minmap.data.ChatRoom
+import com.mindyhsu.minmap.data.Message
 
 class DialogViewModel(private val chatRoomDetail: ChatRoom) : ViewModel() {
     private val db = Firebase.firestore
@@ -12,16 +15,13 @@ class DialogViewModel(private val chatRoomDetail: ChatRoom) : ViewModel() {
     private val users = chatRoomDetail.users.filter { it.name != selfName }
     var roomTitle = ""
 
-    //        val chatList = mutableListOf<Message>()
-//        val message1 = Message(id = "GnGMAzxQq3xLrBpYA6rP", senderId = "Wayne", text = "Hi, how are you")
-//        val message2 = Message(id = "JvotWfs0w81xQyBUNC1s", senderId = "Mindy", text = "i'm fine, thank you, and you")
-//        chatList.add(message1)
-//        chatList.add(message2)
-//        adapter.submitList(chatList)
+    private val _dialogs = MutableLiveData<List<DialogItem>>()
+    val dialogs: LiveData<List<DialogItem>>
+        get() = _dialogs
 
     init {
         getTitleName()
-        getMessage()
+        getDialogs()
     }
 
     private fun getTitleName() {
@@ -37,7 +37,20 @@ class DialogViewModel(private val chatRoomDetail: ChatRoom) : ViewModel() {
         }
     }
 
-    private fun getMessage() {
-
+    private fun getDialogs() {
+        val dataList = mutableListOf<DialogItem>()
+        db.collection("chatRooms").document(chatRoomDetail.id).collection("messages")
+            .orderBy("time")
+            .get().addOnSuccessListener { dialogs ->
+                for (dialog in dialogs) {
+                    val data = dialog.toObject(Message::class.java)
+                    if (dialog.data["senderId"] != "D7uCAaCvEsUSM5hl5yeK") {
+                        dataList.add(DialogItem.FriendDialog(data))
+                    } else {
+                        dataList.add(DialogItem.MyDialog(data))
+                    }
+                }
+                _dialogs.value = dataList
+            }
     }
 }
