@@ -17,11 +17,16 @@ class ChatRoomAdapter(private val uiState: ChatRoomUiState) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: ChatRoom, uiState: ChatRoomUiState) {
-            binding.friendName.text = uiState.roomTitleDisplay(item.participants)
+            val participants = uiState.roomTitleDisplay(item.participants)
+            binding.friendName.text = participants
             binding.lastMessage.text = item.lastMessage
 
             if (item.eventId.isNotEmpty()) {
                 binding.eventReminder.visibility = View.VISIBLE
+            }
+
+            itemView.setOnClickListener {
+                uiState.onClick(item.id)
             }
         }
     }

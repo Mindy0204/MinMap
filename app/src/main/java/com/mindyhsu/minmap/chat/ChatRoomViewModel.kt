@@ -1,15 +1,16 @@
 package com.mindyhsu.minmap.chat
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.mindyhsu.minmap.data.ChatRoom
-import com.mindyhsu.minmap.data.Message
+import com.mindyhsu.minmap.data.User
 
 data class ChatRoomUiState(
-    val onClick: (position: Int) -> Unit,
+    val onClick: (chatRoomId: String) -> Unit,
     val roomTitleDisplay: (id: List<String>) -> String
 )
 
@@ -20,15 +21,18 @@ class ChatRoomViewModel : ViewModel() {
     val chatRoom: LiveData<List<ChatRoom>>
         get() = _chatRoom
 
-    private val _navigateToDialog = MutableLiveData<List<Message>?>()
-    val navigateToDialog: LiveData<List<Message>?>
+    private val _navigateToDialog = MutableLiveData<ChatRoom>()
+    val navigateToDialog: LiveData<ChatRoom>
         get() = _navigateToDialog
 
-    private val userNames = mutableMapOf<String, String>()
+    private val userNameListWithIds = mutableMapOf<String, String>()
+    private val chatRoomList = mutableListOf<ChatRoom>()
+    private val userList = mutableListOf<User>()
+    private val chatRoomListWithUser = mutableListOf<ChatRoom>()
 
     val uiState = ChatRoomUiState(
-        onClick = { position ->
-
+        onClick = { chatRoomId ->
+            _navigateToDialog.value = chatRoomListWithUser.filter { it.id == chatRoomId }[0]
         },
         roomTitleDisplay = {
             val selfId = "D7uCAaCvEsUSM5hl5yeK"
@@ -39,7 +43,7 @@ class ChatRoomViewModel : ViewModel() {
                 if (index != 0) {
                     nameDisplay += ", "
                 }
-                nameDisplay += userNames[id]
+                nameDisplay += userNameListWithIds[id]
             }
             return@ChatRoomUiState nameDisplay
         }
@@ -50,33 +54,55 @@ class ChatRoomViewModel : ViewModel() {
     }
 
     private fun getMyChatRoomList() {
-        val dataList = mutableListOf<ChatRoom>()
+        var chatRoomData = ChatRoom()
+        val usersIds = mutableListOf<String>()
 
         db.collection("chatRooms").whereArrayContains("participants", "D7uCAaCvEsUSM5hl5yeK")
-            .get().addOnSuccessListener { documents ->
+            .get().addOnSuccessListener { chatRooms ->
 
-                val allUserIds = mutableListOf<String>()
-                for (chatRoom in documents) {
-                    val data = chatRoom.toObject(ChatRoom::class.java)
-                    dataList.add(data)
-                    allUserIds.addAll(chatRoom.data["participants"] as List<String>)
+                for (chatRoom in chatRooms) {
+                    chatRoomData = chatRoom.toObject(ChatRoom::class.java)
+                    chatRoomList.add(chatRoomData)
+                    usersIds.addAll(chatRoom.data["participants"] as List<String>)
                 }
 
-                db.collection("users").whereIn("id", allUserIds)
-                    .get().addOnSuccessListener { allUsers ->
-                        for (user in allUsers) {
-                            userNames[user.data["id"] as String] = user.data["name"] as String
+//                Log.d("Minddddddy", "chatRoomList=${chatRoomList}")
+
+                db.collection("users").whereIn("id", usersIds)
+                    .get().addOnSuccessListener { users ->
+
+                        for (user in users) {
+                            userNameListWithIds[user.data["id"] as String] =
+                                user.data["name"] as String
+                            val userList = user.toObject(User::class.java)
+                            this.userList.add(userList)
                         }
-                        _chatRoom.value = dataList
+                        _chatRoom.value = chatRoomList
+
+//                        Log.d("Minddddddy", "userList=${userList}")
+                        addNamesInChatRoom()
                     }
             }
     }
 
-    fun displayDialog(message: List<Message>) {
-        _navigateToDialog.value = message
-    }
+    private fun addNamesInChatRoom() {
+        for (chatRoom in chatRoomList) {
 
-    fun displayDialogComplete() {
-        _navigateToDialog.value = null
+            val userData = mutableListOf<User>()
+//            Log.d("Minddddddy","chatRoom=${chatRoom}, participants=${chatRoom.participants}")
+
+            for (participant in chatRoom.participants) {
+                for (user in userList) {
+                    if (participant == user.id) {
+                        userData.add(user)
+                    }
+                }
+            }
+//            Log.d("Minddddddy","userData=${userData}")
+            chatRoom.users = userData
+            chatRoomListWithUser.add(chatRoom)
+        }
+//        Log.d("Minddddddy", "userData=${chatRoomListWithUser[0].users}")
+//        Log.d("Minddddddy", "userData=${chatRoomListWithUser[1].users}")
     }
 }

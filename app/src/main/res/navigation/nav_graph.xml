@@ -12,8 +12,8 @@
         tools:layout="@layout/fragment_map">
         <argument
             android:name="startNavigation"
-            app:argType="boolean"
-            android:defaultValue="false"/>
+            android:defaultValue="false"
+            app:argType="boolean" />
     </fragment>
     <action
         android:id="@+id/navigate_to_map_fragment"
@@ -35,18 +35,18 @@
         android:id="@+id/dialogFragment"
         android:name="com.mindyhsu.minmap.chat.DialogFragment"
         android:label="DialogFragment">
-<!--        <argument-->
-<!--            android:name="chatRoomId"-->
-<!--            app:argType="com.mindyhsu.minmap.data.Message" />-->
+        <argument
+            android:name="chatRoomDetail"
+            app:argType="com.mindyhsu.minmap.data.ChatRoom" />
     </fragment>
     <dialog
         android:id="@+id/checkEventFragment"
         android:name="com.mindyhsu.minmap.CheckEventFragment"
         android:label="fragment_check_event"
-        tools:layout="@layout/fragment_check_event" >
+        tools:layout="@layout/fragment_check_event">
         <argument
             android:name="eventDetail"
-            app:argType="com.mindyhsu.minmap.data.Event"/>
+            app:argType="com.mindyhsu.minmap.data.Event" />
     </dialog>
     <action
         android:id="@+id/navigate_to_check_event_fragment"

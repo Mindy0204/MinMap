@@ -20,7 +20,7 @@ class ChatRoomFragment : Fragment() {
         viewModel = ChatRoomViewModel()
 
         val adapter = ChatRoomAdapter(
-           viewModel.uiState
+            viewModel.uiState
         )
         binding.chatRoomRecyclerview.adapter = adapter
 
@@ -29,10 +29,10 @@ class ChatRoomFragment : Fragment() {
         }
 
         viewModel.navigateToDialog.observe(viewLifecycleOwner) {
-            findNavController().navigate(
-                ChatRoomFragmentDirections.actionChatRoomFragmentToDialogFragment()
-            )
-            viewModel.displayDialogComplete()
+            viewModel.navigateToDialog.value?.let {
+                findNavController().navigate(ChatRoomFragmentDirections.actionChatRoomFragmentToDialogFragment(it))
+            }
+
         }
 
         return binding.root
