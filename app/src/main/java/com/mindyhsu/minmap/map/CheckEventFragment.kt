@@ -1,12 +1,12 @@
-package com.mindyhsu.minmap
+package com.mindyhsu.minmap.map
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.databinding.FragmentCheckEventBinding
 
 class CheckEventFragment : BottomSheetDialogFragment() {
@@ -27,8 +27,11 @@ class CheckEventFragment : BottomSheetDialogFragment() {
         val eventDetail = CheckEventFragmentArgs.fromBundle(requireArguments()).eventDetail
         viewModel = CheckEventViewModel(eventDetail)
 
-        binding.checkMeetTime.text = getString(R.string.meeting_time_at, viewModel.eventTime.toString())
-        binding.checkMeetLocation.text = getString(R.string.meeting_point_at, viewModel.eventLocation)
+        viewModel.eventParticipant.observe(viewLifecycleOwner) {
+            binding.eventTime.text = getString(R.string.meeting_time_at, viewModel.eventTime)
+            binding.eventLocation.text = getString(R.string.meeting_point_at, viewModel.eventLocation)
+            binding.eventParticipants.text = getString(R.string.meeting_participants, it)
+        }
 
         binding.checkEventButton.setOnClickListener {
             findNavController().navigate(MapFragmentDirections.navigateToMapFragment(true))

@@ -1,47 +1,41 @@
-package com.mindyhsu.minmap
+package com.mindyhsu.minmap.map
 
 import android.Manifest
 import android.app.Activity
 import android.content.Context.LOCATION_SERVICE
 import android.content.Intent
-import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.LocationManager
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
-import com.google.android.gms.common.api.ResolvableApiException
-import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.tasks.Task
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.mindyhsu.minmap.BuildConfig
+import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
 
 
 class MapFragment : Fragment(),
     OnRequestPermissionsResultCallback, OnMapClickListener {
-
     private lateinit var binding: FragmentMapBinding
     private lateinit var viewModel: MapViewModel
 
@@ -50,7 +44,7 @@ class MapFragment : Fragment(),
 
     var marker = LatLng(0.0, 0.0)
 
-    var mapStatus = -1
+    private var showFunctionButton = -1
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -60,25 +54,24 @@ class MapFragment : Fragment(),
         binding = FragmentMapBinding.inflate(inflater, container, false)
         viewModel = MapViewModel()
 
-        viewModel.isStartNavigation = MapFragmentArgs.fromBundle(requireArguments()).startNavigation
+        binding.backToPosition.setOnClickListener {
+            enableMyLocation()
+            getMyLocation()
+        }
 
-        viewModel.hasCurrentEvent.observe(viewLifecycleOwner) {
-            if (!it) {
+        viewModel.currentEventId.observe(viewLifecycleOwner) {
+            if (viewModel.currentEventId.value == "") {
+                map.clear()
                 binding.homeNotice.text = context?.getString(R.string.create_new_event)
-                binding.homeNotice.setOnClickListener {
-                    searchPlace()
-                }
+                binding.homeNotice.setOnClickListener { searchPlace() }
             } else {
-                binding.homeNotice.text =
-                    context?.getString(R.string.show_event, viewModel.currentEventWith)
-                binding.homeNotice.setOnClickListener {
-                    viewModel.getLocation(map, null)
-                }
+                binding.homeNotice.text = context?.getString(R.string.show_event)
+                binding.homeNotice.setOnClickListener { viewModel.getCurrentEventLocation(map) }
             }
         }
 
-        viewModel.hasEventDetail.observe(viewLifecycleOwner) {
-            viewModel.hasEventDetail.value?.let {
+        viewModel.currentEventDetail.observe(viewLifecycleOwner) {
+            viewModel.currentEventDetail.value?.let {
                 findNavController().navigate(
                     CheckEventFragmentDirections.navigateToCheckEventFragment(
                         it
@@ -87,17 +80,36 @@ class MapFragment : Fragment(),
             }
         }
 
-        viewModel.isInviting.observe(viewLifecycleOwner) {
-            if (it) {
-                binding.sendInvitaion.visibility = View.VISIBLE
-            } else {
-                binding.sendInvitaion.visibility = View.GONE
+        viewModel.isStartNavigation = MapFragmentArgs.fromBundle(requireArguments()).startNavigation
+
+        binding.startNavigation.setOnClickListener {
+            binding.startNavigation.visibility = View.GONE
+            binding.routeGuideView.visibility = View.VISIBLE
+            binding.guideText.text = getString(R.string.start_navigation)
+            viewModel.startNavigation()
+        }
+
+        viewModel.navigationInstruction.observe(viewLifecycleOwner) {
+            binding.guideText.visibility = View.VISIBLE
+            binding.guideText.text = viewModel.navigationInstruction.value
+        }
+
+        viewModel.isFinishNavigation.observe(viewLifecycleOwner) {
+            if (viewModel.isFinishNavigation.value == true) {
+                binding.guideText.visibility = View.GONE
+                binding.routeGuideView.visibility = View.GONE
+                binding.homeNotice.visibility = View.VISIBLE
+                map.clear()
+                findNavController().navigate(NavigationSuccessFragmentDirections.navigateToNavigationSuccessFragment())
             }
         }
 
-        binding.backToPosition.setOnClickListener {
-            enableMyLocation()
-            getMyLocation()
+        viewModel.isOnInvitation.observe(viewLifecycleOwner) {
+            if (it) {
+                binding.sendInvitation.visibility = View.VISIBLE
+            } else {
+                binding.sendInvitation.visibility = View.GONE
+            }
         }
 
         binding.functionMenu.setOnClickListener {
@@ -132,20 +144,9 @@ class MapFragment : Fragment(),
             findNavController().navigate(ChatRoomFragmentDirections.navigateToChatRoomFragment())
         }
 
-        binding.sendInvitaion.setOnClickListener {
-            viewModel.setEvent(marker)
-            binding.sendInvitaion.visibility = View.GONE
-        }
-
-        binding.startGuide.setOnClickListener {
-            binding.startGuide.visibility = View.GONE
-            binding.guideText.text = "Start Navigation"
-            binding.routeGuideView.visibility = View.VISIBLE
-            viewModel.startLocationUpdates()
-        }
-
-        viewModel.instruction.observe(viewLifecycleOwner) {
-            binding.guideText.text = viewModel.instruction.value
+        binding.sendInvitation.setOnClickListener {
+            viewModel.sendInvitation(marker)
+            binding.sendInvitation.visibility = View.GONE
         }
 
         return binding.root
@@ -157,15 +158,17 @@ class MapFragment : Fragment(),
         mapFragment?.getMapAsync { googleMap ->
             map = googleMap
             map.uiSettings.setAllGesturesEnabled(true)
-            mapStatus = -1
+            showFunctionButton = -1
             map.setOnMapClickListener(this)
 
             enableMyLocation()
 
             if (viewModel.isStartNavigation) {
-                getMyLocation()?.let { myLocation -> viewModel.getRoute(map, myLocation) }
+                getMyLocation()?.let { myLocation ->
+                    viewModel.getRoute(map, myLocation)
+                }
                 binding.homeNotice.visibility = View.GONE
-                binding.startGuide.visibility = View.VISIBLE
+                binding.startNavigation.visibility = View.VISIBLE
             }
         }
     }
@@ -231,16 +234,16 @@ class MapFragment : Fragment(),
     }
 
     private fun showAdvancedFunction() {
-        when (mapStatus) {
+        when (showFunctionButton) {
             -1 -> {
-                mapStatus = 0
+                showFunctionButton = 0
                 binding.functionChat.visibility = View.VISIBLE
                 binding.functionPlanning.visibility = View.VISIBLE
                 binding.backToPosition.visibility = View.GONE
                 map.uiSettings.setAllGesturesEnabled(false)
             }
             0 -> {
-                mapStatus = -1
+                showFunctionButton = -1
                 binding.functionChat.visibility = View.GONE
                 binding.functionPlanning.visibility = View.GONE
                 binding.backToPosition.visibility = View.VISIBLE
@@ -268,21 +271,13 @@ class MapFragment : Fragment(),
                 Activity.RESULT_OK -> {
                     data?.let {
                         val place = Autocomplete.getPlaceFromIntent(data)
-                        Log.i("Mindy", "Place: ${place.name}, ${place.id}, ${place.latLng}")
-                        place.latLng?.let { latLng -> viewModel.getLocation(map, latLng) }
+                        Log.d("Mindddddddy", "${place.name},${place.latLng}")
+
+                        place.latLng?.let { latLng -> viewModel.onPlanningLocation(map, latLng) }
                     }
                 }
-                AutocompleteActivity.RESULT_ERROR -> {
-                    data?.let {
-                        Toast.makeText(
-                            context,
-                            context?.getString(R.string.search_error),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                }
-                Activity.RESULT_CANCELED -> {
-                }
+                AutocompleteActivity.RESULT_ERROR -> {}
+                Activity.RESULT_CANCELED -> {}
             }
             return
         }
@@ -290,7 +285,7 @@ class MapFragment : Fragment(),
     }
 
     private fun markLocation(latLng: LatLng) {
-        binding.sendInvitaion.visibility = View.VISIBLE
+        binding.sendInvitation.visibility = View.VISIBLE
         marker = latLng
         map.addMarker(MarkerOptions().position(marker))
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker, 15F))

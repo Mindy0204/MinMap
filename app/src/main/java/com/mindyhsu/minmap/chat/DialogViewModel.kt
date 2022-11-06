@@ -7,11 +7,12 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.data.Message
+import com.mindyhsu.minmap.login.UserManager
 
 class DialogViewModel(private val chatRoomDetail: ChatRoom) : ViewModel() {
     private val db = Firebase.firestore
 
-    private val selfName = "Mindy"
+    private val selfName = UserManager.name
     private val users = chatRoomDetail.users.filter { it.name != selfName }
     var roomTitle = ""
 
@@ -44,7 +45,7 @@ class DialogViewModel(private val chatRoomDetail: ChatRoom) : ViewModel() {
             .get().addOnSuccessListener { dialogs ->
                 for (dialog in dialogs) {
                     val data = dialog.toObject(Message::class.java)
-                    if (dialog.data["senderId"] != "D7uCAaCvEsUSM5hl5yeK") {
+                    if (dialog.data["senderId"] != UserManager.id) {
                         dataList.add(DialogItem.FriendDialog(data))
                     } else {
                         dataList.add(DialogItem.MyDialog(data))

@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         map:cameraZoom="13"
-        tools:context=".MapFragment" />
+        tools:context=".map.MapFragment" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/drawer"
@@ -24,6 +24,20 @@
         app:layout_constraintBottom_toBottomOf="@+id/home_notice"
         app:layout_constraintStart_toStartOf="@+id/home_notice"
         app:layout_constraintTop_toTopOf="@+id/home_notice" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/home_notice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_24dp"
+        android:layout_marginTop="@dimen/margin_16dp"
+        android:layout_marginEnd="@dimen/margin_24dp"
+        android:backgroundTint="@color/white"
+        android:gravity="center"
+        app:borderWidth="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/back_to_position"
@@ -76,7 +90,7 @@
         app:layout_constraintStart_toStartOf="@+id/function_menu" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/send_invitaion"
+        android:id="@+id/send_invitation"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/view_and_button_height"
         android:backgroundTint="@color/light_tiffany_green"
@@ -89,31 +103,17 @@
         app:layout_constraintTop_toTopOf="@+id/function_menu" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/start_guide"
+        android:id="@+id/start_navigation"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/view_and_button_height"
         android:backgroundTint="@color/light_tiffany_green"
         android:gravity="center"
-        android:text="@string/start_guide"
+        android:text="@string/start_navigation"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/function_menu"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/function_menu" />
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/home_notice"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_24dp"
-        android:layout_marginTop="@dimen/margin_16dp"
-        android:layout_marginEnd="@dimen/margin_24dp"
-        android:backgroundTint="@color/white"
-        android:gravity="center"
-        app:borderWidth="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.cardview.widget.CardView
         android:id="@+id/route_guide_view"

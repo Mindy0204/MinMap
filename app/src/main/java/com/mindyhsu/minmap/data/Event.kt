@@ -8,10 +8,10 @@ import kotlinx.parcelize.RawValue
 
 @Parcelize
 data class Event(
-    val id: String,
-    val status: String,
-    val participants: List<String>,
-    val geoHash: @RawValue GeoPoint,
-    val place: String,
-    val time: Timestamp
+    val id: String = "",
+    val status: String = "",
+    val participants: List<String> = emptyList(),
+    val geoHash: @RawValue GeoPoint? = null,
+    val place: String = "",
+    val time: Timestamp? = null
 ): Parcelable

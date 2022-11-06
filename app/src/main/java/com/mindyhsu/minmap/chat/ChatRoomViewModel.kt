@@ -8,6 +8,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.data.User
+import com.mindyhsu.minmap.login.UserManager
 
 data class ChatRoomUiState(
     val onClick: (chatRoomId: String) -> Unit,
@@ -35,7 +36,7 @@ class ChatRoomViewModel : ViewModel() {
             _navigateToDialog.value = chatRoomListWithUser.filter { it.id == chatRoomId }[0]
         },
         roomTitleDisplay = {
-            val selfId = "D7uCAaCvEsUSM5hl5yeK"
+            val selfId = UserManager.id
             val ids = it.filter { it != selfId }
             var nameDisplay = ""
 
@@ -57,7 +58,7 @@ class ChatRoomViewModel : ViewModel() {
         var chatRoomData = ChatRoom()
         val usersIds = mutableListOf<String>()
 
-        db.collection("chatRooms").whereArrayContains("participants", "D7uCAaCvEsUSM5hl5yeK")
+        db.collection("chatRooms").whereArrayContains("participants", UserManager.id)
             .get().addOnSuccessListener { chatRooms ->
 
                 for (chatRoom in chatRooms) {

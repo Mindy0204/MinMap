@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".CheckEventFragment">
+    tools:context=".map.CheckEventFragment">
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/check_event_button"
@@ -15,25 +15,35 @@
         android:layout_marginBottom="@dimen/margin_16dp"
         android:backgroundTint="@color/light_tiffany_green"
         android:gravity="center"
-        android:text="@string/check"
+        android:text="@string/check_route"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
     <TextView
-        android:id="@+id/check_meet_time"
+        android:id="@+id/event_time"
         style="@style/general_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_16dp"
         android:layout_marginBottom="@dimen/margin_8dp"
-        app:layout_constraintBottom_toTopOf="@+id/check_meet_location"
+        app:layout_constraintBottom_toTopOf="@+id/event_location"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/check_meet_location"
+        android:id="@+id/event_location"
+        style="@style/general_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        app:layout_constraintBottom_toTopOf="@+id/event_participants"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/event_participants"
         style="@style/general_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
