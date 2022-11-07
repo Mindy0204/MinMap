@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".chat.DialogFragment">
+
+    <TextView
+        android:id="@+id/dialog_page_title"
+        style="@style/page_title_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Loading"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/dialog_recyclerView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/margin_16dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintBottom_toTopOf="@+id/chip_group"
+        app:layout_constraintEnd_toEndOf="@+id/dialog_page_title"
+        app:layout_constraintStart_toStartOf="@+id/dialog_page_title"
+        app:layout_constraintTop_toBottomOf="@+id/dialog_page_title" />
+
+    <com.google.android.material.chip.ChipGroup
+        android:id="@+id/chip_group"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_16dp"
+        android:layout_marginEnd="@dimen/margin_16dp"
+        app:layout_constraintBottom_toTopOf="@+id/edit_view"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/don_not_move"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/don_not_move"
+            app:layout_constraintBottom_toTopOf="@+id/where_are_you"
+            app:layout_constraintEnd_toStartOf="@id/ill_be_there_in"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/ill_be_there_in"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/ill_be_there_in"
+            app:layout_constraintBottom_toTopOf="@+id/where_are_you"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/don_not_move" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/im_at"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/im_at"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/where_are_you"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/where_are_you"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/where_are_you"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/im_here"
+            app:layout_constraintStart_toEndOf="@+id/im_at" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/im_here"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/im_here"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/where_are_you" />
+    </com.google.android.material.chip.ChipGroup>
+
+    <View
+        android:id="@+id/edit_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/view_and_button_height"
+        android:layout_marginStart="@dimen/margin_8dp"
+        android:layout_marginEnd="@dimen/margin_8dp"
+        android:layout_marginBottom="@dimen/margin_16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <ImageView
+        android:id="@+id/share_location"
+        android:layout_width="@dimen/dialog_icon"
+        android:layout_height="@dimen/dialog_icon"
+        android:layout_marginStart="@dimen/margin_8dp"
+        android:src="@mipmap/icon_share_location"
+        app:layout_constraintBottom_toBottomOf="@+id/edit_view"
+        app:layout_constraintStart_toStartOf="@id/edit_view"
+        app:layout_constraintTop_toTopOf="@+id/edit_view" />
+
+    <ImageView
+        android:id="@+id/send_message"
+        android:layout_width="@dimen/dialog_icon"
+        android:layout_height="@dimen/dialog_icon"
+        android:layout_marginEnd="8dp"
+        android:src="@mipmap/icon_send"
+        app:layout_constraintBottom_toBottomOf="@+id/edit_view"
+        app:layout_constraintEnd_toStartOf="@+id/app_photo"
+        app:layout_constraintTop_toTopOf="@+id/edit_view" />
+
+    <ImageView
+        android:id="@+id/app_photo"
+        android:layout_width="@dimen/dialog_icon"
+        android:layout_height="@dimen/dialog_icon"
+        android:layout_marginEnd="@dimen/margin_16dp"
+        android:src="@mipmap/icon_add_photo"
+        app:layout_constraintBottom_toBottomOf="@+id/edit_view"
+        app:layout_constraintEnd_toEndOf="@+id/edit_view"
+        app:layout_constraintTop_toTopOf="@+id/edit_view" />
+
+    <EditText
+        android:id="@+id/my_message"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/edit_view"
+        app:layout_constraintEnd_toStartOf="@+id/send_message"
+        app:layout_constraintStart_toEndOf="@+id/share_location"
+        app:layout_constraintTop_toTopOf="@+id/edit_view" />
+    <!--    android:layout_alignParentRight="true"-->
+    <!--    android:drawableRight="@mipmap/icon_add_photo"-->
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

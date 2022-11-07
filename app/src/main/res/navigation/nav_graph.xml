@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mapsFragment">
+
+    <fragment
+        android:id="@+id/mapsFragment"
+        android:name="com.mindyhsu.minmap.map.MapFragment"
+        android:label="fragment_maps"
+        tools:layout="@layout/fragment_map">
+        <argument
+            android:name="startNavigation"
+            android:defaultValue="false"
+            app:argType="boolean" />
+    </fragment>
+    <action
+        android:id="@+id/navigate_to_map_fragment"
+        app:destination="@id/mapsFragment"
+        app:popUpTo="@id/nav_graph" />
+    <fragment
+        android:id="@+id/chatRoomFragment"
+        android:name="com.mindyhsu.minmap.chat.ChatRoomFragment"
+        android:label="fragment_chat_room"
+        tools:layout="@layout/fragment_chat_room">
+        <action
+            android:id="@+id/action_chatRoomFragment_to_dialogFragment"
+            app:destination="@id/dialogFragment" />
+    </fragment>
+    <action
+        android:id="@+id/navigate_to_chat_room_fragment"
+        app:destination="@id/chatRoomFragment" />
+    <fragment
+        android:id="@+id/dialogFragment"
+        android:name="com.mindyhsu.minmap.chat.DialogFragment"
+        android:label="DialogFragment">
+        <argument
+            android:name="chatRoomDetail"
+            app:argType="com.mindyhsu.minmap.data.ChatRoom" />
+    </fragment>
+    <dialog
+        android:id="@+id/checkEventFragment"
+        android:name="com.mindyhsu.minmap.map.CheckEventFragment"
+        android:label="fragment_check_event"
+        tools:layout="@layout/fragment_check_event">
+        <argument
+            android:name="eventDetail"
+            app:argType="com.mindyhsu.minmap.data.Event" />
+    </dialog>
+    <action
+        android:id="@+id/navigate_to_check_event_fragment"
+        app:destination="@id/checkEventFragment" />
+    <dialog
+        android:id="@+id/navigationSuccessFragment"
+        android:name="com.mindyhsu.minmap.map.NavigationSuccessFragment"
+        android:label="fragment_navigation_success"
+        tools:layout="@layout/fragment_navigation_success" />
+    <action
+        android:id="@+id/navigate_to_navigation_success_fragment"
+        app:destination="@id/navigationSuccessFragment" />
+</navigation>
