@@ -11,7 +11,7 @@
         android:layout_width="280dp"
         android:layout_height="200dp"
         android:alpha="0.7"
-        android:background="@drawable/success_dialog_frame"
+        android:background="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

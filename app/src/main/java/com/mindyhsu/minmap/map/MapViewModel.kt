@@ -5,6 +5,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.location.LocationProvider
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -59,6 +60,14 @@ class MapViewModel : ViewModel() {
     val isOnInvitation: LiveData<Boolean>
         get() = _isOnInvitation
 
+    private val locationManager = GlobalContext.applicationContext()
+        .getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+    private val locationListener = LocationListener {
+        showRouteGuide(it)
+        updateMyLocation(GeoPoint(it.latitude, it.longitude))
+    }
+
     init {
         getUserEvent()
         updateUser()
@@ -107,8 +116,6 @@ class MapViewModel : ViewModel() {
     }
 
     fun getRoute(map: GoogleMap, myLocation: LatLng) {
-        // TODO: why currentEventId can access but currentEventDetail can't ???
-
         var _currentEventDetail = Event()
         db.collection("events").document(_currentEventId.value.toString())
             .get().addOnSuccessListener { event ->
@@ -162,24 +169,12 @@ class MapViewModel : ViewModel() {
     }
 
     fun startNavigation() {
-//        _isFinishNavigation.value = false
-        val locationManager = GlobalContext.applicationContext()
-            .getSystemService(Context.LOCATION_SERVICE) as LocationManager
-
-        val locationListener = LocationListener {
-            showRouteGuide(it)
-            updateMyLocation(GeoPoint(it.latitude, it.longitude))
-        }
-//        if (_isFinishNavigation.value != true) {
-            locationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                0L,
-                0F,
-                locationListener
-            )
-//        } else {
-//            locationManager.removeUpdates(locationListener)
-//        }
+        locationManager.requestLocationUpdates(
+            LocationManager.GPS_PROVIDER,
+            0L,
+            0F,
+            locationListener
+        )
     }
 
     private fun updateMyLocation(userGeo: GeoPoint) {
@@ -195,7 +190,8 @@ class MapViewModel : ViewModel() {
             if (step != routeSteps.size - 1) {
                 step += 1
             } else {
-//                _isFinishNavigation.value = true
+                locationManager.removeUpdates(locationListener)
+                _isFinishNavigation.value = true
             }
 
             var direction = ""

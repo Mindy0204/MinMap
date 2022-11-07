@@ -18,7 +18,7 @@ class NavigationSuccessFragment : DialogFragment() {
 
         binding.successDialogButton.setOnClickListener {
             viewModel.finishEvent()
-            findNavController().navigate(MapFragmentDirections.navigateToMapFragment(false))
+            findNavController().navigateUp()
         }
 
         return binding.root

@@ -61,7 +61,6 @@ class MapFragment : Fragment(),
 
         viewModel.currentEventId.observe(viewLifecycleOwner) {
             if (viewModel.currentEventId.value == "") {
-                map.clear()
                 binding.homeNotice.text = context?.getString(R.string.create_new_event)
                 binding.homeNotice.setOnClickListener { searchPlace() }
             } else {
@@ -71,7 +70,7 @@ class MapFragment : Fragment(),
         }
 
         viewModel.currentEventDetail.observe(viewLifecycleOwner) {
-            viewModel.currentEventDetail.value?.let {
+            it?.let {
                 findNavController().navigate(
                     CheckEventFragmentDirections.navigateToCheckEventFragment(
                         it
@@ -95,7 +94,7 @@ class MapFragment : Fragment(),
         }
 
         viewModel.isFinishNavigation.observe(viewLifecycleOwner) {
-            if (viewModel.isFinishNavigation.value == true) {
+            if (it == true) {
                 binding.guideText.visibility = View.GONE
                 binding.routeGuideView.visibility = View.GONE
                 binding.homeNotice.visibility = View.VISIBLE
@@ -148,7 +147,6 @@ class MapFragment : Fragment(),
             viewModel.sendInvitation(marker)
             binding.sendInvitation.visibility = View.GONE
         }
-
         return binding.root
     }
 
