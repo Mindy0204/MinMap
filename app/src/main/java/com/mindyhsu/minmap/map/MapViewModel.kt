@@ -254,7 +254,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     fun sendEvent(latLng: LatLng) {
         coroutineScope.launch {
             val event = Event(
-                status = "0",
+                status = 0, // not finish
                 participants = listOf("Mindy", "Wayne"),
                 geoHash = GeoPoint(latLng.latitude, latLng.longitude)
             )

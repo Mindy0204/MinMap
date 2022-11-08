@@ -6,7 +6,7 @@ import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import com.mindyhsu.minmap.databinding.ActivityMainBinding
 import timber.log.Timber
 
-class MainActivity : AppCompatActivity(), OnRequestPermissionsResultCallback {
+class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 

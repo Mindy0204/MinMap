@@ -57,7 +57,7 @@ class MapFragment : Fragment(),
 
         binding.backToPosition.setOnClickListener {
             enableMyLocation()
-            getMyLocation()
+            getDeviceLocation()
         }
 
         viewModel.currentEventId.observe(viewLifecycleOwner) {
@@ -165,7 +165,7 @@ class MapFragment : Fragment(),
             enableMyLocation()
 
             if (viewModel.isStartNavigation) {
-                getMyLocation()?.let { myLocation ->
+                getDeviceLocation()?.let { myLocation ->
                     viewModel.getRoute(map, myLocation)
                 }
                 binding.homeNotice.visibility = View.GONE
@@ -185,23 +185,39 @@ class MapFragment : Fragment(),
                 ) == PackageManager.PERMISSION_GRANTED
             ) {
                 map.isMyLocationEnabled = true
-//                viewModel.startLocationUpdates()
                 map.uiSettings.isMyLocationButtonEnabled = false
                 return
             } else {
-                activity?.let { fragmentActivity ->
-                    ActivityCompat.requestPermissions(
-                        fragmentActivity, arrayOf(
-                            Manifest.permission.ACCESS_FINE_LOCATION,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                        ), LOCATION_PERMISSION_REQUEST_CODE
-                    )
-                }
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ), LOCATION_PERMISSION_REQUEST_CODE
+                )
             }
         }
     }
 
-    private fun getMyLocation(): LatLng? {
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        when (requestCode) {
+            LOCATION_PERMISSION_REQUEST_CODE -> {
+
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.isNotEmpty() &&
+                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+                ) {
+                    getDeviceLocation()
+                }
+            }
+            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        }
+    }
+
+    private fun getDeviceLocation(): LatLng? {
         val service = context?.getSystemService(LOCATION_SERVICE) as LocationManager?
         val provider = service?.getBestProvider(Criteria(), false)
         val location = provider?.let {
