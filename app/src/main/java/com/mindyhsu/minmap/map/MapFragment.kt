@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -32,12 +33,13 @@ import com.mindyhsu.minmap.BuildConfig
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
+import com.mindyhsu.minmap.ext.getVmFactory
 
 
 class MapFragment : Fragment(),
     OnRequestPermissionsResultCallback, OnMapClickListener {
     private lateinit var binding: FragmentMapBinding
-    private lateinit var viewModel: MapViewModel
+    private val viewModel by viewModels<MapViewModel> { getVmFactory() }
 
     private lateinit var map: GoogleMap
     private val AUTOCOMPLETE_REQUEST_CODE = 1
@@ -52,7 +54,6 @@ class MapFragment : Fragment(),
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentMapBinding.inflate(inflater, container, false)
-        viewModel = MapViewModel()
 
         binding.backToPosition.setOnClickListener {
             enableMyLocation()
@@ -65,7 +66,9 @@ class MapFragment : Fragment(),
                 binding.homeNotice.setOnClickListener { searchPlace() }
             } else {
                 binding.homeNotice.text = context?.getString(R.string.show_event)
-                binding.homeNotice.setOnClickListener { viewModel.getCurrentEventLocation(map) }
+                binding.homeNotice.setOnClickListener {
+                    viewModel.getCurrentEventLocation(map)
+                }
             }
         }
 
@@ -144,7 +147,7 @@ class MapFragment : Fragment(),
         }
 
         binding.sendInvitation.setOnClickListener {
-            viewModel.sendInvitation(marker)
+            viewModel.sendEvent(marker)
             binding.sendInvitation.visibility = View.GONE
         }
         return binding.root

@@ -3,7 +3,7 @@ package com.mindyhsu.minmap.data
 import com.google.firebase.firestore.GeoPoint
 
 data class User(
-    val currentEvent: List<String> = emptyList(),
+    val currentEvent: String = "",
     val friends: List<String> = emptyList(),
     val geoHash: GeoPoint? = null,
     val id: String = "",

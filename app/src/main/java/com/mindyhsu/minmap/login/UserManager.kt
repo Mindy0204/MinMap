@@ -2,7 +2,7 @@ package com.mindyhsu.minmap.login
 
 import android.content.Context
 import com.google.firebase.firestore.GeoPoint
-import com.mindyhsu.minmap.GlobalContext
+
 
 object UserManager {
 //    private val sharedPreferences =
