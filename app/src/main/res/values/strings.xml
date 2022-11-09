@@ -5,6 +5,11 @@
     <!-- main page-->
     <string name="create_new_event">Start A Activity!</string>
     <string name="show_event">You Have A Activity</string>
+    <string name="meeting_point_at">Meeting Point: %s</string>
+    <string name="meeting_time_at">Meeting Time: %s</string>
+    <string name="meeting_participants">Meeting With: %s</string>
+
+    <!-- main page button-->
     <string name="continue_button">Continue</string>
     <string name="send_invitation">Send Invitation</string>
     <string name="check_route">Check Route</string>
@@ -13,11 +18,6 @@
     <!-- navigation success page-->
     <string name="arrive_meeting_point">Already arrive the meeting point.\nHave a nice date!</string>
     <string name="done">Done</string>
-
-    <!-- check event page-->
-    <string name="meeting_point_at">Meeting Point: %s</string>
-    <string name="meeting_time_at">Meeting Time: %s</string>
-    <string name="meeting_participants">Meeting With: %s</string>
 
     <!-- chat room page-->
     <string name="chat_room">Chat Room</string>

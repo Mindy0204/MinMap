@@ -55,52 +55,70 @@ class MapFragment : Fragment(),
     ): View? {
         binding = FragmentMapBinding.inflate(inflater, container, false)
 
-        binding.backToPosition.setOnClickListener {
+        binding.backToPositionButton.setOnClickListener {
             enableMyLocation()
             getDeviceLocation()
         }
 
+        // Main Entry Page Display
         viewModel.currentEventId.observe(viewLifecycleOwner) {
             if (viewModel.currentEventId.value == "") {
-                binding.homeNotice.text = context?.getString(R.string.create_new_event)
-                binding.homeNotice.setOnClickListener { searchPlace() }
+                // UI
+                binding.createEventButton.visibility = View.VISIBLE
+                binding.createEventButton.text = context?.getString(R.string.create_new_event)
+                binding.cardView.visibility = View.GONE
+                binding.cardViewText.visibility = View.GONE
+
+                // Function
+                binding.createEventButton.setOnClickListener {
+                    searchPlace()
+                }
             } else {
-                binding.homeNotice.text = context?.getString(R.string.show_event)
-                binding.homeNotice.setOnClickListener {
-                    viewModel.getCurrentEventLocation(map)
+                // UI
+                binding.createEventButton.visibility = View.GONE
+                binding.startNavigationButton.visibility = View.VISIBLE
+                viewModel.currentEventDisplay.observe(viewLifecycleOwner) {
+                    binding.cardView.visibility = View.VISIBLE
+                    binding.cardViewText.visibility = View.VISIBLE
+                    binding.cardViewText.text = it
+                }
+
+                // Function
+                getDeviceLocation()?.let { myLocation ->
+                    viewModel.getCurrentEventLocation(map, myLocation)
                 }
             }
         }
 
-        viewModel.currentEventDetail.observe(viewLifecycleOwner) {
-            it?.let {
-                findNavController().navigate(
-                    CheckEventFragmentDirections.navigateToCheckEventFragment(
-                        it
-                    )
-                )
-            }
-        }
+//        viewModel.currentEventDetail.observe(viewLifecycleOwner) {
+//            it?.let {
+//                findNavController().navigate(
+//                    CheckEventFragmentDirections.navigateToCheckEventFragment(
+//                        it
+//                    )
+//                )
+//            }
+//        }
 
-        viewModel.isStartNavigation = MapFragmentArgs.fromBundle(requireArguments()).startNavigation
+//        viewModel.isStartNavigation = MapFragmentArgs.fromBundle(requireArguments()).startNavigation
 
-        binding.startNavigation.setOnClickListener {
-            binding.startNavigation.visibility = View.GONE
-            binding.routeGuideView.visibility = View.VISIBLE
-            binding.guideText.text = getString(R.string.start_navigation)
+        binding.startNavigationButton.setOnClickListener {
+            binding.startNavigationButton.visibility = View.GONE
+            binding.cardView.visibility = View.VISIBLE
+            binding.cardViewText.text = getString(R.string.start_navigation)
             viewModel.startNavigation()
         }
 
         viewModel.navigationInstruction.observe(viewLifecycleOwner) {
-            binding.guideText.visibility = View.VISIBLE
-            binding.guideText.text = viewModel.navigationInstruction.value
+            binding.cardViewText.visibility = View.VISIBLE
+            binding.cardViewText.text = viewModel.navigationInstruction.value
         }
 
         viewModel.isFinishNavigation.observe(viewLifecycleOwner) {
             if (it == true) {
-                binding.guideText.visibility = View.GONE
-                binding.routeGuideView.visibility = View.GONE
-                binding.homeNotice.visibility = View.VISIBLE
+                binding.cardViewText.visibility = View.GONE
+                binding.cardView.visibility = View.GONE
+                binding.createEventButton.visibility = View.VISIBLE
                 map.clear()
                 findNavController().navigate(NavigationSuccessFragmentDirections.navigateToNavigationSuccessFragment())
             }
@@ -108,21 +126,21 @@ class MapFragment : Fragment(),
 
         viewModel.isOnInvitation.observe(viewLifecycleOwner) {
             if (it) {
-                binding.sendInvitation.visibility = View.VISIBLE
+                binding.sendEventButton.visibility = View.VISIBLE
             } else {
-                binding.sendInvitation.visibility = View.GONE
+                binding.sendEventButton.visibility = View.GONE
             }
         }
 
-        binding.functionMenu.setOnClickListener {
+        binding.menuButton.setOnClickListener {
             showAdvancedFunction()
         }
 
-        binding.functionPlanning.setOnClickListener {
+        binding.planningButton.setOnClickListener {
             searchPlace()
         }
 
-        binding.functionChat.setOnClickListener {
+        binding.chatButton.setOnClickListener {
             /*  // Test function: catch mid-point
             // Mock Data
             // AppWorks School, Regent Taipei
@@ -141,14 +159,14 @@ class MapFragment : Fragment(),
 
             val markerFriend = LatLng(midPoint.latitude, midPoint.longitude)
             map.addMarker(MarkerOptions().position(markerFriend))
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(markerFriend, 15F))*/
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(markerFriend, 15F)) */
 
             findNavController().navigate(ChatRoomFragmentDirections.navigateToChatRoomFragment())
         }
 
-        binding.sendInvitation.setOnClickListener {
+        binding.sendEventButton.setOnClickListener {
             viewModel.sendEvent(marker)
-            binding.sendInvitation.visibility = View.GONE
+            binding.sendEventButton.visibility = View.GONE
         }
         return binding.root
     }
@@ -163,14 +181,15 @@ class MapFragment : Fragment(),
             map.setOnMapClickListener(this)
 
             enableMyLocation()
+            getDeviceLocation()
 
-            if (viewModel.isStartNavigation) {
-                getDeviceLocation()?.let { myLocation ->
-                    viewModel.getRoute(map, myLocation)
-                }
-                binding.homeNotice.visibility = View.GONE
-                binding.startNavigation.visibility = View.VISIBLE
-            }
+//            if (viewModel.isStartNavigation) {
+//                getDeviceLocation()?.let { myLocation ->
+//                    viewModel.getRoute(map, myLocation)
+//                }
+//                binding.homeNotice.visibility = View.GONE
+//                binding.startNavigation.visibility = View.VISIBLE
+//            }
         }
     }
 
@@ -254,16 +273,16 @@ class MapFragment : Fragment(),
         when (showFunctionButton) {
             -1 -> {
                 showFunctionButton = 0
-                binding.functionChat.visibility = View.VISIBLE
-                binding.functionPlanning.visibility = View.VISIBLE
-                binding.backToPosition.visibility = View.GONE
+                binding.chatButton.visibility = View.VISIBLE
+                binding.planningButton.visibility = View.VISIBLE
+                binding.backToPositionButton.visibility = View.GONE
                 map.uiSettings.setAllGesturesEnabled(false)
             }
             0 -> {
                 showFunctionButton = -1
-                binding.functionChat.visibility = View.GONE
-                binding.functionPlanning.visibility = View.GONE
-                binding.backToPosition.visibility = View.VISIBLE
+                binding.chatButton.visibility = View.GONE
+                binding.planningButton.visibility = View.GONE
+                binding.backToPositionButton.visibility = View.VISIBLE
                 map.uiSettings.setAllGesturesEnabled(true)
             }
         }
@@ -302,7 +321,7 @@ class MapFragment : Fragment(),
     }
 
     private fun markLocation(latLng: LatLng) {
-        binding.sendInvitation.visibility = View.VISIBLE
+        binding.sendEventButton.visibility = View.VISIBLE
         marker = latLng
         map.addMarker(MarkerOptions().position(marker))
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker, 15F))

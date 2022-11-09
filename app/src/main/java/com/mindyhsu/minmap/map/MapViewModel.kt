@@ -14,8 +14,6 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.gms.maps.model.PolylineOptions
 import com.google.firebase.firestore.GeoPoint
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.mindyhsu.minmap.BuildConfig
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
@@ -39,9 +37,11 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private val getCurrentEventId = repository.getLiveEventId(UserManager.id)
     val currentEventId = Transformations.map(getCurrentEventId) { it }
 
-    private val _currentEventDetail = MutableLiveData<Event>()
-    val currentEventDetail: LiveData<Event>
-        get() = _currentEventDetail
+    private val currentEventDetail = MutableLiveData<Event>()
+
+    //    val currentEventDetail: LiveData<Event>
+//        get() = _currentEventDetail
+    val currentEventDisplay = MutableLiveData<String>()
 
     var isStartNavigation: Boolean = false
     private var routeSteps = listOf<Step>()
@@ -62,40 +62,105 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private val locationManager = MinMapApplication.instance
         .getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-    fun getCurrentEventLocation(map: GoogleMap) {
-        coroutineScope.launch {
-            currentEventId.value?.let {
-                val result = repository.getCurrentEvent(it)
-                _currentEventDetail.value = when (result) {
-                    is Result.Success -> {
-                        error.value = null
-                        status.value = LoadApiStatus.DONE
-                        result.data
+    fun getCurrentEventLocation(map: GoogleMap, myLocation: LatLng) {
+        if (!isStartNavigation) {
+            coroutineScope.launch {
+                currentEventId.value?.let {
+                    val result = repository.getCurrentEvent(it)
+                    currentEventDetail.value = when (result) {
+                        is Result.Success -> {
+                            error.value = null
+                            status.value = LoadApiStatus.DONE
+                            result.data
+                        }
+                        is Result.Fail -> {
+                            error.value = result.error
+                            status.value = LoadApiStatus.ERROR
+                            null
+                        }
+                        is Result.Error -> {
+                            error.value = result.exception.toString()
+                            status.value = LoadApiStatus.ERROR
+                            null
+                        }
+                        else -> {
+                            error.value =
+                                MinMapApplication.instance.getString(R.string.you_know_nothing)
+                            status.value = LoadApiStatus.ERROR
+                            null
+                        }
                     }
-                    is Result.Fail -> {
-                        error.value = result.error
-                        status.value = LoadApiStatus.ERROR
-                        null
-                    }
-                    is Result.Error -> {
-                        error.value = result.exception.toString()
-                        status.value = LoadApiStatus.ERROR
-                        null
-                    }
-                    else -> {
-                        error.value =
-                            MinMapApplication.instance.getString(R.string.you_know_nothing)
-                        status.value = LoadApiStatus.ERROR
-                        null
-                    }
-                }
 
-                _currentEventDetail.value?.geoHash?.let { geo ->
-                    val location = LatLng(geo.latitude, geo.longitude)
-                    map.addMarker(MarkerOptions().position(location))
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
+                    currentEventDetail.value?.geoHash?.let { geo ->
+                        val location = LatLng(geo.latitude, geo.longitude)
+                        map.addMarker(MarkerOptions().position(location))
+                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
+                    }
+                    displayEventDetail()
+                    getDirection(map, myLocation)
                 }
             }
+        }
+    }
+
+    private fun displayEventDetail() {
+        val currentEventLocation = MinMapApplication.instance.getString(
+            R.string.meeting_point_at,
+            currentEventDetail.value?.place
+        )
+//        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+//        val currentEventTime = MinMapApplication.instance.getString(
+//            R.string.meeting_time_at, dateFormat.format(currentEventDetail.value?.time)
+//        )
+        val participantsIds =
+            currentEventDetail.value?.participants?.filter { it != UserManager.id }
+
+        val userList = MutableLiveData<List<User>>()
+        val userNameList = mutableListOf<String>()
+        coroutineScope.launch {
+            val result = participantsIds?.let { repository.getUsersById(it) }
+            userList.value = when (result) {
+                is Result.Success -> {
+                    error.value = null
+                    status.value = LoadApiStatus.DONE
+                    result.data
+                }
+                is Result.Fail -> {
+                    error.value = result.error
+                    status.value = LoadApiStatus.ERROR
+                    null
+                }
+                is Result.Error -> {
+                    error.value = result.exception.toString()
+                    status.value = LoadApiStatus.ERROR
+                    null
+                }
+                else -> {
+                    error.value =
+                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    status.value = LoadApiStatus.ERROR
+                    null
+                }
+            }
+
+            userList.value?.let {
+                for (user in it) {
+                    userNameList.add(user.name)
+                }
+            }
+
+            var currentEventParticipants = ""
+            for ((index, userName) in userNameList.withIndex()) {
+                if (index != 0) {
+                    currentEventParticipants += ", "
+                }
+                currentEventParticipants += userName
+            }
+            currentEventDisplay.value = currentEventLocation + "\n" +
+                    MinMapApplication.instance.getString(
+                        R.string.meeting_participants,
+                        currentEventParticipants
+                    )
         }
     }
 
@@ -106,41 +171,41 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         _isOnInvitation.value = true
     }
 
-    fun getRoute(map: GoogleMap, myLocation: LatLng) {
-        coroutineScope.launch {
-            currentEventId.value?.let {
-                val result = repository.getCurrentEvent(it)
-                _currentEventDetail.value = when (result) {
-                    is Result.Success -> {
-                        error.value = null
-                        status.value = LoadApiStatus.DONE
-                        result.data
-                    }
-                    is Result.Fail -> {
-                        error.value = result.error
-                        status.value = LoadApiStatus.ERROR
-                        null
-                    }
-                    is Result.Error -> {
-                        error.value = result.exception.toString()
-                        status.value = LoadApiStatus.ERROR
-                        null
-                    }
-                    else -> {
-                        error.value =
-                            MinMapApplication.instance.getString(R.string.you_know_nothing)
-                        status.value = LoadApiStatus.ERROR
-                        null
-                    }
-                }
-            }
-            getDirection(map, myLocation)
-        }
-    }
+//    fun getRoute(map: GoogleMap, myLocation: LatLng) {
+//        coroutineScope.launch {
+//            currentEventId.value?.let {
+//                val result = repository.getCurrentEvent(it)
+//                _currentEventDetail.value = when (result) {
+//                    is Result.Success -> {
+//                        error.value = null
+//                        status.value = LoadApiStatus.DONE
+//                        result.data
+//                    }
+//                    is Result.Fail -> {
+//                        error.value = result.error
+//                        status.value = LoadApiStatus.ERROR
+//                        null
+//                    }
+//                    is Result.Error -> {
+//                        error.value = result.exception.toString()
+//                        status.value = LoadApiStatus.ERROR
+//                        null
+//                    }
+//                    else -> {
+//                        error.value =
+//                            MinMapApplication.instance.getString(R.string.you_know_nothing)
+//                        status.value = LoadApiStatus.ERROR
+//                        null
+//                    }
+//                }
+//            }
+//            getDirection(map, myLocation)
+//        }
+//    }
 
     private fun getDirection(map: GoogleMap, myLocation: LatLng) {
         coroutineScope.launch {
-            _currentEventDetail.value?.geoHash?.let {
+            currentEventDetail.value?.geoHash?.let {
                 val eventLocationLat = it.latitude
                 val eventLocationLng = it.longitude
 
@@ -205,8 +270,9 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 }
                 map.addPolyline(polylineOptions)
             }
-            isStartNavigation = false
+            isStartNavigation = true
         }
+
     }
 
     private val locationListener = LocationListener {
@@ -240,6 +306,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             } else {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
+                isStartNavigation = false
             }
 
             var direction = ""

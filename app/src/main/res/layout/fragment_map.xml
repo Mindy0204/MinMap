@@ -21,12 +21,12 @@
         android:visibility="gone"
         app:borderWidth="0dp"
         app:fabSize="mini"
-        app:layout_constraintBottom_toBottomOf="@+id/home_notice"
-        app:layout_constraintStart_toStartOf="@+id/home_notice"
-        app:layout_constraintTop_toTopOf="@+id/home_notice" />
+        app:layout_constraintBottom_toBottomOf="@+id/create_event_button"
+        app:layout_constraintStart_toStartOf="@+id/create_event_button"
+        app:layout_constraintTop_toTopOf="@+id/create_event_button" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/home_notice"
+        android:id="@+id/create_event_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_24dp"
@@ -34,13 +34,15 @@
         android:layout_marginEnd="@dimen/margin_24dp"
         android:backgroundTint="@color/white"
         android:gravity="center"
+        android:visibility="gone"
+        android:text="@string/create_new_event"
         app:borderWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/back_to_position"
+        android:id="@+id/back_to_position_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin_16dp"
@@ -48,12 +50,12 @@
         android:src="@mipmap/icon_gps"
         app:borderWidth="0dp"
         app:fabSize="mini"
-        app:layout_constraintBottom_toTopOf="@+id/function_menu"
-        app:layout_constraintEnd_toEndOf="@id/function_menu"
-        app:layout_constraintStart_toStartOf="@+id/function_menu" />
+        app:layout_constraintBottom_toTopOf="@+id/menu_button"
+        app:layout_constraintEnd_toEndOf="@id/menu_button"
+        app:layout_constraintStart_toStartOf="@+id/menu_button" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/function_menu"
+        android:id="@+id/menu_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin_16dp"
@@ -64,7 +66,7 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/function_chat"
+        android:id="@+id/chat_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/margin_16dp"
@@ -72,12 +74,12 @@
         android:src="@mipmap/icon_chat"
         android:visibility="gone"
         app:borderWidth="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/function_menu"
-        app:layout_constraintEnd_toEndOf="@+id/function_menu"
-        app:layout_constraintStart_toStartOf="@+id/function_menu" />
+        app:layout_constraintBottom_toTopOf="@+id/menu_button"
+        app:layout_constraintEnd_toEndOf="@+id/menu_button"
+        app:layout_constraintStart_toStartOf="@+id/menu_button" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/function_planning"
+        android:id="@+id/planning_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="@dimen/margin_16dp"
@@ -85,51 +87,51 @@
         android:src="@mipmap/icon_planning"
         android:visibility="gone"
         app:borderWidth="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/function_chat"
-        app:layout_constraintEnd_toEndOf="@+id/function_menu"
-        app:layout_constraintStart_toStartOf="@+id/function_menu" />
+        app:layout_constraintBottom_toTopOf="@+id/chat_button"
+        app:layout_constraintEnd_toEndOf="@+id/menu_button"
+        app:layout_constraintStart_toStartOf="@+id/menu_button" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/send_invitation"
+        android:id="@+id/send_event_button"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/view_and_button_height"
         android:backgroundTint="@color/light_tiffany_green"
         android:gravity="center"
         android:text="@string/send_invitation"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/function_menu"
+        app:layout_constraintBottom_toBottomOf="@+id/menu_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/function_menu" />
+        app:layout_constraintTop_toTopOf="@+id/menu_button" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/start_navigation"
+        android:id="@+id/start_navigation_button"
         android:layout_width="wrap_content"
         android:layout_height="@dimen/view_and_button_height"
         android:backgroundTint="@color/light_tiffany_green"
         android:gravity="center"
         android:text="@string/start_navigation"
         android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@+id/function_menu"
+        app:layout_constraintBottom_toBottomOf="@+id/menu_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/function_menu" />
+        app:layout_constraintTop_toTopOf="@+id/menu_button" />
 
     <androidx.cardview.widget.CardView
-        android:id="@+id/route_guide_view"
+        android:id="@+id/card_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/route_guide_view"
         android:layout_margin="@dimen/margin_8dp"
         android:background="@color/light_tiffany_green"
-        android:visibility="gone"
         app:cardCornerRadius="@dimen/corner_radius"
         app:cardElevation="8dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/guide_text"
+            android:id="@+id/card_view_text"
             style="@style/general_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
