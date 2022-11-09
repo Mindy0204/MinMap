@@ -23,6 +23,8 @@ interface MinMapRepository {
 
     suspend fun updateMyLocation(userId: String, myGeo: GeoPoint): Result<Boolean>
 
+    fun updateFriendsLocation(participantIds: List<String>): MutableLiveData<List<User>>
+
     suspend fun sendEvent(event: Event): Result<Boolean>
 
     suspend fun finishEvent(userId: String): Result<Boolean>

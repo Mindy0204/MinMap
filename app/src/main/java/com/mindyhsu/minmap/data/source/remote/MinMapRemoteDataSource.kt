@@ -129,6 +129,29 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
         }
 
+    override fun updateFriendsLocation(participantIds: List<String>): MutableLiveData<List<User>> {
+        val liveData = MutableLiveData<List<User>>()
+        val userList = mutableListOf<User>()
+        FirebaseFirestore.getInstance().collection(PATH_USERS).whereIn(FIELD_ID, participantIds)
+            .addSnapshotListener { documents, exception ->
+                Timber.i("updateFriendsLocation addSnapshotListener detect")
+
+                documents?.let {
+                    userList.clear()
+                    for (document in it.documents) {
+                        val user = document?.toObject(User::class.java)
+                        user?.let { userList.add(it) }
+                    }
+                }
+
+                exception?.let {
+                    Timber.d("updateFriendsLocation => Get documents error=${it.message}")
+                }
+                liveData.value = userList
+            }
+        return liveData
+    }
+
     override suspend fun sendEvent(event: Event): Result<Boolean> =
         suspendCoroutine { continuation ->
             val events = FirebaseFirestore.getInstance().collection(PATH_EVENTS)

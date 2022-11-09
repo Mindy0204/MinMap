@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context.LOCATION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.location.Criteria
 import android.location.LocationManager
 import android.os.Bundle
@@ -22,8 +23,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.GoogleMap.OnMapClickListener
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.*
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
@@ -34,6 +34,7 @@ import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import timber.log.Timber
 
 
 class MapFragment : Fragment(),
@@ -62,56 +63,83 @@ class MapFragment : Fragment(),
 
         // Main Entry Page Display
         viewModel.currentEventId.observe(viewLifecycleOwner) {
-            if (viewModel.currentEventId.value == "") {
+            if (it == "") {
                 // UI
                 binding.createEventButton.visibility = View.VISIBLE
                 binding.createEventButton.text = context?.getString(R.string.create_new_event)
                 binding.cardView.visibility = View.GONE
                 binding.cardViewText.visibility = View.GONE
+                binding.startNavigationButton.visibility = View.GONE
 
                 // Function
+                map.setOnMapClickListener(this)
                 binding.createEventButton.setOnClickListener {
                     searchPlace()
                 }
             } else {
                 // UI
+                map.setOnMapClickListener(null)
                 binding.createEventButton.visibility = View.GONE
-                binding.startNavigationButton.visibility = View.VISIBLE
-                viewModel.currentEventDisplay.observe(viewLifecycleOwner) {
-                    binding.cardView.visibility = View.VISIBLE
-                    binding.cardViewText.visibility = View.VISIBLE
-                    binding.cardViewText.text = it
-                }
 
-                // Function
-                getDeviceLocation()?.let { myLocation ->
-                    viewModel.getCurrentEventLocation(map, myLocation)
+                if (!viewModel.isStartNavigation) {
+                    // UI
+                    binding.startNavigationButton.visibility = View.VISIBLE
+                    viewModel.currentEventDisplay.observe(viewLifecycleOwner) {
+                        binding.cardView.visibility = View.VISIBLE
+                        binding.cardViewText.visibility = View.VISIBLE
+                        binding.cardViewText.text = it
+                    }
+
+                    // Function
+                    getDeviceLocation()?.let { myLocation ->
+                        viewModel.getCurrentEventLocation(map, myLocation)
+                    }
                 }
             }
         }
-
-//        viewModel.currentEventDetail.observe(viewLifecycleOwner) {
-//            it?.let {
-//                findNavController().navigate(
-//                    CheckEventFragmentDirections.navigateToCheckEventFragment(
-//                        it
-//                    )
-//                )
-//            }
-//        }
-
-//        viewModel.isStartNavigation = MapFragmentArgs.fromBundle(requireArguments()).startNavigation
 
         binding.startNavigationButton.setOnClickListener {
             binding.startNavigationButton.visibility = View.GONE
             binding.cardView.visibility = View.VISIBLE
             binding.cardViewText.text = getString(R.string.start_navigation)
             viewModel.startNavigation()
+            viewModel.updateFriendsLocation()
+        }
+
+        val adapter = FriendLocationAdapter(viewModel.uiState)
+        binding.friendsLocationRecyclerView.adapter = adapter
+//        viewModel.userList.observe(viewLifecycleOwner) {
+//            adapter.submitList(it)
+//            viewModel.markFriendsLocation(map)
+//        }
+
+        viewModel.onFriendsLiveReady.observe(viewLifecycleOwner) { ready ->
+            if (ready) {
+                viewModel.friends.observe(viewLifecycleOwner) {
+//                    if (viewModel.markerList.size != 0) {
+//                        for (i in 0 until viewModel.markerList.size) {
+//                            viewModel.markerList.removeAt(i)
+//                        }
+//                    }
+//                    map.clear()
+                    viewModel.markFriendsLocation(map, it)
+                    adapter.submitList(it)
+                }
+            }
         }
 
         viewModel.navigationInstruction.observe(viewLifecycleOwner) {
-            binding.cardViewText.visibility = View.VISIBLE
-            binding.cardViewText.text = viewModel.navigationInstruction.value
+            binding.cardViewText.text = it
+        }
+
+        // Click friend's profile in card view
+        viewModel.checkFriendLocation.observe(viewLifecycleOwner) {
+            // Move smoothly
+            val cameraPosition = CameraPosition.Builder()
+                .target(it)
+                .zoom(15F)
+                .build()
+            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
         }
 
         viewModel.isFinishNavigation.observe(viewLifecycleOwner) {
@@ -120,6 +148,7 @@ class MapFragment : Fragment(),
                 binding.cardView.visibility = View.GONE
                 binding.createEventButton.visibility = View.VISIBLE
                 map.clear()
+                viewModel.isStartNavigation = false
                 findNavController().navigate(NavigationSuccessFragmentDirections.navigateToNavigationSuccessFragment())
             }
         }
@@ -178,18 +207,9 @@ class MapFragment : Fragment(),
             map = googleMap
             map.uiSettings.setAllGesturesEnabled(true)
             showFunctionButton = -1
-            map.setOnMapClickListener(this)
 
             enableMyLocation()
             getDeviceLocation()
-
-//            if (viewModel.isStartNavigation) {
-//                getDeviceLocation()?.let { myLocation ->
-//                    viewModel.getRoute(map, myLocation)
-//                }
-//                binding.homeNotice.visibility = View.GONE
-//                binding.startNavigation.visibility = View.VISIBLE
-//            }
         }
     }
 
@@ -329,7 +349,7 @@ class MapFragment : Fragment(),
 
     override fun onMapClick(latlng: LatLng) {
         map.clear()
-        map.addMarker(MarkerOptions().position(latlng))
+        markLocation(latlng)
     }
 }
 

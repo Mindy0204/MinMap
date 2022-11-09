@@ -10,9 +10,7 @@ import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.gms.maps.model.PolylineOptions
+import com.google.android.gms.maps.model.*
 import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.BuildConfig
 import com.mindyhsu.minmap.MinMapApplication
@@ -26,6 +24,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import com.mindyhsu.minmap.network.LoadApiStatus
+import timber.log.Timber
+
+data class MapUiState(
+    val onClick: (friendId: String) -> Unit
+)
 
 class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var viewModelJob = Job()
@@ -39,9 +42,18 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private val currentEventDetail = MutableLiveData<Event>()
 
-    //    val currentEventDetail: LiveData<Event>
-//        get() = _currentEventDetail
     val currentEventDisplay = MutableLiveData<String>()
+
+    private val _userList = MutableLiveData<List<User>>()
+    val userList: LiveData<List<User>>
+        get() = _userList
+
+    var friends = MutableLiveData<List<User>>()
+    val onFriendsLiveReady = MutableLiveData<Boolean>(false)
+
+    private val _checkFriendLocation = MutableLiveData<LatLng>()
+    val checkFriendLocation: LiveData<LatLng>
+        get() = _checkFriendLocation
 
     var isStartNavigation: Boolean = false
     private var routeSteps = listOf<Step>()
@@ -62,43 +74,47 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private val locationManager = MinMapApplication.instance
         .getSystemService(Context.LOCATION_SERVICE) as LocationManager
 
-    fun getCurrentEventLocation(map: GoogleMap, myLocation: LatLng) {
-        if (!isStartNavigation) {
-            coroutineScope.launch {
-                currentEventId.value?.let {
-                    val result = repository.getCurrentEvent(it)
-                    currentEventDetail.value = when (result) {
-                        is Result.Success -> {
-                            error.value = null
-                            status.value = LoadApiStatus.DONE
-                            result.data
-                        }
-                        is Result.Fail -> {
-                            error.value = result.error
-                            status.value = LoadApiStatus.ERROR
-                            null
-                        }
-                        is Result.Error -> {
-                            error.value = result.exception.toString()
-                            status.value = LoadApiStatus.ERROR
-                            null
-                        }
-                        else -> {
-                            error.value =
-                                MinMapApplication.instance.getString(R.string.you_know_nothing)
-                            status.value = LoadApiStatus.ERROR
-                            null
-                        }
-                    }
+    val uiState = MapUiState(
+        onClick = { friendId ->
+            checkFriendsLocation(friendId)
+        }
+    )
 
-                    currentEventDetail.value?.geoHash?.let { geo ->
-                        val location = LatLng(geo.latitude, geo.longitude)
-                        map.addMarker(MarkerOptions().position(location))
-                        map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
+    fun getCurrentEventLocation(map: GoogleMap, myLocation: LatLng) {
+        coroutineScope.launch {
+            currentEventId.value?.let {
+                val result = repository.getCurrentEvent(it)
+                currentEventDetail.value = when (result) {
+                    is Result.Success -> {
+                        error.value = null
+                        status.value = LoadApiStatus.DONE
+                        result.data
                     }
-                    displayEventDetail()
-                    getDirection(map, myLocation)
+                    is Result.Fail -> {
+                        error.value = result.error
+                        status.value = LoadApiStatus.ERROR
+                        null
+                    }
+                    is Result.Error -> {
+                        error.value = result.exception.toString()
+                        status.value = LoadApiStatus.ERROR
+                        null
+                    }
+                    else -> {
+                        error.value =
+                            MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        status.value = LoadApiStatus.ERROR
+                        null
+                    }
                 }
+
+                currentEventDetail.value?.geoHash?.let { geo ->
+                    val location = LatLng(geo.latitude, geo.longitude)
+                    map.addMarker(MarkerOptions().position(location))
+                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
+                }
+                displayEventDetail()
+                getDirection(map, myLocation)
             }
         }
     }
@@ -115,11 +131,10 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         val participantsIds =
             currentEventDetail.value?.participants?.filter { it != UserManager.id }
 
-        val userList = MutableLiveData<List<User>>()
         val userNameList = mutableListOf<String>()
         coroutineScope.launch {
             val result = participantsIds?.let { repository.getUsersById(it) }
-            userList.value = when (result) {
+            _userList.value = when (result) {
                 is Result.Success -> {
                     error.value = null
                     status.value = LoadApiStatus.DONE
@@ -143,7 +158,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 }
             }
 
-            userList.value?.let {
+            _userList.value?.let {
                 for (user in it) {
                     userNameList.add(user.name)
                 }
@@ -170,38 +185,6 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
         _isOnInvitation.value = true
     }
-
-//    fun getRoute(map: GoogleMap, myLocation: LatLng) {
-//        coroutineScope.launch {
-//            currentEventId.value?.let {
-//                val result = repository.getCurrentEvent(it)
-//                _currentEventDetail.value = when (result) {
-//                    is Result.Success -> {
-//                        error.value = null
-//                        status.value = LoadApiStatus.DONE
-//                        result.data
-//                    }
-//                    is Result.Fail -> {
-//                        error.value = result.error
-//                        status.value = LoadApiStatus.ERROR
-//                        null
-//                    }
-//                    is Result.Error -> {
-//                        error.value = result.exception.toString()
-//                        status.value = LoadApiStatus.ERROR
-//                        null
-//                    }
-//                    else -> {
-//                        error.value =
-//                            MinMapApplication.instance.getString(R.string.you_know_nothing)
-//                        status.value = LoadApiStatus.ERROR
-//                        null
-//                    }
-//                }
-//            }
-//            getDirection(map, myLocation)
-//        }
-//    }
 
     private fun getDirection(map: GoogleMap, myLocation: LatLng) {
         coroutineScope.launch {
@@ -306,7 +289,6 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             } else {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
-                isStartNavigation = false
             }
 
             var direction = ""
@@ -315,6 +297,57 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             }
             _navigationInstruction.value =
                 direction + "\nDuration: " + routeSteps[step].duration.text
+        }
+    }
+
+//    fun markFriendsLocation(map: GoogleMap) {
+//        _userList.value?.let { users ->
+//            for (user in users) {
+//                user.geoHash?.let {
+//                    map.addMarker(
+//                        MarkerOptions()
+//                            .position(LatLng(it.latitude, it.longitude))
+//                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_profile))
+//                            .alpha(0.7F)
+//                    )
+//                }
+//            }
+//        }
+//    }
+
+    val markerList = mutableListOf<Marker>()
+    fun markFriendsLocation(map: GoogleMap, users: List<User>) {
+        for (user in users) {
+            user.geoHash?.let {
+                val marker = map.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(it.latitude, it.longitude))
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_profile))
+                        .alpha(0.7F)
+                )
+
+                marker?.let { marker -> markerList.add(marker) }
+            }
+        }
+    }
+
+    fun updateFriendsLocation() {
+        currentEventDetail.value?.participants?.let {
+            val friendsList = it.filter { it != UserManager.id }
+            friends = repository.updateFriendsLocation(friendsList)
+            onFriendsLiveReady.value = true
+        }
+    }
+
+    private fun checkFriendsLocation(friendId: String) {
+        friends.value?.let { user ->
+            for (user in user) {
+                if (user.id == friendId) {
+                    user.geoHash?.let {
+                        _checkFriendLocation.value = LatLng(it.latitude, it.longitude)
+                    }
+                }
+            }
         }
     }
 

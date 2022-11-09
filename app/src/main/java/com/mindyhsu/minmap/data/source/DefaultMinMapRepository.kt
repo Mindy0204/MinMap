@@ -33,6 +33,10 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
         return remoteDataSource.updateMyLocation(userId, myGeo)
     }
 
+    override fun updateFriendsLocation(participantIds: List<String>): MutableLiveData<List<User>> {
+        return remoteDataSource.updateFriendsLocation(participantIds)
+    }
+
     override suspend fun sendEvent(event: Event): Result<Boolean> {
         return remoteDataSource.sendEvent(event)
     }
