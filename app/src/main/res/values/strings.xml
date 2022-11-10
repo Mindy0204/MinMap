@@ -8,6 +8,7 @@
     <string name="meeting_point_at">Meeting Point: %s</string>
     <string name="meeting_time_at">Meeting Time: %s</string>
     <string name="meeting_participants">Meeting With: %s</string>
+    <string name="navigation_instruction">Next: %s\n%s meters | %s</string>
 
     <!-- main page button-->
     <string name="continue_button">Continue</string>
@@ -16,7 +17,8 @@
     <string name="start_navigation">Start Navigation</string>
 
     <!-- navigation success page-->
-    <string name="arrive_meeting_point">Already arrive the meeting point.\nHave a nice date!</string>
+    <string name="arrive_meeting_point">Arrive the meeting point</string>
+    <string name="have_a_nice_day">Have a nice date!</string>
     <string name="done">Done</string>
 
     <!-- chat room page-->

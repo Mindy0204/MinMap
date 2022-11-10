@@ -5,15 +5,25 @@
     android:layout_height="wrap_content">
 
     <ImageView
+        android:id="@+id/friend_image"
         android:layout_width="@dimen/profile_pic_small"
-        android:layout_height="@dimen/profile_pic"
-        android:alpha="0.4"
+        android:layout_height="@dimen/profile_pic_small"
         android:layout_marginStart="@dimen/margin_4dp"
         android:layout_marginEnd="@dimen/margin_4dp"
+        android:alpha="0.4"
         android:src="@mipmap/icon_profile"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/friend_name_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/navigation_friend_name"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/friend_image"
+        app:layout_constraintStart_toStartOf="@+id/friend_image"
+        app:layout_constraintTop_toBottomOf="@+id/friend_image" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

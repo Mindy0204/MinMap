@@ -45,8 +45,6 @@ class MapFragment : Fragment(),
     private lateinit var map: GoogleMap
     private val AUTOCOMPLETE_REQUEST_CODE = 1
 
-    var marker = LatLng(0.0, 0.0)
-
     private var showFunctionButton = -1
 
     override fun onCreateView(
@@ -56,19 +54,19 @@ class MapFragment : Fragment(),
     ): View? {
         binding = FragmentMapBinding.inflate(inflater, container, false)
 
+        // Back to Device Location
         binding.backToPositionButton.setOnClickListener {
             enableMyLocation()
             getDeviceLocation()
         }
 
-        // Main Entry Page Display
+        // Main Entry Page
         viewModel.currentEventId.observe(viewLifecycleOwner) {
             if (it == "") {
                 // UI
                 binding.createEventButton.visibility = View.VISIBLE
                 binding.createEventButton.text = context?.getString(R.string.create_new_event)
                 binding.cardView.visibility = View.GONE
-                binding.cardViewText.visibility = View.GONE
                 binding.startNavigationButton.visibility = View.GONE
 
                 // Function
@@ -84,10 +82,10 @@ class MapFragment : Fragment(),
                 if (!viewModel.isStartNavigation) {
                     // UI
                     binding.startNavigationButton.visibility = View.VISIBLE
-                    viewModel.currentEventDisplay.observe(viewLifecycleOwner) {
+                    viewModel.currentEventDisplay.observe(viewLifecycleOwner) { display ->
                         binding.cardView.visibility = View.VISIBLE
-                        binding.cardViewText.visibility = View.VISIBLE
-                        binding.cardViewText.text = it
+                        binding.cardViewText.text = display["place"]
+                        binding.cardViewText2.text = display["participants"]
                     }
 
                     // Function
@@ -100,10 +98,14 @@ class MapFragment : Fragment(),
 
         binding.startNavigationButton.setOnClickListener {
             binding.startNavigationButton.visibility = View.GONE
-            binding.cardView.visibility = View.VISIBLE
+            binding.cardViewText2.visibility = View.GONE
             binding.cardViewText.text = getString(R.string.start_navigation)
             viewModel.startNavigation()
             viewModel.updateFriendsLocation()
+        }
+
+        binding.cardViewIcon.setOnClickListener {
+            viewModel.focusOnMeetingPoint(map)
         }
 
         val adapter = FriendLocationAdapter(viewModel.uiState)
@@ -121,31 +123,36 @@ class MapFragment : Fragment(),
             binding.cardViewText.text = it
         }
 
-        // Click friend's profile in card view
+        // Click Friend's Profile in Card View
         viewModel.checkFriendLocation.observe(viewLifecycleOwner) {
             // Move smoothly
             val cameraPosition = CameraPosition.Builder()
                 .target(it)
-                .zoom(15F)
+                .zoom(16F)
                 .build()
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
         }
 
         viewModel.isFinishNavigation.observe(viewLifecycleOwner) {
             if (it == true) {
-                binding.cardViewText.visibility = View.GONE
                 binding.cardView.visibility = View.GONE
                 binding.createEventButton.visibility = View.VISIBLE
+                binding.startNavigationButton.visibility = View.GONE
                 map.clear()
                 viewModel.isStartNavigation = false
                 findNavController().navigate(NavigationSuccessFragmentDirections.navigateToNavigationSuccessFragment())
             }
         }
 
+        binding.sendEventButton.setOnClickListener {
+            viewModel.sendEvent()
+        }
+
         viewModel.isOnInvitation.observe(viewLifecycleOwner) {
             if (it) {
                 binding.sendEventButton.visibility = View.VISIBLE
             } else {
+                map.clear()
                 binding.sendEventButton.visibility = View.GONE
             }
         }
@@ -159,33 +166,9 @@ class MapFragment : Fragment(),
         }
 
         binding.chatButton.setOnClickListener {
-            /*  // Test function: catch mid-point
-            // Mock Data
-            // AppWorks School, Regent Taipei
-            val friendLocation = LatLng(25.03850539224151, 121.53237404271704)
-            val friend2Location = LatLng(25.05445587415607, 121.52420733306852)
-            // Taipei Main Station
-            val myLocation = LatLng(25.047605887381874, 121.51708580765687)
-
-            val locationList: MutableList<LatLng> = mutableListOf()
-            locationList.add(myLocation)
-            locationList.add(friendLocation)
-            locationList.add(friend2Location)
-
-            val midPoint = viewModel.getMidPoint(locationList)
-            Log.i("Mindy", "$midPoint")
-
-            val markerFriend = LatLng(midPoint.latitude, midPoint.longitude)
-            map.addMarker(MarkerOptions().position(markerFriend))
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(markerFriend, 15F)) */
-
             findNavController().navigate(ChatRoomFragmentDirections.navigateToChatRoomFragment())
         }
 
-        binding.sendEventButton.setOnClickListener {
-            viewModel.sendEvent(marker)
-            binding.sendEventButton.visibility = View.GONE
-        }
         return binding.root
     }
 
@@ -315,10 +298,9 @@ class MapFragment : Fragment(),
             when (resultCode) {
                 Activity.RESULT_OK -> {
                     data?.let {
+                        map.clear()
                         val place = Autocomplete.getPlaceFromIntent(data)
-                        Log.d("Mindddddddy", "${place.name},${place.latLng}")
-
-                        place.latLng?.let { latLng -> viewModel.onPlanningLocation(map, latLng) }
+                        viewModel.onPlanningLocation(map, place.latLng!!, place.name!!)
                     }
                 }
                 AutocompleteActivity.RESULT_ERROR -> {}
@@ -329,16 +311,21 @@ class MapFragment : Fragment(),
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun markLocation(latLng: LatLng) {
-        binding.sendEventButton.visibility = View.VISIBLE
-        marker = latLng
-        map.addMarker(MarkerOptions().position(marker))
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(marker, 15F))
-    }
-
-    override fun onMapClick(latlng: LatLng) {
+    override fun onMapClick(latLng: LatLng) {
         map.clear()
-        markLocation(latlng)
+        map.addMarker(
+            MarkerOptions()
+                .position(latLng)
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point))
+        )
+
+        val cameraPosition = CameraPosition.Builder()
+            .target(latLng)
+            .zoom(15F)
+            .build()
+        map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+
+        viewModel.onPlanningLocation(map, latLng, "")
     }
 }
 

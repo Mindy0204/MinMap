@@ -20,4 +20,10 @@
         <item name="android:textSize">@dimen/dialog_text_size</item>
         <item name="android:textColor">@color/gray</item>
     </style>
+
+    <style name="navigation_friend_name">
+        <item name="fontFamily">@font/noto_sans</item>
+        <item name="android:textSize">@dimen/navigation_friend_name_text_size</item>
+        <item name="android:textColor">@color/gray</item>
+    </style>
 </resources>

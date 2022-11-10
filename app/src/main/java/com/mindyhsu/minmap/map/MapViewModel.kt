@@ -25,6 +25,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import com.mindyhsu.minmap.network.LoadApiStatus
 import timber.log.Timber
+import kotlin.math.roundToInt
 
 data class MapUiState(
     val onClick: (friendId: String) -> Unit
@@ -42,11 +43,9 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private val currentEventDetail = MutableLiveData<Event>()
 
-    val currentEventDisplay = MutableLiveData<String>()
+    val currentEventDisplay = MutableLiveData<HashMap<String, String>>()
 
     private val _userList = MutableLiveData<List<User>>()
-    val userList: LiveData<List<User>>
-        get() = _userList
 
     var friends = MutableLiveData<List<User>>()
     val onFriendsLiveReady = MutableLiveData<Boolean>(false)
@@ -59,7 +58,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     var isStartNavigation: Boolean = false
     private var routeSteps = listOf<Step>()
-    var step = 0
+    private var step = 0
+    private var direction = "go-straight"
 
     private var _navigationInstruction = MutableLiveData<String>()
     val navigationInstruction: LiveData<String>
@@ -72,6 +72,9 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var _isOnInvitation = MutableLiveData<Boolean>()
     val isOnInvitation: LiveData<Boolean>
         get() = _isOnInvitation
+
+    private var planningLocation = LatLng(0.0, 0.0)
+    private var planningLocationName = ""
 
     private val locationManager = MinMapApplication.instance
         .getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -115,21 +118,26 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     map.addMarker(MarkerOptions().position(location))
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
                 }
+
+                _isOnInvitation.value = false
                 displayEventDetail()
                 getDirection(map, myLocation)
             }
         }
     }
 
+    fun focusOnMeetingPoint(map: GoogleMap) {
+        currentEventDetail.value?.geoHash?.let { geo ->
+            val location = LatLng(geo.latitude, geo.longitude)
+            val cameraPosition = CameraPosition.Builder()
+                .target(location)
+                .zoom(16F)
+                .build()
+            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+        }
+    }
+
     private fun displayEventDetail() {
-        val currentEventLocation = MinMapApplication.instance.getString(
-            R.string.meeting_point_at,
-            currentEventDetail.value?.place
-        )
-//        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-//        val currentEventTime = MinMapApplication.instance.getString(
-//            R.string.meeting_time_at, dateFormat.format(currentEventDetail.value?.time)
-//        )
         val participantsIds =
             currentEventDetail.value?.participants?.filter { it != UserManager.id }
 
@@ -173,19 +181,15 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 }
                 currentEventParticipants += userName
             }
-            currentEventDisplay.value = currentEventLocation + "\n" +
-                    MinMapApplication.instance.getString(
-                        R.string.meeting_participants,
-                        currentEventParticipants
-                    )
-        }
-    }
 
-    fun onPlanningLocation(map: GoogleMap, latLng: LatLng) {
-        val location = LatLng(latLng.latitude, latLng.longitude)
-        map.addMarker(MarkerOptions().position(location))
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
-        _isOnInvitation.value = true
+            currentEventDetail.value?.let {
+                val data = hashMapOf(
+                    "place" to it.place,
+                    "participants" to currentEventParticipants
+                )
+                currentEventDisplay.value = data
+            }
+        }
     }
 
     private fun getDirection(map: GoogleMap, myLocation: LatLng) {
@@ -201,7 +205,11 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     mode = "walking"
                 )
 
-                map.addMarker(MarkerOptions().position(LatLng(eventLocationLat, eventLocationLng)))
+                map.addMarker(
+                    MarkerOptions()
+                        .position(LatLng(eventLocationLat, eventLocationLng))
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point))
+                )
 
                 val directionResult = when (result) {
                     is Result.Success -> {
@@ -249,6 +257,14 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                                         stepItem.startLocation.lng
                                     )
                                 )
+                                if (stepItem == legItem.steps.last()) {
+                                    polylineOptions.add(
+                                        LatLng(
+                                            stepItem.endLocation.lat,
+                                            stepItem.endLocation.lng
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
@@ -261,7 +277,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     }
 
     private val locationListener = LocationListener {
-        showRouteGuide(it)
+        showNavigationInstruction(it)
         updateMyLocation(GeoPoint(it.latitude, it.longitude))
     }
 
@@ -280,25 +296,38 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
-    private fun showRouteGuide(myLocation: Location) {
+    private fun showNavigationInstruction(myLocation: Location) {
         val stepEndLocation = Location("stepEndLocation")
         stepEndLocation.latitude = routeSteps[step].endLocation.lat
         stepEndLocation.longitude = routeSteps[step].endLocation.lng
 
-        if (myLocation.distanceTo(stepEndLocation) <= 20) { // 20 meter
-            if (step != routeSteps.size - 1) {
-                step += 1
-            } else {
-                locationManager.removeUpdates(locationListener)
-                _isFinishNavigation.value = true
+        if (step + 1 < routeSteps.size) {
+            routeSteps[step + 1].maneuver?.let {
+                direction = it
             }
+        } else {
+            direction = "go-straight"
+        }
 
-            var direction = ""
-            routeSteps[step].maneuver?.let {
-                direction = "Direction: $it"
+        _navigationInstruction.value =
+            MinMapApplication.instance.getString(
+                R.string.navigation_instruction,
+                direction,
+                myLocation.distanceTo(stepEndLocation).toInt().toString(),
+                routeSteps[step].duration.text
+            )
+
+        // Last step
+        if (step == routeSteps.size - 1 && myLocation.distanceTo(stepEndLocation).toInt() <= 15) {
+            locationManager.removeUpdates(locationListener)
+            _isFinishNavigation.value = true
+        }
+
+        // Other steps
+        if (myLocation.distanceTo(stepEndLocation).toInt() == 0) {
+            if (step < routeSteps.size - 1) {
+                step++
             }
-            _navigationInstruction.value =
-                direction + "\nDuration: " + routeSteps[step].duration.text
         }
     }
 
@@ -344,12 +373,36 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
-    fun sendEvent(latLng: LatLng) {
+    fun onPlanningLocation(map: GoogleMap, latLng: LatLng, placeName: String?) {
+        map.addMarker(
+            MarkerOptions()
+                .position(latLng)
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point))
+        )
+
+        val cameraPosition = CameraPosition.Builder()
+            .target(latLng)
+            .zoom(15F)
+            .build()
+        map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+
+        planningLocation = latLng
+        placeName?.let {
+            planningLocationName = it
+        }
+        _isOnInvitation.value = true
+        Timber.d("planningLocation=$planningLocation, planningLocationName=$planningLocationName")
+    }
+
+    fun sendEvent() {
+        // TODO: update firebase chatRooms & users
+        // TODO: Check whether need fields: time & status in Event()
         coroutineScope.launch {
             val event = Event(
                 status = 0, // not finish
-                participants = listOf("Mindy", "Wayne"),
-                geoHash = GeoPoint(latLng.latitude, latLng.longitude)
+                participants = listOf(UserManager.id, "pq4eXE9vKfjZC3p37HsG"), // mock
+                geoHash = GeoPoint(planningLocation.latitude, planningLocation.longitude),
+                place = planningLocationName
             )
 
             status.value = LoadApiStatus.LOADING
@@ -372,7 +425,6 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     status.value = LoadApiStatus.ERROR
                 }
             }
-
             _isOnInvitation.value = false
         }
     }
