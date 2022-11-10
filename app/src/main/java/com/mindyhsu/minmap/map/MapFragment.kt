@@ -108,20 +108,9 @@ class MapFragment : Fragment(),
 
         val adapter = FriendLocationAdapter(viewModel.uiState)
         binding.friendsLocationRecyclerView.adapter = adapter
-//        viewModel.userList.observe(viewLifecycleOwner) {
-//            adapter.submitList(it)
-//            viewModel.markFriendsLocation(map)
-//        }
-
         viewModel.onFriendsLiveReady.observe(viewLifecycleOwner) { ready ->
             if (ready) {
                 viewModel.friends.observe(viewLifecycleOwner) {
-//                    if (viewModel.markerList.size != 0) {
-//                        for (i in 0 until viewModel.markerList.size) {
-//                            viewModel.markerList.removeAt(i)
-//                        }
-//                    }
-//                    map.clear()
                     viewModel.markFriendsLocation(map, it)
                     adapter.submitList(it)
                 }

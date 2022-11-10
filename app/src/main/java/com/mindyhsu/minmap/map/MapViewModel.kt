@@ -55,6 +55,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     val checkFriendLocation: LiveData<LatLng>
         get() = _checkFriendLocation
 
+    private val markerList = mutableListOf<Marker>()
+
     var isStartNavigation: Boolean = false
     private var routeSteps = listOf<Step>()
     var step = 0
@@ -300,23 +302,14 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
-//    fun markFriendsLocation(map: GoogleMap) {
-//        _userList.value?.let { users ->
-//            for (user in users) {
-//                user.geoHash?.let {
-//                    map.addMarker(
-//                        MarkerOptions()
-//                            .position(LatLng(it.latitude, it.longitude))
-//                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_profile))
-//                            .alpha(0.7F)
-//                    )
-//                }
-//            }
-//        }
-//    }
-
-    val markerList = mutableListOf<Marker>()
     fun markFriendsLocation(map: GoogleMap, users: List<User>) {
+        if (markerList.size != 0) {
+            for (i in 0 until markerList.size) {
+                markerList[0].remove()
+                markerList.removeAt(0)
+            }
+        }
+
         for (user in users) {
             user.geoHash?.let {
                 val marker = map.addMarker(
