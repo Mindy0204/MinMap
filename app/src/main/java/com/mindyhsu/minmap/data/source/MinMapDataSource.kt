@@ -15,6 +15,8 @@ interface MinMapDataSource {
         mode: String
     ): Result<MapDirection>
 
+    suspend fun setUser(uid: String, image: String, name: String): Result<Boolean>
+
     suspend fun getUserEvent(userId: String): Result<String>
 
     fun getLiveEventId(userId: String): MutableLiveData<String>

@@ -14,7 +14,7 @@ class NavigationSuccessViewModel(private val repository: MinMapRepository) : Vie
 
     fun finishEvent() {
         coroutineScope.launch {
-            repository.finishEvent(UserManager.id)
+            UserManager.id?.let { repository.finishEvent(it) }
         }
     }
 }

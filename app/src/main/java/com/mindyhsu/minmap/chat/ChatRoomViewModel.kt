@@ -67,7 +67,7 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
 
     private fun getChatRoom() {
         coroutineScope.launch {
-            val result = repository.getChatRoom(UserManager.id)
+            val result = UserManager.id?.let { repository.getChatRoom(it) }
             chatRoomList.value = when (result) {
                 is Result.Success -> {
                     error.value = null

@@ -54,6 +54,37 @@ object MinMapRemoteDataSource : MinMapDataSource {
         }
     }
 
+    override suspend fun setUser(uid: String, image: String, name: String): Result<Boolean> =
+        suspendCoroutine { continuation ->
+            Timber.d("setUser => setUser uid=$uid")
+            val userRef = FirebaseFirestore.getInstance().collection(PATH_USERS).document(uid)
+            FirebaseFirestore.getInstance().runTransaction { transaction ->
+                Timber.d("setUser => transaction uid=$uid")
+
+                val snapshot = transaction.get(userRef)
+                if (snapshot.data == null) {
+                    transaction.set(userRef, User(id = uid, image = image, name = name))
+                    Timber.d("setUser => After set user=${snapshot.data}")
+                } else {
+                    Timber.d("setUser => User=${snapshot.data}")
+                }
+            }.addOnCompleteListener { task ->
+                Timber.d("setUser =>addOnCompleteListener")
+
+                if (task.isSuccessful) {
+                    Timber.d("setUser => Set/ Update user=${task.result}")
+                    continuation.resume(Result.Success(true))
+                } else {
+                    task.exception?.let {
+                        Timber.d("setUser => Set/ Update documents error=${it.message}")
+                        continuation.resume(Result.Error(it))
+                        return@addOnCompleteListener
+                    }
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                }
+            }
+        }
+
     override suspend fun getUserEvent(userId: String): Result<String> =
         suspendCoroutine { continuation ->
             FirebaseFirestore.getInstance().collection(PATH_USERS).document(userId).get()

@@ -5,11 +5,9 @@ import android.app.Activity
 import android.content.Context.LOCATION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.location.Criteria
 import android.location.LocationManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,7 +32,6 @@ import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
 import com.mindyhsu.minmap.ext.getVmFactory
-import timber.log.Timber
 
 
 class MapFragment : Fragment(),
@@ -61,7 +58,7 @@ class MapFragment : Fragment(),
         }
 
         // Main Entry Page
-        viewModel.currentEventId.observe(viewLifecycleOwner) {
+        viewModel.currentEventId?.observe(viewLifecycleOwner) {
             if (it == "") {
                 // UI
                 binding.createEventButton.visibility = View.VISIBLE
@@ -99,7 +96,7 @@ class MapFragment : Fragment(),
         binding.startNavigationButton.setOnClickListener {
             binding.startNavigationButton.visibility = View.GONE
             binding.cardViewText2.visibility = View.GONE
-            binding.cardViewText.text = getString(R.string.start_navigation)
+            binding.cardViewText.text = getString(R.string.start_navigation_button)
             viewModel.startNavigation()
             viewModel.updateFriendsLocation()
         }

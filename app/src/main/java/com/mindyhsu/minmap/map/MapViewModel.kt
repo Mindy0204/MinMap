@@ -38,8 +38,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private val status = MutableLiveData<LoadApiStatus>()
     private val error = MutableLiveData<String?>()
 
-    private val getCurrentEventId = repository.getLiveEventId(UserManager.id)
-    val currentEventId = Transformations.map(getCurrentEventId) { it }
+    private val getCurrentEventId = UserManager.id?.let { repository.getLiveEventId(it) }
+    val currentEventId = getCurrentEventId?.let { Transformations.map(getCurrentEventId) { it } }
 
     private val currentEventDetail = MutableLiveData<Event>()
 
@@ -87,7 +87,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     fun getCurrentEventLocation(map: GoogleMap, myLocation: LatLng) {
         coroutineScope.launch {
-            currentEventId.value?.let {
+            currentEventId?.value?.let {
                 val result = repository.getCurrentEvent(it)
                 currentEventDetail.value = when (result) {
                     is Result.Success -> {
@@ -292,7 +292,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private fun updateMyLocation(myGeo: GeoPoint) {
         coroutineScope.launch {
-            repository.updateMyLocation(UserManager.id, myGeo)
+            UserManager.id?.let { repository.updateMyLocation(it, myGeo) }
         }
     }
 
@@ -400,7 +400,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         coroutineScope.launch {
             val event = Event(
                 status = 0, // not finish
-                participants = listOf(UserManager.id, "pq4eXE9vKfjZC3p37HsG"), // mock
+                participants = listOf(UserManager.id!!, "pq4eXE9vKfjZC3p37HsG"), // mock
                 geoHash = GeoPoint(planningLocation.latitude, planningLocation.longitude),
                 place = planningLocationName
             )

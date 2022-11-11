@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <style name="login_title">
+        <item name="fontFamily">@font/baloo_paaji_2_semibold</item>
+        <item name="android:textSize">@dimen/login_title_text_size</item>
+        <item name="android:textColor">@color/gray_drak</item>
+    </style>
+
+    <style name="login_subtitle">
+        <item name="fontFamily">@font/baloo_paaji_2</item>
+        <item name="android:textSize">@dimen/login_subtitle_text_size</item>
+        <item name="android:textColor">@color/gray</item>
+    </style>
+
     <style name="page_title_text">
-        <item name="fontFamily">@font/noto_sans_bold</item>
+        <item name="fontFamily">@font/baloo_paaji_2_medium</item>
         <item name="android:textSize">@dimen/page_title_text_size</item>
         <item name="android:textColor">@color/gray</item>
         <item name="android:layout_marginStart">@dimen/margin_16dp</item>
@@ -10,20 +23,38 @@
     </style>
 
     <style name="general_text">
-        <item name="fontFamily">@font/noto_sans</item>
-        <item name="android:textSize">@dimen/chat_list_text_size</item>
+        <item name="fontFamily">@font/baloo_paaji_2</item>
+        <item name="android:textSize">@dimen/general_text_size</item>
         <item name="android:textColor">@color/gray</item>
     </style>
 
     <style name="general_small_text">
-        <item name="fontFamily">@font/noto_sans</item>
-        <item name="android:textSize">@dimen/dialog_text_size</item>
+        <item name="fontFamily">@font/baloo_paaji_2</item>
+        <item name="android:textSize">@dimen/general_small_text_size</item>
         <item name="android:textColor">@color/gray</item>
     </style>
 
-    <style name="navigation_friend_name">
-        <item name="fontFamily">@font/noto_sans</item>
+    <style name="navigation_friend_name_text">
+        <item name="fontFamily">@font/baloo_paaji_2</item>
         <item name="android:textSize">@dimen/navigation_friend_name_text_size</item>
         <item name="android:textColor">@color/gray</item>
+    </style>
+
+    <style name="white_button">
+        <item name="fontFamily">@font/baloo_paaji_2_medium</item>
+        <item name="android:textSize">@dimen/button_text_size</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:gravity">center</item>
+        <item name="backgroundTint">@color/white</item>
+        <item name="android:layout_margin">@dimen/margin_16dp</item>
+    </style>
+
+    <style name="green_button">
+        <item name="fontFamily">@font/baloo_paaji_2_medium</item>
+        <item name="android:textSize">@dimen/button_text_size</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:gravity">center</item>
+        <item name="backgroundTint">@color/light_tiffany_green</item>
+        <item name="android:layout_margin">@dimen/margin_16dp</item>
     </style>
 </resources>

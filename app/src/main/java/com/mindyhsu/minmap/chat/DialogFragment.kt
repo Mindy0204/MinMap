@@ -33,21 +33,21 @@ class DialogFragment : Fragment() {
 
         binding = FragmentDialogBinding.inflate(inflater, container, false)
 
-        binding.dialogPageTitle.text = viewModel.roomTitle
+        binding.dialogTitleText.text = viewModel.roomTitle
 
         val adapter = DialogAdapter()
-        binding.dialogRecyclerView.adapter = adapter
+        binding.dialogRecyclerview.adapter = adapter
 
         viewModel.dialogs.observe(viewLifecycleOwner) {
             adapter.submitList(it)
         }
 
         // Chips
-        binding.donNotMove.setOnClickListener { }
-        binding.illBeThereIn.setOnClickListener { }
-        binding.imAt.setOnClickListener { }
-        binding.whereAreYou.setOnClickListener { }
-        binding.imHere.setOnClickListener { }
+        binding.donNotMoveChip.setOnClickListener { }
+        binding.illBeThereChip.setOnClickListener { }
+        binding.imAtChip.setOnClickListener { }
+        binding.whereAreYouChip.setOnClickListener { }
+        binding.imHereChip.setOnClickListener { }
 
         return binding.root
     }

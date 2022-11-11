@@ -17,6 +17,10 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
         return remoteDataSource.getDirection(startLocation, endLocation, apiKey, mode)
     }
 
+    override suspend fun setUser(uid: String, image: String, name: String): Result<Boolean> {
+        return remoteDataSource.setUser(uid, image, name)
+    }
+
     override suspend fun getUserEvent(userId: String): Result<String> {
         return remoteDataSource.getUserEvent(userId)
     }

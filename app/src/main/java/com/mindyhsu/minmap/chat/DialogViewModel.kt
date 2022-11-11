@@ -57,7 +57,7 @@ class DialogViewModel(
             var messages = MutableLiveData<List<Message>>()
             val dataList = mutableListOf<DialogItem>()
 
-            val result = repository.getMessages(chatRoomDetail.id, UserManager.id)
+            val result = UserManager.id?.let { repository.getMessages(chatRoomDetail.id, it) }
             messages.value = when (result) {
                 is Result.Success -> {
                     error.value = null

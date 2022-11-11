@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.mindyhsu.minmap.chat.ChatRoomViewModel
 import com.mindyhsu.minmap.data.source.MinMapRepository
+import com.mindyhsu.minmap.login.LoginViewModel
 import com.mindyhsu.minmap.map.MapViewModel
 import com.mindyhsu.minmap.map.NavigationSuccessViewModel
 
@@ -14,6 +15,9 @@ class ViewModelFactory constructor(
     override fun <T : ViewModel> create(modelClass: Class<T>) =
         with(modelClass) {
             when {
+                isAssignableFrom(LoginViewModel::class.java) ->
+                    LoginViewModel(repository)
+
                 isAssignableFrom(MapViewModel::class.java) ->
                     MapViewModel(repository)
 
