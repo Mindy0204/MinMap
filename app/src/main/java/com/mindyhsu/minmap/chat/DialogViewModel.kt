@@ -28,6 +28,7 @@ class DialogViewModel(
 
     private val selfName = UserManager.name
     private val users = chatRoomDetail.users.filter { it.name != selfName }
+    private val usersDistinct = users.distinct()
     var roomTitle = ""
 
     private val _dialogs = MutableLiveData<List<DialogItem>>()
@@ -40,7 +41,7 @@ class DialogViewModel(
     }
 
     private fun getTitleName() {
-        for ((index, user) in users.withIndex()) {
+        for ((index, user) in usersDistinct.withIndex()) {
             for (participant in chatRoomDetail.participants) {
                 if (user.id == participant) {
                     if (index != 0) {

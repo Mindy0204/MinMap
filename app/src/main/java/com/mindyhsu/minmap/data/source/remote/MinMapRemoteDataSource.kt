@@ -253,19 +253,26 @@ object MinMapRemoteDataSource : MinMapDataSource {
 
     override suspend fun getUsersById(usersIds: List<String>): Result<List<User>> =
         suspendCoroutine { continuation ->
-            FirebaseFirestore.getInstance().collection(PATH_USERS).whereIn(FIELD_ID, usersIds)
+            // There's limit (10 queries) of Firebase whereIn filter so query all users now
+//            FirebaseFirestore.getInstance().collection(PATH_USERS).whereIn(FIELD_ID, usersIds)
+
+            FirebaseFirestore.getInstance().collection(PATH_USERS)
                 .get().addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         val userNameListWithIds = mutableMapOf<String, String>()
                         val userList = mutableListOf<User>()
                         for (document in task.result) {
-                            Timber.d("getUserById => user id=${document.id}, data=${document.data}")
+                            for (userId in usersIds) {
+                                if (document.id == userId) {
+                                    Timber.d("getUserById => user id=${document.id}, data=${document.data}")
 
-                            userNameListWithIds[document.data[FIELD_ID] as String] =
-                                document.data[FIELD_NAME] as String
+                                    userNameListWithIds[document.data[FIELD_ID] as String] =
+                                        document.data[FIELD_NAME] as String
 
-                            val users = document.toObject(User::class.java)
-                            userList.add(users)
+                                    val users = document.toObject(User::class.java)
+                                    userList.add(users)
+                                }
+                            }
                         }
                         continuation.resume(Result.Success(userList))
                     } else {
