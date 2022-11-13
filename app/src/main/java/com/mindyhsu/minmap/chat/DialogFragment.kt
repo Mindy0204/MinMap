@@ -1,14 +1,19 @@
 package com.mindyhsu.minmap.chat
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethodManager
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import com.google.firebase.Timestamp
+import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.databinding.FragmentDialogBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import java.util.*
 
 class DialogFragment : Fragment() {
 
@@ -21,16 +26,10 @@ class DialogFragment : Fragment() {
         )
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-//        val chatRoomDetail = DialogFragmentArgs.fromBundle(requireArguments()).chatRoomDetail
-
         binding = FragmentDialogBinding.inflate(inflater, container, false)
 
         binding.dialogTitleText.text = viewModel.roomTitle
@@ -38,8 +37,14 @@ class DialogFragment : Fragment() {
         val adapter = DialogAdapter(viewModel.uiState)
         binding.dialogRecyclerview.adapter = adapter
 
-        viewModel.dialogs.observe(viewLifecycleOwner) {
+        viewModel.messages?.observe(viewLifecycleOwner) {
             adapter.submitList(it)
+        }
+
+        binding.sendMessage.setOnClickListener {
+            val time = Timestamp(Calendar.getInstance().time)
+            viewModel.sendMessage(binding.myMessageEditText.text.toString(), time)
+            binding.myMessageEditText.text.clear()
         }
 
         // Chips

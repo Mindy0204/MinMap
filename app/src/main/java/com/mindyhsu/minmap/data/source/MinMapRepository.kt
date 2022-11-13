@@ -31,11 +31,13 @@ interface MinMapRepository {
 
     suspend fun finishEvent(userId: String): Result<Boolean>
 
-    suspend fun getChatRoom(userId: String): Result<List<ChatRoom>>
+    suspend fun getChatRoom(userId: String): Result<List<ChatRoom>> //
+
+    suspend fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>>
 
     suspend fun getUsersById(usersIds: List<String>): Result<List<User>>
 
-    suspend fun getMessages(chatRoomId: String, userId: String): Result<List<Message>>
+    fun getMessage(chatRoomId: String, userId: String): MutableLiveData<List<Message>>
 
-    suspend fun sendMessages(senderId: String, text: String, time: Timestamp): Result<Boolean>
+    suspend fun sendMessage(chatRoomId: String, message: Message): Result<Boolean>
 }

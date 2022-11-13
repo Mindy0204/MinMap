@@ -31,6 +31,8 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_MESSAGES = "messages"
     private const val FIELD_TIME = "time"
     private const val FIELD_SENDER_ID = "senderId"
+    private const val FIELD_LAST_MESSAGES = "lastMessage"
+    private const val FIELD_LAST_UPDATE = "lastUpdate"
 
     override suspend fun getDirection(
         startLocation: String,
@@ -251,6 +253,10 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
         }
 
+    override suspend fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>> {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun getUsersById(usersIds: List<String>): Result<List<User>> =
         suspendCoroutine { continuation ->
             // There's limit (10 queries) of Firebase whereIn filter so query all users now
@@ -286,35 +292,74 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
         }
 
-    override suspend fun getMessages(chatRoomId: String, userId: String): Result<List<Message>> =
-        suspendCoroutine { continuation ->
-            FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS).document(chatRoomId)
-                .collection(FIELD_MESSAGES).orderBy(FIELD_TIME)
-                .get().addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        val dataList = mutableListOf<Message>()
-                        for (document in task.result) {
-                            Timber.d("getMessages => message id=${document.id}, data=${document.data}")
-                            val message = document.toObject(Message::class.java)
-                            dataList.add(message)
-                        }
-                        continuation.resume(Result.Success(dataList))
-                    } else {
-                        task.exception?.let {
-                            Timber.d("getMessages => Get documents error=${it.message}")
-                            continuation.resume(Result.Error(it))
-                            return@addOnCompleteListener
-                        }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+    override fun getMessage(
+        chatRoomId: String,
+        userId: String
+    ): MutableLiveData<List<Message>> {
+        val liveData = MutableLiveData<List<Message>>()
+        val messageList = mutableListOf<Message>()
+        FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS).document(chatRoomId)
+            .collection(FIELD_MESSAGES).orderBy(FIELD_TIME)
+            .addSnapshotListener { documents, exception ->
+                Timber.i("getLiveMessages addSnapshotListener detect")
+
+                documents?.let {
+                    messageList.clear()
+                    for (document in it.documents) {
+                        val message = document?.toObject(Message::class.java)
+                        message?.let { messageList.add(it) }
                     }
                 }
-        }
+                liveData.value = messageList
 
-    override suspend fun sendMessages(
-        senderId: String,
-        text: String,
-        time: Timestamp
-    ): Result<Boolean> {
-        TODO("Not yet implemented")
+                exception?.let {
+                    Timber.d("getLiveMessages => Get documents error=${it.message}")
+                }
+            }
+        return liveData
     }
+
+    override suspend fun sendMessage(chatRoomId: String, message: Message): Result<Boolean> =
+        suspendCoroutine { continuation ->
+            var isChatRoomInfoUpdate = false
+            FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS).document(chatRoomId).update(
+                mapOf(
+                    FIELD_LAST_MESSAGES to message.text,
+                    FIELD_LAST_UPDATE to message.time
+                )
+            ).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Timber.d("sendMessages => chatRoom=${task.result}}")
+                    isChatRoomInfoUpdate = true
+                } else {
+                    task.exception?.let {
+                        Timber.d("sendMessages => Set documents error=${it.message}")
+                        continuation.resume(Result.Error(it))
+                        return@addOnCompleteListener
+                    }
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                }
+            }
+
+            val messages =
+                FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS).document(chatRoomId)
+                    .collection(FIELD_MESSAGES)
+            val document = messages.document()
+            message.id = document.id
+            document.set(message).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Timber.d("sendMessages => message=${task.result}")
+                    if (isChatRoomInfoUpdate) {
+                        continuation.resume(Result.Success(true))
+                    }
+                } else {
+                    task.exception?.let {
+                        Timber.d("sendMessages => Set documents error=${it.message}")
+                        continuation.resume(Result.Error(it))
+                        return@addOnCompleteListener
+                    }
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                }
+            }
+        }
 }

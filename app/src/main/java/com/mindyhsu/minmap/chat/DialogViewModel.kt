@@ -1,8 +1,9 @@
 package com.mindyhsu.minmap.chat
 
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import com.google.firebase.Timestamp
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.ChatRoom
@@ -36,11 +37,8 @@ class DialogViewModel(
     private val usersDistinct = users.distinct()
     var roomTitle = ""
 
-    private var messages = MutableLiveData<List<Message>>()
-
-    private val _dialogs = MutableLiveData<List<DialogItem>>()
-    val dialogs: LiveData<List<DialogItem>>
-        get() = _dialogs
+    private val getLiveMessages = UserManager.id?.let { repository.getMessage(chatRoomDetail.id, it) }
+    val messages = getLiveMessages?.let { Transformations.map(getLiveMessages) { getMessages(it) } }
 
     val uiState = DialogUiState(
         getSenderName = { senderId ->
@@ -51,7 +49,6 @@ class DialogViewModel(
 
     init {
         getTitleName()
-        getDialogs()
     }
 
     private fun getTitleName() {
@@ -67,56 +64,62 @@ class DialogViewModel(
         }
     }
 
-    private fun getDialogs() {
+    private fun getMessages(messages: List<Message>): List<DialogItem> {
+        val dataList = mutableListOf<DialogItem>()
+        messages.let {
+            val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+            var lastDate = "2022-11-11"
+            for (message in it) {
+                val getDate = message.time?.toDate()?.let { date -> dateFormat.format(date) }
+                if (getDate != lastDate) {
+                    dataList.add(DialogItem.DialogDate(message))
+                    getDate?.let {
+                        lastDate = getDate
+                    }
+                }
+
+                if (message.senderId != UserManager.id) {
+                    dataList.add(DialogItem.FriendDialog(message))
+                } else {
+                    dataList.add(DialogItem.MyDialog(message))
+                }
+            }
+        }
+        return dataList
+    }
+
+    fun sendMessage(text: String, time: Timestamp) {
         coroutineScope.launch {
-            val dataList = mutableListOf<DialogItem>()
+            UserManager.id?.let { userId ->
+                val message = Message(
+                    senderId = userId,
+                    text = text,
+                    time = time
+                )
 
-            val result = UserManager.id?.let { repository.getMessages(chatRoomDetail.id, it) }
-            messages.value = when (result) {
-                is Result.Success -> {
-                    error.value = null
-                    status.value = LoadApiStatus.DONE
-                    result.data
-                }
-                is Result.Fail -> {
-                    error.value = result.error
-                    status.value = LoadApiStatus.ERROR
-                    null
-                }
-                is Result.Error -> {
-                    error.value = result.exception.toString()
-                    status.value = LoadApiStatus.ERROR
-                    null
-                }
-                else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
-                    status.value = LoadApiStatus.ERROR
-                    null
-                }
-            }
+                status.value = LoadApiStatus.LOADING
 
-            messages.value?.let {
-                val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-                var lastDate = "2022-11-11"
-                for (message in it) {
-                    val getDate = message.time?.toDate()?.let { date -> dateFormat.format(date) }
-                    if (getDate != lastDate) {
-                        dataList.add(DialogItem.DialogDate(message))
-                        getDate?.let {
-                            lastDate = getDate
-                        }
+                when (val result =
+                    repository.sendMessage(chatRoomId = chatRoomDetail.id, message = message)) {
+                    is Result.Success -> {
+                        error.value = null
+                        status.value = LoadApiStatus.DONE
                     }
-
-                    if (message.senderId != UserManager.id) {
-                        dataList.add(DialogItem.FriendDialog(message))
-                    } else {
-                        dataList.add(DialogItem.MyDialog(message))
+                    is Result.Fail -> {
+                        error.value = result.error
+                        status.value = LoadApiStatus.ERROR
+                    }
+                    is Result.Error -> {
+                        error.value = result.exception.toString()
+                        status.value = LoadApiStatus.ERROR
+                    }
+                    else -> {
+                        error.value =
+                            MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        status.value = LoadApiStatus.ERROR
                     }
                 }
-                _dialogs.value = dataList
             }
-
         }
     }
 }
