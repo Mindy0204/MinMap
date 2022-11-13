@@ -53,7 +53,7 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
         return remoteDataSource.getChatRoom(userId)
     }
 
-    override suspend fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>> {
+    override fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>> {
         return remoteDataSource.getLiveChatRoom(userId)
     }
 

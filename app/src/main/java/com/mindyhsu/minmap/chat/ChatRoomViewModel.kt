@@ -2,6 +2,7 @@ package com.mindyhsu.minmap.chat
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
@@ -27,6 +28,9 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
 
     private val status = MutableLiveData<LoadApiStatus>()
     private val error = MutableLiveData<String?>()
+
+//    private val getLiveChatRooms = UserManager.id?.let { repository.getLiveChatRoom(it) }
+//    val chatRooms = getLiveChatRooms?.let { Transformations.map(getLiveChatRooms) { it } }
 
     private val _chatRoom = MutableLiveData<List<ChatRoom>>()
     val chatRoom: LiveData<List<ChatRoom>>

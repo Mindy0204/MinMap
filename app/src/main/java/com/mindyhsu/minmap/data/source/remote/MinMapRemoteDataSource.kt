@@ -253,8 +253,28 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
         }
 
-    override suspend fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>> {
-        TODO("Not yet implemented")
+    override fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>> {
+        val liveData = MutableLiveData<List<ChatRoom>>()
+        val chatRoomList = mutableListOf<ChatRoom>()
+        FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS)
+            .whereArrayContains(FIELD_PARTICIPANTS, userId)
+            .addSnapshotListener { documents, exception ->
+                Timber.i("getLiveChatRoom addSnapshotListener detect")
+
+                documents?.let {
+                    chatRoomList.clear()
+                    for (document in it.documents) {
+                        val chatRoom = document?.toObject(ChatRoom::class.java)
+                        chatRoom?.let { chatRoomList.add(it) }
+                    }
+                }
+
+                exception?.let {
+                    Timber.d("getLiveChatRoom => Get documents error=${it.message}")
+                }
+                liveData.value = chatRoomList
+            }
+        return liveData
     }
 
     override suspend fun getUsersById(usersIds: List<String>): Result<List<User>> =
@@ -301,7 +321,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
         FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS).document(chatRoomId)
             .collection(FIELD_MESSAGES).orderBy(FIELD_TIME)
             .addSnapshotListener { documents, exception ->
-                Timber.i("getLiveMessages addSnapshotListener detect")
+                Timber.i("getMessage addSnapshotListener detect")
 
                 documents?.let {
                     messageList.clear()
@@ -313,7 +333,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 liveData.value = messageList
 
                 exception?.let {
-                    Timber.d("getLiveMessages => Get documents error=${it.message}")
+                    Timber.d("getMessage => Get documents error=${it.message}")
                 }
             }
         return liveData

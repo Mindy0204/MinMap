@@ -33,7 +33,7 @@ interface MinMapDataSource {
 
     suspend fun getChatRoom(userId: String): Result<List<ChatRoom>>
 
-    suspend fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>>
+    fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>>
 
     suspend fun getUsersById(usersIds: List<String>): Result<List<User>>
 
