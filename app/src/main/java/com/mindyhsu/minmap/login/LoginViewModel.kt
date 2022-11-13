@@ -63,7 +63,6 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
     fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             accountResult = completedTask.getResult(ApiException::class.java)
-            _isSignIn.value = accountResult != null
 
             // Set Firebase auth
             accountResult.idToken?.let { signInGoogleWithFirebaseAuth(it) }
@@ -86,6 +85,7 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
                         setUser(user.uid, accountResult.photoUrl.toString(), name)
                     }
                 }
+                _isSignIn.value = UserManager.id != null
             } else {
                 task.exception?.let {
                     Timber.d("signInGoogleWithFirebaseAuth => Request error=${it.message}")

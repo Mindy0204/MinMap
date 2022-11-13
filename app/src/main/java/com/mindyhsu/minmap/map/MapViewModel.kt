@@ -38,6 +38,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private val status = MutableLiveData<LoadApiStatus>()
     private val error = MutableLiveData<String?>()
 
+    val deviceLocation = MutableLiveData<LatLng>()
+
     private val getCurrentEventId = UserManager.id?.let { repository.getLiveEventId(it) }
     val currentEventId = getCurrentEventId?.let { Transformations.map(getCurrentEventId) { it } }
 

@@ -3,6 +3,7 @@ package com.mindyhsu.minmap.map
 import android.Manifest
 import android.app.Activity
 import android.content.Context.LOCATION_SERVICE
+import android.content.Context.TELEPHONY_IMS_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Criteria
@@ -32,6 +33,7 @@ import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import timber.log.Timber
 
 
 class MapFragment : Fragment(),
@@ -51,46 +53,22 @@ class MapFragment : Fragment(),
     ): View? {
         binding = FragmentMapBinding.inflate(inflater, container, false)
 
+        // Initialize Map
+        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
+        mapFragment?.getMapAsync { googleMap ->
+            map = googleMap
+            map.uiSettings.setAllGesturesEnabled(true)
+            showFunctionButton = -1
+
+            enableMyLocation()
+            getDeviceLocation()
+            showCurrentEvent()
+        }
+
         // Back to Device Location
         binding.backToPositionButton.setOnClickListener {
             enableMyLocation()
             getDeviceLocation()
-        }
-
-        // Main Entry Page
-        viewModel.currentEventId?.observe(viewLifecycleOwner) {
-            if (it == "") {
-                // UI
-                binding.createEventButton.visibility = View.VISIBLE
-                binding.createEventButton.text = context?.getString(R.string.create_new_event)
-                binding.cardView.visibility = View.GONE
-                binding.startNavigationButton.visibility = View.GONE
-
-                // Function
-                map.setOnMapClickListener(this)
-                binding.createEventButton.setOnClickListener {
-                    searchPlace()
-                }
-            } else {
-                // UI
-                map.setOnMapClickListener(null)
-                binding.createEventButton.visibility = View.GONE
-
-                if (!viewModel.isStartNavigation) {
-                    // UI
-                    binding.startNavigationButton.visibility = View.VISIBLE
-                    viewModel.currentEventDisplay.observe(viewLifecycleOwner) { display ->
-                        binding.cardView.visibility = View.VISIBLE
-                        binding.cardViewText.text = display["place"]
-                        binding.cardViewText2.text = display["participants"]
-                    }
-
-                    // Function
-                    getDeviceLocation()?.let { myLocation ->
-                        viewModel.getCurrentEventLocation(map, myLocation)
-                    }
-                }
-            }
         }
 
         binding.startNavigationButton.setOnClickListener {
@@ -169,19 +147,6 @@ class MapFragment : Fragment(),
         return binding.root
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
-        mapFragment?.getMapAsync { googleMap ->
-            map = googleMap
-            map.uiSettings.setAllGesturesEnabled(true)
-            showFunctionButton = -1
-
-            enableMyLocation()
-            getDeviceLocation()
-        }
-    }
-
     private fun enableMyLocation() {
         context?.let { context ->
             if (ContextCompat.checkSelfPermission(
@@ -233,10 +198,10 @@ class MapFragment : Fragment(),
                 if (ActivityCompat.checkSelfPermission(
                         context,
                         Manifest.permission.ACCESS_FINE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                    ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
                         context,
                         Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) != PackageManager.PERMISSION_GRANTED
+                    ) == PackageManager.PERMISSION_GRANTED
                 ) {
 //                    return
                 } else {
@@ -251,11 +216,52 @@ class MapFragment : Fragment(),
         if (cameraUpdate != null) {
             map.animateCamera(cameraUpdate)
         }
+        viewModel.deviceLocation.value = latLng
         return latLng
     }
 
     companion object {
         const val LOCATION_PERMISSION_REQUEST_CODE = 1
+    }
+
+    private fun showCurrentEvent() {
+        // Main Entry Page
+        viewModel.currentEventId?.observe(viewLifecycleOwner) {
+            if (it == "") {
+                // UI
+                binding.createEventButton.visibility = View.VISIBLE
+                binding.createEventButton.text = context?.getString(R.string.create_new_event)
+                binding.cardView.visibility = View.GONE
+                binding.startNavigationButton.visibility = View.GONE
+
+                // Function
+                map.setOnMapClickListener(this)
+                binding.createEventButton.setOnClickListener {
+                    searchPlace()
+                }
+            } else {
+                // UI
+                map.setOnMapClickListener(null)
+                binding.createEventButton.visibility = View.GONE
+
+                if (!viewModel.isStartNavigation) {
+                    // UI
+                    binding.startNavigationButton.visibility = View.VISIBLE
+                    viewModel.currentEventDisplay.observe(viewLifecycleOwner) { display ->
+                        binding.cardView.visibility = View.VISIBLE
+                        binding.cardViewText.text = display["place"]
+                        binding.cardViewText2.text = display["participants"]
+                    }
+
+                    // Function
+                    viewModel.deviceLocation.observe(viewLifecycleOwner) { myLocation ->
+                        if (myLocation != null) {
+                            viewModel.getCurrentEventLocation(map, myLocation)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun showAdvancedFunction() {
