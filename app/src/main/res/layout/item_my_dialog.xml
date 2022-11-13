@@ -7,6 +7,7 @@
     android:layout_marginBottom="@dimen/margin_8dp">
 
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/dialog_constraint"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/dialog_frame"
@@ -33,4 +34,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <TextView
+        android:id="@+id/dialog_time_text"
+        style="@style/dialog_time_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/margin_4dp"
+        app:layout_constraintBottom_toBottomOf="@+id/dialog_constraint"
+        app:layout_constraintEnd_toStartOf="@+id/dialog_constraint" />
 </androidx.constraintlayout.widget.ConstraintLayout>

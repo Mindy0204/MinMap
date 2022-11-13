@@ -15,6 +15,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+
+data class DialogUiState(
+    val getSenderName: (senderId: String) -> String
+)
 
 class DialogViewModel(
     private val repository: MinMapRepository,
@@ -31,9 +36,18 @@ class DialogViewModel(
     private val usersDistinct = users.distinct()
     var roomTitle = ""
 
+    private var messages = MutableLiveData<List<Message>>()
+
     private val _dialogs = MutableLiveData<List<DialogItem>>()
     val dialogs: LiveData<List<DialogItem>>
         get() = _dialogs
+
+    val uiState = DialogUiState(
+        getSenderName = { senderId ->
+            val sender = (chatRoomDetail.users.filter { it.id == senderId }).distinct()
+            sender[0].name
+        }
+    )
 
     init {
         getTitleName()
@@ -55,7 +69,6 @@ class DialogViewModel(
 
     private fun getDialogs() {
         coroutineScope.launch {
-            var messages = MutableLiveData<List<Message>>()
             val dataList = mutableListOf<DialogItem>()
 
             val result = UserManager.id?.let { repository.getMessages(chatRoomDetail.id, it) }
@@ -84,7 +97,17 @@ class DialogViewModel(
             }
 
             messages.value?.let {
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+                var lastDate = "2022-11-11"
                 for (message in it) {
+                    val getDate = message.time?.toDate()?.let { date -> dateFormat.format(date) }
+                    if (getDate != lastDate) {
+                        dataList.add(DialogItem.DialogDate(message))
+                        getDate?.let {
+                            lastDate = getDate
+                        }
+                    }
+
                     if (message.senderId != UserManager.id) {
                         dataList.add(DialogItem.FriendDialog(message))
                     } else {

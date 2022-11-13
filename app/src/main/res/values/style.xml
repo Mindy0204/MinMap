@@ -34,6 +34,12 @@
         <item name="android:textColor">@color/gray</item>
     </style>
 
+    <style name="dialog_time_text">
+        <item name="fontFamily">@font/baloo_paaji_2</item>
+        <item name="android:textSize">@dimen/dialog_time_text_size</item>
+        <item name="android:textColor">@color/gray</item>
+    </style>
+
     <style name="navigation_friend_name_text">
         <item name="fontFamily">@font/baloo_paaji_2</item>
         <item name="android:textSize">@dimen/navigation_friend_name_text_size</item>

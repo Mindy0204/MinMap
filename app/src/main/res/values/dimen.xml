@@ -11,6 +11,7 @@
     <dimen name="page_title_text_size">24sp</dimen>
     <dimen name="general_text_size">18sp</dimen>
     <dimen name="general_small_text_size">16sp</dimen>
+    <dimen name="dialog_time_text_size">12sp</dimen>
     <dimen name="navigation_friend_name_text_size">12sp</dimen>
     <dimen name="button_text_size">16sp</dimen>
 

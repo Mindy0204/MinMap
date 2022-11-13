@@ -35,7 +35,7 @@ class DialogFragment : Fragment() {
 
         binding.dialogTitleText.text = viewModel.roomTitle
 
-        val adapter = DialogAdapter()
+        val adapter = DialogAdapter(viewModel.uiState)
         binding.dialogRecyclerview.adapter = adapter
 
         viewModel.dialogs.observe(viewLifecycleOwner) {
