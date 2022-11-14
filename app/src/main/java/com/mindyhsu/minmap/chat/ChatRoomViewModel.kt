@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import com.google.firebase.Timestamp
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.ChatRoom
@@ -29,11 +30,14 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     private val status = MutableLiveData<LoadApiStatus>()
     private val error = MutableLiveData<String?>()
 
-    val getLiveChatRoom = MutableLiveData<List<ChatRoom>>()
-    val onChatRoomLiveReady = MutableLiveData<Boolean>(false)
+    private val getLiveChatRoom = UserManager.id?.let { repository.getLiveChatRoom(it) }
+    val liveChatRoom = getLiveChatRoom?.let { Transformations.map(getLiveChatRoom) { it } }
+    private val lastChatRoomLastUpdate = mutableListOf<Timestamp>()
+    private val lastChatRoomLastMessage = mutableListOf<String>()
 
-//    private val getLiveChatRooms = UserManager.id?.let { repository.getLiveChatRoom(it) }
-//    val chatRooms = getLiveChatRooms?.let { Transformations.map(getLiveChatRooms) { it } }
+    private val _isUpdate = MutableLiveData<Boolean>()
+    val isUpdate: LiveData<Boolean>
+        get() = _isUpdate
 
     private val _chatRoom = MutableLiveData<List<ChatRoom>>()
     val chatRoom: LiveData<List<ChatRoom>>
@@ -43,7 +47,8 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     val navigateToDialog: LiveData<ChatRoom?>
         get() = _navigateToDialog
 
-    private var chatRoomList = MutableLiveData<List<ChatRoom>>()
+    private var chatRoomList = MutableLiveData<List<ChatRoom>?>()
+    private val usersIds = mutableListOf<String>()
     private val userList = MutableLiveData<List<User>>()
 
     private val userNameListWithIds = mutableMapOf<String, String>()
@@ -69,21 +74,48 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     )
 
     init {
-//        getChatRoom()
-        getLiveChatRoom()
+        getChatRoom()
     }
 
-    fun getLiveChatRoom() {
-        chatRoomList = UserManager.id?.let { repository.getLiveChatRoom(it) }!!
-        onChatRoomLiveReady.value = true
+    private val lastChatRoomParticipants = mutableListOf<List<String>>()
 
-        val usersIds = mutableListOf<String>()
-        chatRoomList.value?.let {
-            for (chatRoom in it) {
-                usersIds.addAll(chatRoom.participants)
+
+    fun getChatRoomLastUpdateChange() {
+        liveChatRoom?.value?.let {
+            lastChatRoomLastUpdate.clear()
+            lastChatRoomLastMessage.clear()
+            for (liveChatRoom in it) {
+                liveChatRoom.lastUpdate?.let { time -> lastChatRoomLastUpdate.add(time) }
+                lastChatRoomLastMessage.add(liveChatRoom.lastMessage)
+            }
+
+            _chatRoom.value?.let {
+                for ((index, chatRoom) in it.withIndex()) {
+                    chatRoom.lastUpdate = lastChatRoomLastUpdate[index]
+                    chatRoom.lastMessage = lastChatRoomLastMessage[index]
+                }
+                _isUpdate.value = true
             }
         }
-        getUsersById(usersIds)
+    }
+
+    fun getChatRoomParticipantsChange() {
+        liveChatRoom?.value?.let {
+            lastChatRoomParticipants.clear()
+            val updateUsersIds = mutableListOf<String>()
+
+            for (liveChatRoom in it) {
+                lastChatRoomParticipants.add(liveChatRoom.participants)
+            }
+
+            _chatRoom.value?.let {
+                for ((index, chatRoom) in it.withIndex()) {
+                    chatRoom.participants = lastChatRoomParticipants[index]
+                }
+
+//                _isUpdate.value = true
+            }
+        }
     }
 
     private fun getChatRoom() {
@@ -113,7 +145,6 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
                 }
             }
 
-            val usersIds = mutableListOf<String>()
             chatRoomList.value?.let {
                 for (chatRoom in it) {
                     usersIds.addAll(chatRoom.participants)
