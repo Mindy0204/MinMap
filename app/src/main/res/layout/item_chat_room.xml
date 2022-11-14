@@ -6,24 +6,24 @@
     android:layout_height="wrap_content">
 
     <ImageView
-        android:id="@+id/friend_profile"
-        android:layout_width="@dimen/profile_pic"
-        android:layout_height="@dimen/profile_pic"
+        android:id="@+id/friend_pic"
+        android:layout_width="@dimen/chat_room_friend_pic_size"
+        android:layout_height="@dimen/chat_room_friend_pic_size"
         android:layout_marginBottom="@dimen/margin_16dp"
+        android:alpha="0.4"
         android:src="@mipmap/icon_profile"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:alpha="0.4"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/event_reminder"
-        android:layout_width="@dimen/chat_room_icon_small"
-        android:layout_height="@dimen/chat_room_icon_small"
+        android:layout_width="@dimen/dialog_event_reminder_size"
+        android:layout_height="@dimen/dialog_event_reminder_size"
         android:src="@mipmap/icon_circle"
         android:visibility="gone"
-        app:layout_constraintStart_toStartOf="@+id/friend_profile"
-        app:layout_constraintTop_toTopOf="@+id/friend_profile" />
+        app:layout_constraintStart_toStartOf="@+id/friend_pic"
+        app:layout_constraintTop_toTopOf="@+id/friend_pic" />
 
     <TextView
         android:id="@+id/friend_name"
@@ -31,18 +31,16 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/margin_16dp"
-        android:text="Wayne"
-        app:layout_constraintStart_toEndOf="@+id/friend_profile"
-        app:layout_constraintTop_toTopOf="@+id/friend_profile"
-        app:layout_constraintBottom_toTopOf="@+id/last_message"/>
+        app:layout_constraintBottom_toTopOf="@+id/last_message"
+        app:layout_constraintStart_toEndOf="@+id/friend_pic"
+        app:layout_constraintTop_toTopOf="@+id/friend_pic" />
 
     <TextView
         android:id="@+id/last_message"
         style="@style/general_small_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="hi"
-        app:layout_constraintBottom_toBottomOf="@+id/friend_profile"
+        app:layout_constraintBottom_toBottomOf="@+id/friend_pic"
         app:layout_constraintStart_toStartOf="@+id/friend_name"
         app:layout_constraintTop_toBottomOf="@+id/friend_name" />
 

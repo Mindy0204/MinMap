@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mapsFragment">
+    app:startDestination="@id/loginFragment">
 
     <fragment
         android:id="@+id/mapsFragment"
@@ -40,18 +40,6 @@
             app:argType="com.mindyhsu.minmap.data.ChatRoom" />
     </fragment>
     <dialog
-        android:id="@+id/checkEventFragment"
-        android:name="com.mindyhsu.minmap.map.CheckEventFragment"
-        android:label="fragment_check_event"
-        tools:layout="@layout/fragment_check_event">
-        <argument
-            android:name="eventDetail"
-            app:argType="com.mindyhsu.minmap.data.Event" />
-    </dialog>
-    <action
-        android:id="@+id/navigate_to_check_event_fragment"
-        app:destination="@id/checkEventFragment" />
-    <dialog
         android:id="@+id/navigationSuccessFragment"
         android:name="com.mindyhsu.minmap.map.NavigationSuccessFragment"
         android:label="fragment_navigation_success"
@@ -59,4 +47,12 @@
     <action
         android:id="@+id/navigate_to_navigation_success_fragment"
         app:destination="@id/navigationSuccessFragment" />
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.mindyhsu.minmap.login.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login" />
+    <action
+        android:id="@+id/navigate_to_login_fragment"
+        app:destination="@id/loginFragment" />
 </navigation>

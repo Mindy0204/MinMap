@@ -2,33 +2,37 @@
     <string name="app_name">MinMap</string>
     <string name="title_main">MinMap</string>
 
+    <!-- login page-->
+    <string name="login_subtitle">Hey, can\'t wait to meet you!</string>
+    <string name="login">Sign In with Google</string>
+
     <!-- main page-->
     <string name="create_new_event">Start A Activity!</string>
-    <string name="show_event">You Have A Activity</string>
+    <string name="navigation_instruction">Next: %s\n%s meters | %s</string>
+
+    <!-- main page button-->
     <string name="continue_button">Continue</string>
-    <string name="send_invitation">Send Invitation</string>
-    <string name="check_route">Check Route</string>
-    <string name="start_navigation">Start Navigation</string>
+    <string name="send_invitation_button">Send Invitation</string>
+    <string name="check_route_button">Check Route</string>
+    <string name="start_navigation_button">Start Navigation</string>
 
     <!-- navigation success page-->
-    <string name="arrive_meeting_point">Already arrive the meeting point.\nHave a nice date!</string>
-    <string name="done">Done</string>
-
-    <!-- check event page-->
-    <string name="meeting_point_at">Meeting Point: %s</string>
-    <string name="meeting_time_at">Meeting Time: %s</string>
-    <string name="meeting_participants">Meeting With: %s</string>
+    <string name="arrive_meeting_point">Arrive the meeting point</string>
+    <string name="have_a_nice_day">Have a nice date!</string>
+    <string name="done_button">Done</string>
 
     <!-- chat room page-->
     <string name="chat_room">Chat Room</string>
-    <string name="chat_room_search">Search Friend or Dialog</string>
+    <string name="chat_room_search_bar">Search Friend or Dialog</string>
 
     <!-- dialog page-->
-    <string name="don_not_move">Don\'t Move!</string>
-    <string name="where_are_you">Where are you?</string>
-    <string name="im_here">I\'m here.</string>
-    <string name="im_at">I\'m at %s.</string>
-    <string name="ill_be_there_in">I\'ll be there in %s minutes.</string>
+    <string name="loading">Loading</string>
+    <string name="don_not_move_chip">Don\'t Move!</string>
+    <string name="where_are_you_chip">Where are you?</string>
+    <string name="im_here_chip">I\'m here</string>
+    <string name="im_at_chip">I\'m at %s</string>
+    <string name="ill_be_there_chip">I\'ll be there in %s minutes</string>
 
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="internet_not_connected">Internet is not connected</string>
+    <string name="you_know_nothing">You know nothing</string>
 </resources>

@@ -7,7 +7,7 @@
     tools:context=".chat.ChatRoomFragment">
 
     <TextView
-        android:id="@+id/chat_room_page_title"
+        android:id="@+id/chat_room_title_text"
         style="@style/page_title_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -17,34 +17,34 @@
 
     <ImageView
         android:id="@+id/chat_room_bell"
-        android:layout_width="@dimen/chat_room_icon"
-        android:layout_height="@dimen/chat_room_icon"
+        android:layout_width="@dimen/chat_room_icon_size"
+        android:layout_height="@dimen/chat_room_icon_size"
         android:layout_marginEnd="@dimen/margin_16dp"
         android:src="@mipmap/icon_bell"
-        app:layout_constraintBottom_toBottomOf="@+id/chat_room_page_title"
+        app:layout_constraintBottom_toBottomOf="@+id/chat_room_title_text"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/chat_room_page_title" />
+        app:layout_constraintTop_toTopOf="@+id/chat_room_title_text" />
 
     <ImageView
         android:id="@+id/char_room_add_friend"
-        android:layout_width="@dimen/chat_room_icon"
-        android:layout_height="@dimen/chat_room_icon"
+        android:layout_width="@dimen/chat_room_icon_size"
+        android:layout_height="@dimen/chat_room_icon_size"
         android:layout_marginEnd="@dimen/margin_8dp"
         android:src="@mipmap/icon_add"
-        app:layout_constraintBottom_toBottomOf="@+id/chat_room_page_title"
+        app:layout_constraintBottom_toBottomOf="@+id/chat_room_title_text"
         app:layout_constraintEnd_toStartOf="@+id/chat_room_bell"
-        app:layout_constraintTop_toTopOf="@+id/chat_room_page_title" />
+        app:layout_constraintTop_toTopOf="@+id/chat_room_title_text" />
 
     <SearchView
-        android:id="@+id/chat_room_search"
+        android:id="@+id/chat_room_search_bar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin_16dp"
         android:iconifiedByDefault="false"
-        android:queryHint="@string/chat_room_search"
-        app:layout_constraintEnd_toEndOf="@+id/chat_room_page_title"
+        android:queryHint="@string/chat_room_search_bar"
+        app:layout_constraintEnd_toEndOf="@+id/chat_room_title_text"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/chat_room_page_title" />
+        app:layout_constraintTop_toBottomOf="@+id/chat_room_title_text" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chat_room_recyclerview"
@@ -53,9 +53,9 @@
         android:layout_marginTop="@dimen/margin_24dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/chat_room_search"
-        app:layout_constraintStart_toStartOf="@+id/chat_room_page_title"
-        app:layout_constraintTop_toBottomOf="@+id/chat_room_search"
+        app:layout_constraintEnd_toEndOf="@+id/chat_room_search_bar"
+        app:layout_constraintStart_toStartOf="@+id/chat_room_title_text"
+        app:layout_constraintTop_toBottomOf="@+id/chat_room_search_bar"
         tools:listitem="@layout/item_chat_room" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

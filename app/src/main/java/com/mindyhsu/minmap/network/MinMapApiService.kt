@@ -13,8 +13,6 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
 import retrofit2.http.Query
 
-private const val origin = "台北市大安區新生南路一段10652忠孝新生站"
-private const val destination = "台北市中正區仁愛路二段AppWorks+School"
 private const val DIRECTIONS_URL = "https://maps.googleapis.com/maps/api/directions/"
 
 private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()

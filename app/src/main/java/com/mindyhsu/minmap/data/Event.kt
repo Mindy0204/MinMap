@@ -8,8 +8,8 @@ import kotlinx.parcelize.RawValue
 
 @Parcelize
 data class Event(
-    val id: String = "",
-    val status: String = "",
+    var id: String = "",
+    val status: Int = 0,
     val participants: List<String> = emptyList(),
     val geoHash: @RawValue GeoPoint? = null,
     val place: String = "",

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/light_tiffany_green"
+    tools:context=".login.LoginFragment">
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/map_lottie"
+        android:layout_width="@dimen/login_lottie_size"
+        android:layout_height="@dimen/login_lottie_size"
+        android:layout_centerInParent="true"
+        android:layout_margin="@dimen/margin_16dp"
+        app:layout_constraintBottom_toTopOf="@+id/login_title_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
+        app:lottie_autoPlay="true"
+        app:lottie_fileName="map.json"
+        app:lottie_loop="true"
+        app:lottie_speed="1" />
+
+    <TextView
+        android:id="@+id/login_title_text"
+        style="@style/login_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_8dp"
+        android:text="@string/app_name"
+        app:layout_constraintBottom_toTopOf="@+id/login_subtitle_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/map_lottie" />
+
+    <TextView
+        android:id="@+id/login_subtitle_text"
+        style="@style/login_subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/login_subtitle"
+        app:layout_constraintBottom_toTopOf="@+id/login_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_title_text" />
+
+<!--        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton-->
+<!--            android:id="@+id/login_button"-->
+<!--            style="@style/white_button"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="@dimen/button_height_size"-->
+<!--            android:text="@string/login"-->
+<!--            app:layout_constraintBottom_toBottomOf="parent"-->
+<!--            app:layout_constraintStart_toStartOf="parent" />-->
+
+    <com.google.android.gms.common.SignInButton
+        android:id="@+id/login_button"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/google_login_button_height_size"
+        android:layout_margin="@dimen/margin_16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:buttonSize="wide"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

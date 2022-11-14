@@ -8,38 +8,66 @@
 
     <View
         android:id="@+id/success_dialog"
-        android:layout_width="280dp"
-        android:layout_height="200dp"
-        android:alpha="0.7"
-        android:background="@color/black"
+        android:layout_width="@dimen/success_dialog_size"
+        android:layout_height="@dimen/success_dialog_size"
+        android:background="@drawable/success_dialog_frame"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/arrive_lottie"
+        android:layout_width="@dimen/navigation_success_lottie_size"
+        android:layout_height="@dimen/navigation_success_lottie_size"
+        android:layout_centerInParent="true"
+        android:layout_marginTop="@dimen/margin_24dp"
+        app:layout_constraintBottom_toTopOf="@+id/success_dialog_text"
+        app:layout_constraintEnd_toEndOf="@+id/success_dialog"
+        app:layout_constraintStart_toStartOf="@+id/success_dialog"
+        app:layout_constraintTop_toTopOf="@+id/success_dialog"
+        app:lottie_autoPlay="true"
+        app:lottie_fileName="arrive.json"
+        app:lottie_loop="true"
+        app:lottie_speed="1" />
+
     <TextView
         android:id="@+id/success_dialog_text"
-        style="@style/general_small_text"
-        android:gravity="center"
+        style="@style/general_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/margin_16dp"
+        android:layout_marginTop="@dimen/margin_16dp"
+        android:layout_marginBottom="@dimen/margin_4dp"
+        android:gravity="center"
         android:text="@string/arrive_meeting_point"
-        android:textColor="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/success_dialog_text2"
+        app:layout_constraintEnd_toEndOf="@+id/success_dialog"
+        app:layout_constraintStart_toStartOf="@+id/success_dialog"
+        app:layout_constraintTop_toBottomOf="@+id/arrive_lottie"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/success_dialog_text2"
+        style="@style/general_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/margin_16dp"
+        android:gravity="center"
+        android:text="@string/have_a_nice_day"
         app:layout_constraintBottom_toTopOf="@+id/success_dialog_button"
         app:layout_constraintEnd_toEndOf="@+id/success_dialog"
         app:layout_constraintStart_toStartOf="@+id/success_dialog"
-        app:layout_constraintTop_toTopOf="@+id/success_dialog" />
+        app:layout_constraintTop_toBottomOf="@+id/success_dialog_text" />
 
-    <Button
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/success_dialog_button"
+        style="@style/green_button"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/done"
+        android:layout_height="@dimen/button_height_size"
+        android:text="@string/done_button"
         app:layout_constraintBottom_toBottomOf="@+id/success_dialog"
         app:layout_constraintEnd_toEndOf="@+id/success_dialog"
-        app:layout_constraintStart_toStartOf="@+id/success_dialog"
-        android:layout_margin="@dimen/margin_16dp"/>
+        app:layout_constraintStart_toStartOf="@+id/success_dialog" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

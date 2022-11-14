@@ -1,18 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <dimen name="margin_4dp">4dp</dimen>
     <dimen name="margin_8dp">8dp</dimen>
     <dimen name="margin_16dp">16dp</dimen>
     <dimen name="margin_24dp">24dp</dimen>
 
+    <!-- text size -->
+    <dimen name="login_title_text_size">32sp</dimen>
+    <dimen name="login_subtitle_text_size">20sp</dimen>
     <dimen name="page_title_text_size">24sp</dimen>
-    <dimen name="chat_list_text_size">18sp</dimen>
-    <dimen name="dialog_text_size">16sp</dimen>
+    <dimen name="general_text_size">18sp</dimen>
+    <dimen name="general_small_text_size">16sp</dimen>
+    <dimen name="dialog_time_text_size">12sp</dimen>
+    <dimen name="navigation_friend_name_text_size">12sp</dimen>
+    <dimen name="button_text_size">16sp</dimen>
 
-    <dimen name="view_and_button_height">48dp</dimen>
-    <dimen name="route_guide_view">135dp</dimen>
-    <dimen name="profile_pic">48dp</dimen>
-    <dimen name="chat_room_icon">20dp</dimen>
-    <dimen name="chat_room_icon_small">16dp</dimen>
-    <dimen name="dialog_icon">28dp</dimen>
-    <dimen name="corner_radius">12dp</dimen>
+    <!-- view size -->
+    <dimen name="success_dialog_size">280dp</dimen>
+
+    <dimen name="login_lottie_size">220dp</dimen>
+    <dimen name="navigation_success_lottie_size">100dp</dimen>
+
+    <dimen name="button_height_size">48dp</dimen>
+    <dimen name="google_login_button_height_size">60dp</dimen>
+
+    <dimen name="navigation_instruction_view_size">135dp</dimen>
+    <dimen name="navigation_friend_pic_size">32dp</dimen>
+
+    <dimen name="chat_room_friend_pic_size">48dp</dimen>
+    <dimen name="chat_room_icon_size">20dp</dimen>
+
+    <dimen name="dialog_icon_size">28dp</dimen>
+    <dimen name="dialog_event_reminder_size">14dp</dimen>
+
+    <dimen name="corner_radius_size">12dp</dimen>
 </resources>
