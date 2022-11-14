@@ -30,9 +30,21 @@ class ChatRoomFragment : Fragment() {
             adapter.submitList(it)
         }
 
+//        viewModel.onChatRoomLiveReady.observe(viewLifecycleOwner) { ready ->
+//            if (ready) {
+//                viewModel.chatRoom.observe(viewLifecycleOwner) {
+//                    adapter.submitList(it)
+//                }
+//            }
+//        }
+
         viewModel.navigateToDialog.observe(viewLifecycleOwner) {
             viewModel.navigateToDialog.value?.let {
-                findNavController().navigate(ChatRoomFragmentDirections.actionChatRoomFragmentToDialogFragment(it))
+                findNavController().navigate(
+                    ChatRoomFragmentDirections.actionChatRoomFragmentToDialogFragment(
+                        it
+                    )
+                )
                 viewModel.completeNavigateToDialog()
             }
 

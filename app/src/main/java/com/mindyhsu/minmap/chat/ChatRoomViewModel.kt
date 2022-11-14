@@ -29,6 +29,9 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     private val status = MutableLiveData<LoadApiStatus>()
     private val error = MutableLiveData<String?>()
 
+    val getLiveChatRoom = MutableLiveData<List<ChatRoom>>()
+    val onChatRoomLiveReady = MutableLiveData<Boolean>(false)
+
 //    private val getLiveChatRooms = UserManager.id?.let { repository.getLiveChatRoom(it) }
 //    val chatRooms = getLiveChatRooms?.let { Transformations.map(getLiveChatRooms) { it } }
 
@@ -66,7 +69,21 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     )
 
     init {
-        getChatRoom()
+//        getChatRoom()
+        getLiveChatRoom()
+    }
+
+    fun getLiveChatRoom() {
+        chatRoomList = UserManager.id?.let { repository.getLiveChatRoom(it) }!!
+        onChatRoomLiveReady.value = true
+
+        val usersIds = mutableListOf<String>()
+        chatRoomList.value?.let {
+            for (chatRoom in it) {
+                usersIds.addAll(chatRoom.participants)
+            }
+        }
+        getUsersById(usersIds)
     }
 
     private fun getChatRoom() {

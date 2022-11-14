@@ -11,9 +11,10 @@
         android:label="fragment_maps"
         tools:layout="@layout/fragment_map">
         <argument
-            android:name="startNavigation"
-            android:defaultValue="false"
-            app:argType="boolean" />
+            android:name="midPoint"
+            android:defaultValue="@null"
+            app:nullable="true"
+            app:argType="com.google.android.gms.maps.model.LatLng" />
     </fragment>
     <action
         android:id="@+id/navigate_to_map_fragment"
@@ -38,6 +39,9 @@
         <argument
             android:name="chatRoomDetail"
             app:argType="com.mindyhsu.minmap.data.ChatRoom" />
+        <action
+            android:id="@+id/action_dialogFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
     </fragment>
     <dialog
         android:id="@+id/navigationSuccessFragment"

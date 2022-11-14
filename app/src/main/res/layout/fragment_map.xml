@@ -106,7 +106,6 @@
         android:layout_margin="@dimen/margin_8dp"
         android:background="@color/white"
         android:backgroundTint="@color/white"
-        android:visibility="gone"
         app:cardCornerRadius="@dimen/corner_radius_size"
         app:cardElevation="@dimen/corner_radius_size"
         app:layout_constraintEnd_toEndOf="parent"
@@ -116,7 +115,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingTop="@dimen/margin_24dp">
+            android:paddingTop="@dimen/margin_16dp">
 
             <ImageView
                 android:id="@+id/card_view_icon"
@@ -145,7 +144,6 @@
                 style="@style/general_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/margin_8dp"
                 app:layout_constraintEnd_toEndOf="@id/card_view_text"
                 app:layout_constraintStart_toStartOf="@+id/card_view_icon"
                 app:layout_constraintTop_toBottomOf="@+id/card_view_icon" />
