@@ -430,15 +430,4 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             _isOnInvitation.value = false
         }
     }
-
-    fun getMidPoint(locationList: MutableList<LatLng>): LatLng {
-        var totalLat = 0.0
-        var totalLon = 0.0
-        val listSize = locationList.size
-        for (location in locationList) {
-            totalLat += location.latitude
-            totalLon += location.longitude
-        }
-        return LatLng(totalLat / listSize, totalLon / listSize)
-    }
 }

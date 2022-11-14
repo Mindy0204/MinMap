@@ -9,7 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.mindyhsu.minmap.databinding.FragmentChatRoomBinding
 import com.mindyhsu.minmap.ext.getVmFactory
-import com.mindyhsu.minmap.map.NavigationSuccessViewModel
+import timber.log.Timber
 
 class ChatRoomFragment : Fragment() {
     private lateinit var binding: FragmentChatRoomBinding
@@ -30,9 +30,22 @@ class ChatRoomFragment : Fragment() {
             adapter.submitList(it)
         }
 
+        viewModel.isUpdate.observe(viewLifecycleOwner) {
+            adapter.submitList(viewModel.chatRoom.value)
+            adapter.notifyDataSetChanged()
+        }
+
+        viewModel.liveChatRoom?.observe(viewLifecycleOwner) {
+            viewModel.getChatRoomLastUpdateChange()
+        }
+
         viewModel.navigateToDialog.observe(viewLifecycleOwner) {
             viewModel.navigateToDialog.value?.let {
-                findNavController().navigate(ChatRoomFragmentDirections.actionChatRoomFragmentToDialogFragment(it))
+                findNavController().navigate(
+                    ChatRoomFragmentDirections.actionChatRoomFragmentToDialogFragment(
+                        it
+                    )
+                )
                 viewModel.completeNavigateToDialog()
             }
 

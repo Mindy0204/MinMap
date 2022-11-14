@@ -1,14 +1,17 @@
 package com.mindyhsu.minmap.chat
 
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.data.Message
 import com.mindyhsu.minmap.data.Result
+import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
@@ -37,8 +40,13 @@ class DialogViewModel(
     private val usersDistinct = users.distinct()
     var roomTitle = ""
 
-    private val getLiveMessages = UserManager.id?.let { repository.getMessage(chatRoomDetail.id, it) }
+    private val getLiveMessages =
+        UserManager.id?.let { repository.getMessage(chatRoomDetail.id, it) }
     val messages = getLiveMessages?.let { Transformations.map(getLiveMessages) { getMessages(it) } }
+
+    private val _midPoint = MutableLiveData<LatLng>()
+    val midPoint: LiveData<LatLng>
+        get() = _midPoint
 
     val uiState = DialogUiState(
         getSenderName = { senderId ->
@@ -120,6 +128,54 @@ class DialogViewModel(
                     }
                 }
             }
+        }
+    }
+
+    fun getMidPoint() {
+        coroutineScope.launch {
+            val result = repository.getUsersById(chatRoomDetail.participants)
+            val userList = MutableLiveData<List<User>>()
+            userList.value = when (result) {
+                is Result.Success -> {
+                    error.value = null
+                    status.value = LoadApiStatus.DONE
+                    result.data
+                }
+                is Result.Fail -> {
+                    error.value = result.error
+                    status.value = LoadApiStatus.ERROR
+                    null
+                }
+                is Result.Error -> {
+                    error.value = result.exception.toString()
+                    status.value = LoadApiStatus.ERROR
+                    null
+                }
+                else -> {
+                    error.value =
+                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    status.value = LoadApiStatus.ERROR
+                    null
+                }
+            }
+
+            val locationList = mutableListOf<LatLng>()
+            userList.value?.let {
+                for (user in it) {
+                    user.geoHash?.let { geo ->
+                        locationList.add(LatLng(geo.latitude, geo.longitude))
+                    }
+                }
+            }
+
+            var totalLat = 0.0
+            var totalLon = 0.0
+            val listSize = locationList.size
+            for (location in locationList) {
+                totalLat += location.latitude
+                totalLon += location.longitude
+            }
+            _midPoint.value = LatLng(totalLat / listSize, totalLon / listSize)
         }
     }
 }

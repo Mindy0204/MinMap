@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import com.google.firebase.Timestamp
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.ChatRoom
@@ -29,8 +30,14 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     private val status = MutableLiveData<LoadApiStatus>()
     private val error = MutableLiveData<String?>()
 
-//    private val getLiveChatRooms = UserManager.id?.let { repository.getLiveChatRoom(it) }
-//    val chatRooms = getLiveChatRooms?.let { Transformations.map(getLiveChatRooms) { it } }
+    private val getLiveChatRoom = UserManager.id?.let { repository.getLiveChatRoom(it) }
+    val liveChatRoom = getLiveChatRoom?.let { Transformations.map(getLiveChatRoom) { it } }
+    private val lastChatRoomLastUpdate = mutableListOf<Timestamp>()
+    private val lastChatRoomLastMessage = mutableListOf<String>()
+
+    private val _isUpdate = MutableLiveData<Boolean>()
+    val isUpdate: LiveData<Boolean>
+        get() = _isUpdate
 
     private val _chatRoom = MutableLiveData<List<ChatRoom>>()
     val chatRoom: LiveData<List<ChatRoom>>
@@ -40,7 +47,8 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     val navigateToDialog: LiveData<ChatRoom?>
         get() = _navigateToDialog
 
-    private var chatRoomList = MutableLiveData<List<ChatRoom>>()
+    private var chatRoomList = MutableLiveData<List<ChatRoom>?>()
+    private val usersIds = mutableListOf<String>()
     private val userList = MutableLiveData<List<User>>()
 
     private val userNameListWithIds = mutableMapOf<String, String>()
@@ -67,6 +75,47 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
 
     init {
         getChatRoom()
+    }
+
+    private val lastChatRoomParticipants = mutableListOf<List<String>>()
+
+
+    fun getChatRoomLastUpdateChange() {
+        liveChatRoom?.value?.let {
+            lastChatRoomLastUpdate.clear()
+            lastChatRoomLastMessage.clear()
+            for (liveChatRoom in it) {
+                liveChatRoom.lastUpdate?.let { time -> lastChatRoomLastUpdate.add(time) }
+                lastChatRoomLastMessage.add(liveChatRoom.lastMessage)
+            }
+
+            _chatRoom.value?.let {
+                for ((index, chatRoom) in it.withIndex()) {
+                    chatRoom.lastUpdate = lastChatRoomLastUpdate[index]
+                    chatRoom.lastMessage = lastChatRoomLastMessage[index]
+                }
+                _isUpdate.value = true
+            }
+        }
+    }
+
+    fun getChatRoomParticipantsChange() {
+        liveChatRoom?.value?.let {
+            lastChatRoomParticipants.clear()
+            val updateUsersIds = mutableListOf<String>()
+
+            for (liveChatRoom in it) {
+                lastChatRoomParticipants.add(liveChatRoom.participants)
+            }
+
+            _chatRoom.value?.let {
+                for ((index, chatRoom) in it.withIndex()) {
+                    chatRoom.participants = lastChatRoomParticipants[index]
+                }
+
+//                _isUpdate.value = true
+            }
+        }
     }
 
     private fun getChatRoom() {
@@ -96,7 +145,6 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
                 }
             }
 
-            val usersIds = mutableListOf<String>()
             chatRoomList.value?.let {
                 for (chatRoom in it) {
                     usersIds.addAll(chatRoom.participants)

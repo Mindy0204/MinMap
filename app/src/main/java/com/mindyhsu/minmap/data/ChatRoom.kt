@@ -8,9 +8,9 @@ import kotlinx.parcelize.Parcelize
 data class ChatRoom(
     val eventId: String = "",
     val id: String = "",
-    val participants: List<String> = emptyList(),
-    val lastUpdate: Timestamp? = null,
-    val lastMessage: String = ""
+    var participants: List<String> = emptyList(),
+    var lastUpdate: Timestamp? = null,
+    var lastMessage: String = ""
 ): Parcelable {
     var users: List<User> = emptyList()
 }
