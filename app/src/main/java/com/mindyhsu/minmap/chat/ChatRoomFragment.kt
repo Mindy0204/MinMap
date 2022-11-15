@@ -11,6 +11,7 @@ import com.mindyhsu.minmap.databinding.FragmentChatRoomBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import timber.log.Timber
 
+
 class ChatRoomFragment : Fragment() {
     private lateinit var binding: FragmentChatRoomBinding
     private val viewModel by viewModels<ChatRoomViewModel> { getVmFactory() }
@@ -21,23 +22,8 @@ class ChatRoomFragment : Fragment() {
     ): View? {
         binding = FragmentChatRoomBinding.inflate(inflater, container, false)
 
-        val adapter = ChatRoomAdapter(
-            viewModel.uiState
-        )
+        val adapter = ChatRoomAdapter(viewModel.uiState)
         binding.chatRoomRecyclerview.adapter = adapter
-
-        viewModel.chatRoom.observe(viewLifecycleOwner) {
-            adapter.submitList(it)
-        }
-
-        viewModel.isUpdate.observe(viewLifecycleOwner) {
-            adapter.submitList(viewModel.chatRoom.value)
-            adapter.notifyDataSetChanged()
-        }
-
-        viewModel.liveChatRoom?.observe(viewLifecycleOwner) {
-            viewModel.getChatRoomLastUpdateChange()
-        }
 
         viewModel.navigateToDialog.observe(viewLifecycleOwner) {
             viewModel.navigateToDialog.value?.let {
@@ -48,7 +34,17 @@ class ChatRoomFragment : Fragment() {
                 )
                 viewModel.completeNavigateToDialog()
             }
+        }
 
+        binding.charRoomAddFriend.setOnClickListener { }
+
+        viewModel.getLiveChatRoom.observe(viewLifecycleOwner) {
+            viewModel.checkUsersExist(it)
+        }
+
+        viewModel.liveChatRoom.observe(viewLifecycleOwner) {
+            adapter.submitList(it)
+            adapter.notifyDataSetChanged()
         }
 
         return binding.root

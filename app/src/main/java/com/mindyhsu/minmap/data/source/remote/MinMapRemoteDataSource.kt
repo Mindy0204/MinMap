@@ -280,6 +280,8 @@ object MinMapRemoteDataSource : MinMapDataSource {
     override suspend fun getUsersById(usersIds: List<String>): Result<List<User>> =
         suspendCoroutine { continuation ->
             // There's limit (10 queries) of Firebase whereIn filter so query all users now
+
+            // Future Upgrade
 //            FirebaseFirestore.getInstance().collection(PATH_USERS).whereIn(FIELD_ID, usersIds)
 
             FirebaseFirestore.getInstance().collection(PATH_USERS)
@@ -288,6 +290,8 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         val userNameListWithIds = mutableMapOf<String, String>()
                         val userList = mutableListOf<User>()
                         for (document in task.result) {
+
+                            // If no limit in the future, we could deprecate these logics
                             for (userId in usersIds) {
                                 if (document.id == userId) {
                                     Timber.d("getUserById => user id=${document.id}, data=${document.data}")
@@ -299,6 +303,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                     userList.add(users)
                                 }
                             }
+
                         }
                         continuation.resume(Result.Success(userList))
                     } else {

@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.util.*
 
 data class DialogUiState(
     val getSenderName: (senderId: String) -> String
@@ -96,8 +97,9 @@ class DialogViewModel(
         return dataList
     }
 
-    fun sendMessage(text: String, time: Timestamp) {
+    fun sendMessage(text: String) {
         coroutineScope.launch {
+            val time = Timestamp(Calendar.getInstance().time)
             UserManager.id?.let { userId ->
                 val message = Message(
                     senderId = userId,

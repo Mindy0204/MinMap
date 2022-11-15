@@ -186,7 +186,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
             currentEventDetail.value?.let {
                 val data = hashMapOf(
-                    "place" to it.place,
+                    "place" to it.place + " |",
                     "participants" to currentEventParticipants
                 )
                 currentEventDisplay.value = data

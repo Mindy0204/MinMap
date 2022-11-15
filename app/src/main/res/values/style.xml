@@ -4,7 +4,7 @@
     <style name="login_title">
         <item name="fontFamily">@font/baloo_paaji_2_semibold</item>
         <item name="android:textSize">@dimen/login_title_text_size</item>
-        <item name="android:textColor">@color/gray_drak</item>
+        <item name="android:textColor">@color/gray_dark</item>
     </style>
 
     <style name="login_subtitle">

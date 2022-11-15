@@ -8,7 +8,7 @@
 
     <!-- main page-->
     <string name="create_new_event">Start A Activity!</string>
-    <string name="navigation_instruction">Next: %s\n%s meters | %s</string>
+    <string name="navigation_instruction">Next: %s  |  %s meters  |  %s</string>
 
     <!-- main page button-->
     <string name="continue_button">Continue</string>
@@ -31,7 +31,7 @@
     <string name="where_are_you_chip">Where are you?</string>
     <string name="im_here_chip">I\'m here</string>
     <string name="im_at_chip">I\'m at %s</string>
-    <string name="ill_be_there_chip">I\'ll be there in %s minutes</string>
+    <string name="ill_be_there_chip">I\'ll be there in 5 minutes</string>
 
     <string name="internet_not_connected">Internet is not connected</string>
     <string name="you_know_nothing">You know nothing</string>

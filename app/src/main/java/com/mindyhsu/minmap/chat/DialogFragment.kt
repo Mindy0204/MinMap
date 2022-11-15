@@ -14,6 +14,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.firebase.Timestamp
 import com.mindyhsu.minmap.MinMapApplication
+import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.databinding.FragmentDialogBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import com.mindyhsu.minmap.map.MapFragmentDirections
@@ -47,8 +48,7 @@ class DialogFragment : Fragment() {
         }
 
         binding.sendMessage.setOnClickListener {
-            val time = Timestamp(Calendar.getInstance().time)
-            viewModel.sendMessage(binding.myMessageEditText.text.toString(), time)
+            viewModel.sendMessage(binding.myMessageEditText.text.toString())
             binding.myMessageEditText.text.clear()
         }
 
@@ -62,11 +62,15 @@ class DialogFragment : Fragment() {
         }
 
         // Chips
-        binding.donNotMoveChip.setOnClickListener { }
-        binding.illBeThereChip.setOnClickListener { }
-        binding.imAtChip.setOnClickListener { }
-        binding.whereAreYouChip.setOnClickListener { }
-        binding.imHereChip.setOnClickListener { }
+        binding.donNotMoveChip.setOnClickListener {
+            viewModel.sendMessage(getString(R.string.don_not_move_chip))
+        }
+        binding.whereAreYouChip.setOnClickListener {
+            viewModel.sendMessage(getString(R.string.where_are_you_chip))
+        }
+        binding.imHereChip.setOnClickListener {
+            viewModel.sendMessage(getString(R.string.im_here_chip))
+        }
 
         return binding.root
     }
