@@ -27,6 +27,7 @@
     <dimen name="navigation_icon_size">24dp</dimen>
     <dimen name="navigation_instruction_view_size">135dp</dimen>
     <dimen name="navigation_friend_pic_size">32dp</dimen>
+    <dimen name="invitation_icon_size">36dp</dimen>
 
     <dimen name="chat_room_friend_pic_size">48dp</dimen>
     <dimen name="chat_room_icon_size">20dp</dimen>

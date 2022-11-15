@@ -119,16 +119,17 @@ class MapFragment : Fragment(),
             }
         }
 
-        binding.sendEventButton.setOnClickListener {
-            viewModel.sendEvent()
+        binding.sendInvitationButton.setOnClickListener {
+//            viewModel.sendEvent()
+            findNavController().navigate(SendInvitationFragmentDirections.navigateToSendEventToFriendFragment())
         }
 
         viewModel.isOnInvitation.observe(viewLifecycleOwner) {
             if (it) {
-                binding.sendEventButton.visibility = View.VISIBLE
+                binding.sendInvitationButton.visibility = View.VISIBLE
             } else {
                 map.clear()
-                binding.sendEventButton.visibility = View.GONE
+                binding.sendInvitationButton.visibility = View.GONE
             }
         }
 

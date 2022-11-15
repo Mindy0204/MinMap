@@ -135,7 +135,7 @@ class DialogViewModel(
 
     fun getMidPoint() {
         coroutineScope.launch {
-            val result = repository.getUsersById(chatRoomDetail.participants)
+            val result = repository.getUserById(chatRoomDetail.participants)
             val userList = MutableLiveData<List<User>>()
             userList.value = when (result) {
                 is Result.Success -> {

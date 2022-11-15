@@ -8,6 +8,7 @@ buildscript {
         version_moshi = '1.13.0'
         version_navigation = '2.5.2'
         version_lottie = "5.2.0"
+        version_glide = "4.13.2"
     }
 
     repositories {

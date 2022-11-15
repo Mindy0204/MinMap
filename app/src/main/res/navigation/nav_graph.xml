@@ -59,4 +59,12 @@
     <action
         android:id="@+id/navigate_to_login_fragment"
         app:destination="@id/loginFragment" />
+    <dialog
+        android:id="@+id/sendEventToFriendFragment"
+        android:name="com.mindyhsu.minmap.map.SendInvitationFragment"
+        android:label="fragment_send_event_to_friend"
+        tools:layout="@layout/fragment_send_invitation" />
+    <action
+        android:id="@+id/navigate_to_send_event_to_friend_fragment"
+        app:destination="@id/sendEventToFriendFragment" />
 </navigation>

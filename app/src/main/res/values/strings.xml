@@ -21,6 +21,9 @@
     <string name="have_a_nice_day">Have a nice date!</string>
     <string name="done_button">Done</string>
 
+    <!-- send event to friend page-->
+    <string name="invite_friend">Invite Friends into Event!</string>
+
     <!-- chat room page-->
     <string name="chat_room">Chat Room</string>
     <string name="chat_room_search_bar">Search Friend or Dialog</string>

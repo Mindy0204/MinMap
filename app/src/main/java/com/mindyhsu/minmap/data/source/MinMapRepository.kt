@@ -25,17 +25,17 @@ interface MinMapRepository {
 
     suspend fun updateMyLocation(userId: String, myGeo: GeoPoint): Result<Boolean>
 
-    fun updateFriendsLocation(participantIds: List<String>): MutableLiveData<List<User>>
+    fun updateFriendLocation(participantIds: List<String>): MutableLiveData<List<User>>
+
+    suspend fun getFriend(userId: String): Result<List<String>>
 
     suspend fun sendEvent(event: Event): Result<Boolean>
 
     suspend fun finishEvent(userId: String): Result<Boolean>
 
-    suspend fun getChatRoom(userId: String): Result<List<ChatRoom>> //
-
     fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>>
 
-    suspend fun getUsersById(usersIds: List<String>): Result<List<User>>
+    suspend fun getUserById(usersIds: List<String>): Result<List<User>>
 
     fun getMessage(chatRoomId: String, userId: String): MutableLiveData<List<Message>>
 

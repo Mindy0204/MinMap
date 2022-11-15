@@ -28,6 +28,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_PARTICIPANTS = "participants"
     private const val FIELD_ID = "id"
     private const val FIELD_NAME = "name"
+    private const val FIELD_FRIENDS = "friends"
     private const val FIELD_MESSAGES = "messages"
     private const val FIELD_TIME = "time"
     private const val FIELD_SENDER_ID = "senderId"
@@ -162,7 +163,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
         }
 
-    override fun updateFriendsLocation(participantIds: List<String>): MutableLiveData<List<User>> {
+    override fun updateFriendLocation(participantIds: List<String>): MutableLiveData<List<User>> {
         val liveData = MutableLiveData<List<User>>()
         val userList = mutableListOf<User>()
         FirebaseFirestore.getInstance().collection(PATH_USERS).whereIn(FIELD_ID, participantIds)
@@ -184,6 +185,26 @@ object MinMapRemoteDataSource : MinMapDataSource {
             }
         return liveData
     }
+
+    override suspend fun getFriend(userId: String): Result<List<String>> =
+        suspendCoroutine { continuation ->
+            FirebaseFirestore.getInstance().collection(PATH_USERS).document(userId).get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Timber.d("getFriend => id=${task.result.id}, data=${task.result.data}")
+                        val friendList = task.result.data?.get(FIELD_FRIENDS) as List<String>
+                        val friends = friendList.filter { it != userId }
+                        continuation.resume(Result.Success(friends))
+                    } else {
+                        task.exception?.let {
+                            Timber.d("getFriend => Get documents error=${it.message}")
+                            continuation.resume(Result.Error(it))
+                            return@addOnCompleteListener
+                        }
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    }
+                }
+        }
 
     override suspend fun sendEvent(event: Event): Result<Boolean> =
         suspendCoroutine { continuation ->
@@ -229,30 +250,6 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
         }
 
-    override suspend fun getChatRoom(userId: String): Result<List<ChatRoom>> =
-        suspendCoroutine { continuation ->
-            FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS)
-                .whereArrayContains(FIELD_PARTICIPANTS, userId).get()
-                .addOnCompleteListener { task ->
-                    if (task.isSuccessful) {
-                        val chatRoomList = mutableListOf<ChatRoom>()
-                        for (document in task.result) {
-                            Timber.d("getChatRoom => chatRoom id=${document.id}, data=${document.data}")
-                            val chatRoom = document.toObject(ChatRoom::class.java)
-                            chatRoomList.add(chatRoom)
-                        }
-                        continuation.resume(Result.Success(chatRoomList))
-                    } else {
-                        task.exception?.let {
-                            Timber.d("getChatRoom => Get documents error=${it.message}")
-                            continuation.resume(Result.Error(it))
-                            return@addOnCompleteListener
-                        }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
-                    }
-                }
-        }
-
     override fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>> {
         val liveData = MutableLiveData<List<ChatRoom>>()
         val chatRoomList = mutableListOf<ChatRoom>()
@@ -277,7 +274,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
         return liveData
     }
 
-    override suspend fun getUsersById(usersIds: List<String>): Result<List<User>> =
+    override suspend fun getUserById(usersIds: List<String>): Result<List<User>> =
         suspendCoroutine { continuation ->
             // There's limit (10 queries) of Firebase whereIn filter so query all users now
 

@@ -145,7 +145,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
         val userNameList = mutableListOf<String>()
         coroutineScope.launch {
-            val result = participantsIds?.let { repository.getUsersById(it) }
+            val result = participantsIds?.let { repository.getUserById(it) }
             _userList.value = when (result) {
                 is Result.Success -> {
                     error.value = null
@@ -358,7 +358,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     fun updateFriendsLocation() {
         currentEventDetail.value?.participants?.let {
             val friendsList = it.filter { it != UserManager.id }
-            friends = repository.updateFriendsLocation(friendsList)
+            friends = repository.updateFriendLocation(friendsList)
             onFriendsLiveReady.value = true
         }
     }
@@ -398,7 +398,6 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     fun sendEvent() {
         // TODO: update firebase chatRooms & users
-        // TODO: Check whether need fields: time & status in Event()
         coroutineScope.launch {
             val event = Event(
                 status = 0, // not finish

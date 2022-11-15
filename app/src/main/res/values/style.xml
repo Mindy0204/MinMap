@@ -63,4 +63,9 @@
         <item name="backgroundTint">@color/light_tiffany_green</item>
         <item name="android:layout_margin">@dimen/margin_16dp</item>
     </style>
+
+    <style name="circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

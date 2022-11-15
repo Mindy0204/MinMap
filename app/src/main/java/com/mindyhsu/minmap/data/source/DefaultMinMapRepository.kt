@@ -37,8 +37,12 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
         return remoteDataSource.updateMyLocation(userId, myGeo)
     }
 
-    override fun updateFriendsLocation(participantIds: List<String>): MutableLiveData<List<User>> {
-        return remoteDataSource.updateFriendsLocation(participantIds)
+    override fun updateFriendLocation(participantIds: List<String>): MutableLiveData<List<User>> {
+        return remoteDataSource.updateFriendLocation(participantIds)
+    }
+
+    override suspend fun getFriend(userId: String): Result<List<String>> {
+        return remoteDataSource.getFriend(userId)
     }
 
     override suspend fun sendEvent(event: Event): Result<Boolean> {
@@ -49,16 +53,12 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
         return remoteDataSource.finishEvent(userId)
     }
 
-    override suspend fun getChatRoom(userId: String): Result<List<ChatRoom>> {
-        return remoteDataSource.getChatRoom(userId)
-    }
-
     override fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>> {
         return remoteDataSource.getLiveChatRoom(userId)
     }
 
-    override suspend fun getUsersById(usersIds: List<String>): Result<List<User>> {
-        return remoteDataSource.getUsersById(usersIds)
+    override suspend fun getUserById(usersIds: List<String>): Result<List<User>> {
+        return remoteDataSource.getUserById(usersIds)
     }
 
     override fun getMessage(
