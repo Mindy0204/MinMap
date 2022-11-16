@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".chat.AddFriendFragment">
+
+    <View
+        android:id="@+id/add_friend_dialog"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/add_friend_dialog_size"
+        android:background="@drawable/success_dialog_frame"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <SurfaceView
+        android:id="@+id/surfaceView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="@dimen/margin_16dp"
+        app:layout_constraintBottom_toTopOf="@+id/add_friend_text"
+        app:layout_constraintEnd_toEndOf="@+id/add_friend_dialog"
+        app:layout_constraintStart_toStartOf="@+id/add_friend_dialog"
+        app:layout_constraintTop_toTopOf="@+id/add_friend_dialog" />
+
+    <TextView
+        android:id="@+id/add_friend_text"
+        style="@style/general_text"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/button_height_size"
+        android:layout_marginBottom="@dimen/margin_16dp"
+        android:gravity="center"
+        app:layout_constraintBottom_toTopOf="@+id/add_friend_button"
+        app:layout_constraintEnd_toEndOf="@+id/add_friend_dialog"
+        app:layout_constraintStart_toStartOf="@+id/add_friend_dialog" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/add_friend_button"
+        style="@style/green_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/add_friend"
+        app:layout_constraintBottom_toBottomOf="@+id/add_friend_dialog"
+        app:layout_constraintEnd_toEndOf="@+id/add_friend_dialog"
+        app:layout_constraintStart_toStartOf="@+id/add_friend_dialog" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

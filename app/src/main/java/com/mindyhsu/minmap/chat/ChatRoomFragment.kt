@@ -36,7 +36,9 @@ class ChatRoomFragment : Fragment() {
             }
         }
 
-        binding.charRoomAddFriend.setOnClickListener { }
+        binding.charRoomAddFriend.setOnClickListener {
+            findNavController().navigate(AddFriendFragmentDirections.navigateToAddFriendFragment())
+        }
 
         viewModel.getLiveChatRoom.observe(viewLifecycleOwner) {
             viewModel.checkUsersExist(it)

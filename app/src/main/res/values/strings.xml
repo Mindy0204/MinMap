@@ -36,6 +36,10 @@
     <string name="im_at_chip">I\'m at %s</string>
     <string name="ill_be_there_chip">I\'ll be there in 5 minutes</string>
 
+    <!-- add friend page-->
+    <string name="add_friend">Add Friend</string>
+    <string name="camera_permission">We need your camera permission to scan QR code</string>
+
     <string name="internet_not_connected">Internet is not connected</string>
     <string name="you_know_nothing">You know nothing</string>
 </resources>

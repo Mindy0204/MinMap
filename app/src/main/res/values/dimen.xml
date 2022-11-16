@@ -17,6 +17,7 @@
 
     <!-- view size -->
     <dimen name="success_dialog_size">280dp</dimen>
+    <dimen name="add_friend_dialog_size">500dp</dimen>
 
     <dimen name="login_lottie_size">220dp</dimen>
     <dimen name="navigation_success_lottie_size">100dp</dimen>
