@@ -17,6 +17,6 @@
         <item name="bottomSheetStyle">@style/AppBottomSheetStyle</item>
     </style>
     <style name="AppBottomSheetStyle" parent="Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:background">@drawable/bottom_sheet_dialog_frame</item>
     </style>
 </resources>

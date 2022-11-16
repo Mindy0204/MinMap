@@ -120,8 +120,12 @@ class MapFragment : Fragment(),
         }
 
         binding.sendInvitationButton.setOnClickListener {
-//            viewModel.sendEvent()
-            findNavController().navigate(SendInvitationFragmentDirections.navigateToSendEventToFriendFragment())
+            findNavController().navigate(
+                SendInvitationFragmentDirections.navigateToSendEventToFriendFragment(
+                    viewModel.planningLocation,
+                    viewModel.planningLocationName
+                )
+            )
         }
 
         viewModel.isOnInvitation.observe(viewLifecycleOwner) {

@@ -75,8 +75,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     val isOnInvitation: LiveData<Boolean>
         get() = _isOnInvitation
 
-    private var planningLocation = LatLng(0.0, 0.0)
-    private var planningLocationName = ""
+    var planningLocation = LatLng(0.0, 0.0)
+    var planningLocationName = ""
 
     private val locationManager = MinMapApplication.instance
         .getSystemService(Context.LOCATION_SERVICE) as LocationManager

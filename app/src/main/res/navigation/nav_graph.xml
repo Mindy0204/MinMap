@@ -63,7 +63,14 @@
         android:id="@+id/sendEventToFriendFragment"
         android:name="com.mindyhsu.minmap.map.SendInvitationFragment"
         android:label="fragment_send_event_to_friend"
-        tools:layout="@layout/fragment_send_invitation" />
+        tools:layout="@layout/fragment_send_invitation" >
+        <argument
+            android:name="eventLocation"
+            app:argType="com.google.android.gms.maps.model.LatLng" />
+        <argument
+            android:name="eventLocationName"
+            app:argType="string" />
+    </dialog>
     <action
         android:id="@+id/navigate_to_send_event_to_friend_fragment"
         app:destination="@id/sendEventToFriendFragment" />

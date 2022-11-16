@@ -25,9 +25,6 @@ class ViewModelFactory constructor(
                 isAssignableFrom(NavigationSuccessViewModel::class.java) ->
                     NavigationSuccessViewModel(repository)
 
-                isAssignableFrom(SendInvitationViewModel::class.java) ->
-                    SendInvitationViewModel(repository)
-
                 isAssignableFrom(ChatRoomViewModel::class.java) ->
                     ChatRoomViewModel(repository)
 

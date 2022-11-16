@@ -7,12 +7,18 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.mindyhsu.minmap.R
+import com.mindyhsu.minmap.chat.DialogFragmentArgs
 import com.mindyhsu.minmap.databinding.FragmentSendInvitationBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 
 class SendInvitationFragment : BottomSheetDialogFragment() {
     private lateinit var binding: FragmentSendInvitationBinding
-    private val viewModel by viewModels<SendInvitationViewModel> { getVmFactory() }
+    private val viewModel by viewModels<SendInvitationViewModel> {
+        getVmFactory(
+            SendInvitationFragmentArgs.fromBundle(requireArguments()).eventLocation,
+            SendInvitationFragmentArgs.fromBundle(requireArguments()).eventLocationName
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,11 +30,15 @@ class SendInvitationFragment : BottomSheetDialogFragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentSendInvitationBinding.inflate(inflater, container, false)
-        val adapter = SendInvitationAdapter()
+        val adapter = SendInvitationAdapter(viewModel.sendInvitationUiState)
         binding.sendInvitationRecyclerView.adapter = adapter
 
         viewModel.userList.observe(viewLifecycleOwner) {
             adapter.submitList(it)
+        }
+
+        binding.sendInvitationButton.setOnClickListener {
+            viewModel.sendEvent()
         }
 
         return binding.root
