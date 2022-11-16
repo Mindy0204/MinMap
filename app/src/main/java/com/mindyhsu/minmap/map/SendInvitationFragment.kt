@@ -5,9 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import com.mindyhsu.minmap.R
+import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.chat.DialogFragmentArgs
+import com.mindyhsu.minmap.chat.DialogFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentSendInvitationBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 
@@ -39,6 +42,10 @@ class SendInvitationFragment : BottomSheetDialogFragment() {
 
         binding.sendInvitationButton.setOnClickListener {
             viewModel.sendEvent()
+        }
+
+        viewModel.completeInvitation.observe(viewLifecycleOwner) {
+            findNavController().navigateUp()
         }
 
         return binding.root

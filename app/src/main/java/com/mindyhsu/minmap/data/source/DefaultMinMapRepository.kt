@@ -45,8 +45,19 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
         return remoteDataSource.getFriend(userId)
     }
 
-    override suspend fun sendEvent(event: Event): Result<Boolean> {
+    override suspend fun sendEvent(event: Event): Result<String> {
         return remoteDataSource.sendEvent(event)
+    }
+
+    override suspend fun updateUserCurrentEvent(
+        userId: List<String>,
+        currentEventId: String
+    ): Result<Boolean> {
+        return remoteDataSource.updateUserCurrentEvent(userId, currentEventId)
+    }
+
+    override suspend fun updateChatRoomCurrentEvent(participants: List<String>, currentEventId: String): Result<String> {
+        return remoteDataSource.updateChatRoomCurrentEvent(participants, currentEventId)
     }
 
     override suspend fun finishEvent(userId: String): Result<Boolean> {

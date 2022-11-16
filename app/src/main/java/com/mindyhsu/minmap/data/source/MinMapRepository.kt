@@ -29,7 +29,11 @@ interface MinMapRepository {
 
     suspend fun getFriend(userId: String): Result<List<String>>
 
-    suspend fun sendEvent(event: Event): Result<Boolean>
+    suspend fun sendEvent(event: Event): Result<String>
+
+    suspend fun updateUserCurrentEvent(userId: List<String>, currentEventId: String): Result<Boolean>
+
+    suspend fun updateChatRoomCurrentEvent(participants: List<String>, currentEventId: String): Result<String>
 
     suspend fun finishEvent(userId: String): Result<Boolean>
 

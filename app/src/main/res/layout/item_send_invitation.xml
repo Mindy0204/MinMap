@@ -38,6 +38,7 @@
         style="@style/general_small_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:maxLines="1"
         android:gravity="center"
         app:layout_constraintEnd_toEndOf="@+id/send_invitation_friend_image"
         app:layout_constraintStart_toStartOf="@+id/send_invitation_friend_image"
