@@ -16,34 +16,34 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
-        android:id="@+id/chat_room_bell"
+        android:id="@+id/char_room_add_friend"
         android:layout_width="@dimen/chat_room_icon_size"
         android:layout_height="@dimen/chat_room_icon_size"
         android:layout_marginEnd="@dimen/margin_16dp"
-        android:src="@mipmap/icon_bell"
+        android:src="@mipmap/icon_add"
         app:layout_constraintBottom_toBottomOf="@+id/chat_room_title_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@+id/chat_room_title_text" />
 
     <ImageView
-        android:id="@+id/char_room_add_friend"
+        android:id="@+id/chat_room_search_icon"
         android:layout_width="@dimen/chat_room_icon_size"
         android:layout_height="@dimen/chat_room_icon_size"
-        android:layout_marginEnd="@dimen/margin_8dp"
-        android:src="@mipmap/icon_add"
-        app:layout_constraintBottom_toBottomOf="@+id/chat_room_title_text"
-        app:layout_constraintEnd_toStartOf="@+id/chat_room_bell"
-        app:layout_constraintTop_toTopOf="@+id/chat_room_title_text" />
+        android:src="@mipmap/icon_search"
+        app:layout_constraintBottom_toBottomOf="@+id/chat_room_search_bar"
+        app:layout_constraintStart_toStartOf="@id/chat_room_title_text"
+        app:layout_constraintTop_toTopOf="@id/chat_room_search_bar" />
 
-    <SearchView
+    <EditText
         android:id="@+id/chat_room_search_bar"
+        style="@style/general_text"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/margin_8dp"
         android:layout_marginTop="@dimen/margin_16dp"
-        android:iconifiedByDefault="false"
-        android:queryHint="@string/chat_room_search_bar"
+        android:hint="@string/chat_room_search_bar"
         app:layout_constraintEnd_toEndOf="@+id/chat_room_title_text"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/chat_room_search_icon"
         app:layout_constraintTop_toBottomOf="@+id/chat_room_title_text" />
 
     <androidx.recyclerview.widget.RecyclerView

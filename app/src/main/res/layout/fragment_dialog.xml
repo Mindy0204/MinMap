@@ -89,6 +89,7 @@
         android:layout_width="@dimen/dialog_icon_size"
         android:layout_height="@dimen/dialog_icon_size"
         android:src="@mipmap/icon_send_message"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/edit_view"
         app:layout_constraintEnd_toEndOf="@+id/edit_view"
         app:layout_constraintTop_toTopOf="@+id/edit_view" />

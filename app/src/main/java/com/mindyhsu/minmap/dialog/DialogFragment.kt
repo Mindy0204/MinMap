@@ -8,6 +8,8 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.widget.doAfterTextChanged
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -70,6 +72,14 @@ class DialogFragment : Fragment() {
         }
         binding.imHereChip.setOnClickListener {
             viewModel.sendMessage(getString(R.string.im_here_chip))
+        }
+
+        binding.myMessageEditText.doOnTextChanged { text, start, before, count ->
+            if (text.toString() == "") {
+                binding.sendMessage.visibility = View.GONE
+            } else {
+                binding.sendMessage.visibility = View.VISIBLE
+            }
         }
 
         return binding.root
