@@ -82,4 +82,8 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
     override suspend fun sendMessage(chatRoomId: String, message: Message): Result<Boolean> {
         return remoteDataSource.sendMessage(chatRoomId, message)
     }
+
+    override suspend fun setFriend(userId: String, friendId: String): Result<Boolean> {
+        return remoteDataSource.setFriend(userId, friendId)
+    }
 }

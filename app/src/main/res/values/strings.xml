@@ -39,6 +39,10 @@
     <!-- add friend page-->
     <string name="add_friend">Add Friend</string>
     <string name="camera_permission">We need your camera permission to scan QR code</string>
+    <string name="show_qrcode">Show My QR Code</string>
+    <string name="show_qrcode_scanner">Show QR Code Scanner</string>
+    <string name="no_this_user">Your friend haven\'t joined Min Map yet</string>
+    <string name="no_qrcode_result">You didn\'t find any friend</string>
 
     <string name="internet_not_connected">Internet is not connected</string>
     <string name="you_know_nothing">You know nothing</string>

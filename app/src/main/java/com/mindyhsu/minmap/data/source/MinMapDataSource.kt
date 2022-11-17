@@ -44,4 +44,6 @@ interface MinMapDataSource {
     fun getMessage(chatRoomId: String, userId: String): MutableLiveData<List<Message>>
 
     suspend fun sendMessage(chatRoomId: String, message: Message): Result<Boolean>
+
+    suspend fun setFriend(userId: String, friendId: String): Result<Boolean>
 }

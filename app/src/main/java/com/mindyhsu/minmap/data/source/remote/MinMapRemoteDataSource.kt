@@ -2,6 +2,7 @@ package com.mindyhsu.minmap.data.source.remote
 
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.MinMapApplication
@@ -415,7 +416,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 )
             ).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Timber.d("sendMessages => chatRoom=${task.result}}")
+                    Timber.d("sendMessages")
                     isChatRoomInfoUpdate = true
                 } else {
                     task.exception?.let {
@@ -434,13 +435,51 @@ object MinMapRemoteDataSource : MinMapDataSource {
             message.id = document.id
             document.set(message).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Timber.d("sendMessages => message=${task.result}")
+                    Timber.d("sendMessages")
                     if (isChatRoomInfoUpdate) {
                         continuation.resume(Result.Success(true))
                     }
                 } else {
                     task.exception?.let {
                         Timber.d("sendMessages => Set documents error=${it.message}")
+                        continuation.resume(Result.Error(it))
+                        return@addOnCompleteListener
+                    }
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                }
+            }
+        }
+
+    override suspend fun setFriend(userId: String, friendId: String): Result<Boolean> =
+        suspendCoroutine { continuation ->
+            var isUserFriendUpdate = false
+            FirebaseFirestore.getInstance().collection(PATH_USERS).document(userId).update(
+                mapOf(FIELD_FRIENDS to FieldValue.arrayUnion(friendId))
+            ).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Timber.d("setFriend => Set my friend")
+                    isUserFriendUpdate = true
+                } else {
+                    task.exception?.let {
+                        Timber.d("setFriend => Set documents error=${it.message}")
+                        continuation.resume(Result.Error(it))
+                        return@addOnCompleteListener
+                    }
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                }
+            }
+
+            FirebaseFirestore.getInstance().collection(PATH_USERS).document(friendId).update(
+                mapOf(FIELD_FRIENDS to FieldValue.arrayUnion(userId))
+            ).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Timber.d("setFriend")
+                    if (isUserFriendUpdate) {
+                        continuation.resume(Result.Success(true))
+                    }
+                } else {
+                    task.exception?.let {
+                        Timber.d("setFriend => Set documents error=${it.message}")
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }

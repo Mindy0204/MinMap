@@ -2,6 +2,7 @@ package com.mindyhsu.minmap.factory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.mindyhsu.minmap.chat.AddFriendViewModel
 import com.mindyhsu.minmap.chat.ChatRoomViewModel
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.LoginViewModel
@@ -27,6 +28,9 @@ class ViewModelFactory constructor(
 
                 isAssignableFrom(ChatRoomViewModel::class.java) ->
                     ChatRoomViewModel(repository)
+
+                isAssignableFrom(AddFriendViewModel::class.java) ->
+                    AddFriendViewModel(repository)
 
                 else ->
                     throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")

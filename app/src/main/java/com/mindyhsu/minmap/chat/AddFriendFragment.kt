@@ -1,8 +1,6 @@
 package com.mindyhsu.minmap.chat
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.graphics.Camera
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -12,20 +10,32 @@ import android.view.SurfaceHolder
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.core.content.ContextCompat
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.google.android.gms.vision.CameraSource
 import com.google.android.gms.vision.Detector
 import com.google.android.gms.vision.barcode.Barcode
 import com.google.android.gms.vision.barcode.BarcodeDetector
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.common.BitMatrix
+import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
+import com.mindyhsu.minmap.bindImage
 import com.mindyhsu.minmap.databinding.FragmentAddFriendBinding
-import timber.log.Timber
+import com.mindyhsu.minmap.ext.getVmFactory
+import com.mindyhsu.minmap.login.UserManager
+import kotlinx.coroutines.Runnable
 
 
-class AddFriendFragment : DialogFragment() {
+class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsResultCallback {
     private lateinit var binding: FragmentAddFriendBinding
+    private val viewModel by viewModels<AddFriendViewModel> { getVmFactory() }
+
+    private var qrDisplay = -1
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,55 +45,31 @@ class AddFriendFragment : DialogFragment() {
 
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
-        cameraCheckPermission()
         buildCodeScanner()
 
-        return binding.root
-    }
-
-    private fun cameraCheckPermission() {
-        context?.let { context ->
-            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED
-            ) {
-                return
-            } else {
-                requestPermissions(
-                    arrayOf(
-                        Manifest.permission.CAMERA
-                    ), CAMERA_PERMISSION_REQUEST_CODE
-                )
-            }
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        when (requestCode) {
-            CAMERA_PERMISSION_REQUEST_CODE -> {
-
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.isNotEmpty() &&
-                    grantResults[0] == PackageManager.PERMISSION_GRANTED
-                ) {
-                    buildCodeScanner()
-                } else {
-                    Toast.makeText(
-                        context,
-                        getString(R.string.camera_permission),
-                        Toast.LENGTH_SHORT
-                    ).show()
+        binding.addFriendText.setOnClickListener {
+            when (qrDisplay) {
+                -1 -> {
+                    showMyQrCode()
+                    qrDisplay = 0
+                }
+                0 -> {
+                    showQrCodeScanner()
+                    qrDisplay = -1
                 }
             }
-            else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
-    }
 
-    companion object {
-        const val CAMERA_PERMISSION_REQUEST_CODE = 1
+        binding.addFriendButton.setOnClickListener {
+            if (viewModel.friend.value != null) {
+                viewModel.setFriend()
+                findNavController().navigateUp()
+            } else {
+                Toast.makeText(context, R.string.no_qrcode_result, Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        return binding.root
     }
 
     private fun buildCodeScanner() {
@@ -98,40 +84,71 @@ class AddFriendFragment : DialogFragment() {
                 holder: SurfaceHolder, format: Int,
                 width: Int, height: Int
             ) {
-                Timber.d("surfaceChanged")
-
+                cameraSource.start(holder)
             }
 
-            override fun surfaceCreated(holder: SurfaceHolder) {
-                Timber.d("surfaceCreated")
-
-                if (ContextCompat.checkSelfPermission(MinMapApplication.instance, Manifest.permission.CAMERA)
-                    == PackageManager.PERMISSION_GRANTED
-                ) {
-                    cameraSource.start(holder)
-
-                }
-            }
+            override fun surfaceCreated(holder: SurfaceHolder) {}
 
             override fun surfaceDestroyed(holder: SurfaceHolder) {
                 // Close camera
                 cameraSource.stop()
-                Timber.d("surfaceDestroyed")
-
             }
         })
 
         barcodeDetector.setProcessor(object : Detector.Processor<Barcode> {
-            override fun release() {  }
+            override fun release() {}
 
             override fun receiveDetections(detections: Detector.Detections<Barcode>) {
                 val qrCode: SparseArray<Barcode> = detections.detectedItems
                 if (qrCode.size() != 0) {
-                    binding.addFriendText.post {
-                        binding.addFriendText.text = qrCode.valueAt(0).displayValue
-                    }
+                    binding.addFriendText.post(Runnable {
+                        viewModel.getUserById(qrCode.valueAt(0).displayValue)
+                        cameraSource.stop()
+                        showScanResult()
+                    })
                 }
             }
         })
+    }
+
+    private fun qrCodeGenerate() {
+        val multiFormatWriter = MultiFormatWriter()
+        val barcodeEncoder = BarcodeEncoder()
+        val bitMatrix: BitMatrix =
+            multiFormatWriter.encode(UserManager.id, BarcodeFormat.QR_CODE, 500, 500)
+        val bitmap: Bitmap = barcodeEncoder.createBitmap(bitMatrix)
+        binding.addFriendQrcode.setImageBitmap(bitmap)
+    }
+
+    private fun showMyQrCode() {
+        qrCodeGenerate()
+        binding.surfaceView.visibility = View.GONE
+        binding.addFriendQrcode.visibility = View.VISIBLE
+        binding.addFriendText.text = getString(R.string.show_qrcode_scanner)
+    }
+
+    private fun showQrCodeScanner() {
+        buildCodeScanner()
+        binding.surfaceView.visibility = View.VISIBLE
+        binding.addFriendQrcode.visibility = View.GONE
+        binding.addFriendText.text = getString(R.string.show_qrcode)
+    }
+
+    private fun showScanResult() {
+        viewModel.friend.observe(viewLifecycleOwner) {
+            if (it != null) {
+                binding.addFriendText.text = it.name
+                binding.addFriendImage.visibility = View.VISIBLE
+                bindImage(binding.addFriendImage, it.image)
+                binding.surfaceView.visibility = View.GONE
+                binding.addFriendQrcode.visibility = View.GONE
+            } else {
+                Toast.makeText(
+                    context,
+                    getString(R.string.no_this_user),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
     }
 }

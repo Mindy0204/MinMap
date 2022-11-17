@@ -21,7 +21,9 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_margin="@dimen/margin_16dp"
+        android:clickable="false"
         app:layout_constraintBottom_toTopOf="@+id/add_friend_text"
+        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="@+id/add_friend_dialog"
         app:layout_constraintStart_toStartOf="@+id/add_friend_dialog"
         app:layout_constraintTop_toTopOf="@+id/add_friend_dialog" />
@@ -29,13 +31,28 @@
     <TextView
         android:id="@+id/add_friend_text"
         style="@style/general_text"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="@dimen/button_height_size"
         android:layout_marginBottom="@dimen/margin_16dp"
         android:gravity="center"
+        android:text="@string/show_qrcode"
         app:layout_constraintBottom_toTopOf="@+id/add_friend_button"
         app:layout_constraintEnd_toEndOf="@+id/add_friend_dialog"
-        app:layout_constraintStart_toStartOf="@+id/add_friend_dialog" />
+        app:layout_constraintStart_toEndOf="@+id/add_friend_image" />
+
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/add_friend_image"
+        android:layout_width="@dimen/chat_room_friend_pic_size"
+        android:layout_height="@dimen/chat_room_friend_pic_size"
+        android:layout_marginEnd="@dimen/margin_16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/add_friend_text"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@+id/add_friend_text"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="@+id/add_friend_dialog"
+        app:layout_constraintTop_toTopOf="@+id/add_friend_text"
+        app:shapeAppearanceOverlay="@style/circle" />
 
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/add_friend_button"
@@ -47,4 +64,15 @@
         app:layout_constraintEnd_toEndOf="@+id/add_friend_dialog"
         app:layout_constraintStart_toStartOf="@+id/add_friend_dialog" />
 
+    <ImageView
+        android:id="@+id/add_friend_qrcode"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_margin="@dimen/margin_16dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@+id/add_friend_text"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="@+id/add_friend_dialog"
+        app:layout_constraintStart_toStartOf="@+id/add_friend_dialog"
+        app:layout_constraintTop_toTopOf="@+id/add_friend_dialog" />
 </androidx.constraintlayout.widget.ConstraintLayout>
