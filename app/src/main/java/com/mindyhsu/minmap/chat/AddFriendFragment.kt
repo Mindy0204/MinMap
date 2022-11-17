@@ -69,6 +69,13 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
             }
         }
 
+        viewModel.hasThisFriend.observe(viewLifecycleOwner) {
+            if (it) {
+                findNavController().navigateUp()
+                Toast.makeText(context, R.string.add_friend_exist, Toast.LENGTH_SHORT).show()
+            }
+        }
+
         return binding.root
     }
 

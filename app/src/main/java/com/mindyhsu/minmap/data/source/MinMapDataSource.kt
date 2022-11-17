@@ -45,5 +45,5 @@ interface MinMapDataSource {
 
     suspend fun sendMessage(chatRoomId: String, message: Message): Result<Boolean>
 
-    suspend fun setFriend(userId: String, friendId: String): Result<Boolean>
+    suspend fun setFriend(userId: String, friendId: String): Result<String>
 }

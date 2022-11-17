@@ -43,6 +43,8 @@
     <string name="show_qrcode_scanner">Show QR Code Scanner</string>
     <string name="no_this_user">Your friend haven\'t joined Min Map yet</string>
     <string name="no_qrcode_result">You didn\'t find any friend</string>
+    <string name="add_friend_success_message">Hi, My friend! Let\'s chat!</string>
+    <string name="add_friend_exist">You already have this friend!</string>
 
     <string name="internet_not_connected">Internet is not connected</string>
     <string name="you_know_nothing">You know nothing</string>

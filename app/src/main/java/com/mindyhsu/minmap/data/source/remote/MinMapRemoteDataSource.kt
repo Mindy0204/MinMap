@@ -450,9 +450,11 @@ object MinMapRemoteDataSource : MinMapDataSource {
             }
         }
 
-    override suspend fun setFriend(userId: String, friendId: String): Result<Boolean> =
+    override suspend fun setFriend(userId: String, friendId: String): Result<String> =
         suspendCoroutine { continuation ->
             var isUserFriendUpdate = false
+
+            // Update my friend list
             FirebaseFirestore.getInstance().collection(PATH_USERS).document(userId).update(
                 mapOf(FIELD_FRIENDS to FieldValue.arrayUnion(friendId))
             ).addOnCompleteListener { task ->
@@ -469,17 +471,38 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
             }
 
+            // Update friend's friend list
             FirebaseFirestore.getInstance().collection(PATH_USERS).document(friendId).update(
                 mapOf(FIELD_FRIENDS to FieldValue.arrayUnion(userId))
             ).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Timber.d("setFriend")
-                    if (isUserFriendUpdate) {
-                        continuation.resume(Result.Success(true))
-                    }
+                    isUserFriendUpdate = true
                 } else {
                     task.exception?.let {
                         Timber.d("setFriend => Set documents error=${it.message}")
+                        isUserFriendUpdate = false
+                        continuation.resume(Result.Error(it))
+                        return@addOnCompleteListener
+                    }
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                }
+            }
+
+            // Create a chat room
+            val document = FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS).document()
+            val chatRoom = ChatRoom(id = document.id, participants = listOf(userId, friendId))
+
+            document.set(chatRoom).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Timber.d("setFriend create chat room => chatRoom=${task.result}")
+                    if (isUserFriendUpdate) {
+                        Timber.i("setFriend create chat room => chatRoom id=${document.id}")
+                        continuation.resume(Result.Success(document.id))
+                    }
+                } else {
+                    task.exception?.let {
+                        Timber.d("setFriend create chat room => Set documents error=${it.message}")
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
