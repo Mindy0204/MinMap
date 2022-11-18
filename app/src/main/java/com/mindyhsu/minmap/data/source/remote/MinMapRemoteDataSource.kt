@@ -1,5 +1,6 @@
 package com.mindyhsu.minmap.data.source.remote
 
+import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
@@ -32,9 +33,10 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_FRIENDS = "friends"
     private const val FIELD_MESSAGES = "messages"
     private const val FIELD_TIME = "time"
-    private const val FIELD_SENDER_ID = "senderId"
     private const val FIELD_LAST_MESSAGES = "lastMessage"
     private const val FIELD_LAST_UPDATE = "lastUpdate"
+
+    private val lastMessageNum = mutableMapOf<String, Int>()
 
     override suspend fun getDirection(
         startLocation: String,
@@ -389,6 +391,25 @@ object MinMapRemoteDataSource : MinMapDataSource {
             .collection(FIELD_MESSAGES).orderBy(FIELD_TIME)
             .addSnapshotListener { documents, exception ->
                 Timber.i("getMessage addSnapshotListener detect")
+
+                // If there's new message since last read
+                if (lastMessageNum[chatRoomId] == null) {
+                    lastMessageNum[chatRoomId] = documents?.size()!!
+                } else {
+                    if (documents?.size()!! > lastMessageNum[chatRoomId]!!) {
+                        lastMessageNum[chatRoomId] = documents.size()
+
+                        if (documents.last().data["senderId"] != userId) {
+                            // Send broadcast
+                            Intent().also { intent ->
+                                intent.action = "com.mindyhsu.minmap.DETECT_MESSAGE"
+                                MinMapApplication.instance.sendBroadcast(
+                                    intent.putExtra("message", "unread message")
+                                )
+                            }
+                        }
+                    }
+                }
 
                 documents?.let {
                     messageList.clear()

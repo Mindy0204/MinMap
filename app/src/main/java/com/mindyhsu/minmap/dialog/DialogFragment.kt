@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.Timestamp
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
@@ -46,7 +47,9 @@ class DialogFragment : Fragment() {
 
         viewModel.messages?.observe(viewLifecycleOwner) {
             adapter.submitList(it)
-            binding.dialogRecyclerview.scrollToPosition(adapter.itemCount - 1)
+            binding.dialogRecyclerview.postDelayed({
+                binding.dialogRecyclerview.smoothScrollToPosition(adapter.itemCount - 1)
+            }, 100)
         }
 
         binding.sendMessage.setOnClickListener {
@@ -59,7 +62,11 @@ class DialogFragment : Fragment() {
             viewModel.getMidPoint()
             viewModel.midPoint.observe(viewLifecycleOwner) {
                 findNavController().navigate(MapFragmentDirections.navigateToMapFragment(it))
-                Toast.makeText(context, "midPoint=(${it.latitude},${it.longitude})", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "midPoint=(${it.latitude},${it.longitude})",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -75,7 +82,7 @@ class DialogFragment : Fragment() {
         }
 
         binding.myMessageEditText.doOnTextChanged { text, start, before, count ->
-            if (text.toString() == "") {
+            if (text?.trim().toString() == "") {
                 binding.sendMessage.visibility = View.GONE
             } else {
                 binding.sendMessage.visibility = View.VISIBLE
