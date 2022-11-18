@@ -292,7 +292,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         )
     }
 
-    private fun updateMyLocation(myGeo: GeoPoint) {
+    fun updateMyLocation(myGeo: GeoPoint) {
         coroutineScope.launch {
             UserManager.id?.let { repository.updateMyLocation(it, myGeo) }
         }

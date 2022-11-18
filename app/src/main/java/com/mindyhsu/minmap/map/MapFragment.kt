@@ -28,6 +28,7 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.BuildConfig
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
@@ -217,7 +218,10 @@ class MapFragment : Fragment(),
         }
 
         val latLng = location?.let { LatLng(it.latitude, it.longitude) }
-        val cameraUpdate = latLng?.let { CameraUpdateFactory.newLatLngZoom(it, 15F) }
+        val cameraUpdate = latLng?.let {
+            viewModel.updateMyLocation(GeoPoint(it.latitude, it.longitude))
+            CameraUpdateFactory.newLatLngZoom(it, 15F)
+        }
         if (cameraUpdate != null) {
             map.animateCamera(cameraUpdate)
         }
