@@ -47,7 +47,8 @@
     <string name="add_friend_exist">You already have this friend!</string>
 
     <!-- notification -->
-    <string name="channel_description">You have a message</string>
+    <string name="message_channel_description">You have new message</string>
+    <string name="chat_room_channel_description">You have %s new chat room%s</string>
 
     <string name="internet_not_connected">Internet is not connected</string>
     <string name="you_know_nothing">You know nothing</string>

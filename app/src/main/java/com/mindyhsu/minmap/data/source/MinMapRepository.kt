@@ -37,6 +37,8 @@ interface MinMapRepository {
 
     suspend fun finishEvent(userId: String): Result<Boolean>
 
+    suspend fun getChatRoom(userId: String): Result<List<ChatRoom>>
+
     fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>>
 
     suspend fun getUserById(usersIds: List<String>): Result<List<User>>

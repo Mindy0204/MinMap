@@ -58,8 +58,10 @@ class MapFragment : Fragment(),
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync { googleMap ->
             map = googleMap
+            map.clear()
             map.uiSettings.setAllGesturesEnabled(true)
             showFunctionButton = -1
+            binding.sendInvitationButton.visibility = View.GONE
 
             enableMyLocation()
             getDeviceLocation()

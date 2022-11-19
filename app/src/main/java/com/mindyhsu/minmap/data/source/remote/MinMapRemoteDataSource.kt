@@ -2,16 +2,18 @@ package com.mindyhsu.minmap.data.source.remote
 
 import android.content.Intent
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
-import com.mindyhsu.minmap.chat.DialogItem
 import com.mindyhsu.minmap.data.*
 import com.mindyhsu.minmap.data.MapDirection
 import com.mindyhsu.minmap.data.source.MinMapDataSource
+import com.mindyhsu.minmap.main.KEY_CHAT_ROOM
+import com.mindyhsu.minmap.main.KEY_MESSAGE
+import com.mindyhsu.minmap.main.MESSAGE_INTENT_FILTER
+import com.mindyhsu.minmap.main.UNREAD_MESSAGE
 import com.mindyhsu.minmap.network.MinMapApi
 import com.mindyhsu.minmap.util.Util.getString
 import com.mindyhsu.minmap.util.Util.isInternetConnected
@@ -33,6 +35,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_FRIENDS = "friends"
     private const val FIELD_MESSAGES = "messages"
     private const val FIELD_TIME = "time"
+    private const val FIELD_SENDER_ID = "senderId"
     private const val FIELD_LAST_MESSAGES = "lastMessage"
     private const val FIELD_LAST_UPDATE = "lastUpdate"
 
@@ -317,6 +320,30 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
         }
 
+    override suspend fun getChatRoom(userId: String): Result<List<ChatRoom>> =
+        suspendCoroutine { continuation ->
+            FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS)
+                .whereArrayContains(FIELD_PARTICIPANTS, userId).get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        val chatRoomList = mutableListOf<ChatRoom>()
+                        for (document in task.result) {
+                            Timber.d("getChatRoom => chatRoom id=${document.id}, data=${document.data}")
+                            val chatRoom = document.toObject(ChatRoom::class.java)
+                            chatRoomList.add(chatRoom)
+                        }
+                        continuation.resume(Result.Success(chatRoomList))
+                    } else {
+                        task.exception?.let {
+                            Timber.d("getChatRoom => Get documents error=${it.message}")
+                            continuation.resume(Result.Error(it))
+                            return@addOnCompleteListener
+                        }
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    }
+                }
+        }
+
     override fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>> {
         val liveData = MutableLiveData<List<ChatRoom>>()
         val chatRoomList = mutableListOf<ChatRoom>()
@@ -399,12 +426,12 @@ object MinMapRemoteDataSource : MinMapDataSource {
                     if (documents?.size()!! > lastMessageNum[chatRoomId]!!) {
                         lastMessageNum[chatRoomId] = documents.size()
 
-                        if (documents.last().data["senderId"] != userId) {
+                        if (documents.last().data[FIELD_SENDER_ID] != userId) {
                             // Send broadcast
                             Intent().also { intent ->
-                                intent.action = "com.mindyhsu.minmap.DETECT_MESSAGE"
+                                intent.action = MESSAGE_INTENT_FILTER
                                 MinMapApplication.instance.sendBroadcast(
-                                    intent.putExtra("message", "unread message")
+                                    intent.putExtra(KEY_MESSAGE, UNREAD_MESSAGE)
                                 )
                             }
                         }

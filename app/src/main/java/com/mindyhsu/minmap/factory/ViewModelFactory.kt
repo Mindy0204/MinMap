@@ -6,6 +6,7 @@ import com.mindyhsu.minmap.chat.AddFriendViewModel
 import com.mindyhsu.minmap.chat.ChatRoomViewModel
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.LoginViewModel
+import com.mindyhsu.minmap.main.MainViewModel
 import com.mindyhsu.minmap.map.MapViewModel
 import com.mindyhsu.minmap.map.NavigationSuccessViewModel
 import com.mindyhsu.minmap.map.SendInvitationViewModel
@@ -17,6 +18,9 @@ class ViewModelFactory constructor(
     override fun <T : ViewModel> create(modelClass: Class<T>) =
         with(modelClass) {
             when {
+                isAssignableFrom(MainViewModel::class.java) ->
+                    MainViewModel(repository)
+
                 isAssignableFrom(LoginViewModel::class.java) ->
                     LoginViewModel(repository)
 
