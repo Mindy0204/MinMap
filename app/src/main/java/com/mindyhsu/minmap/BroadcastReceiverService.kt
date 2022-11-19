@@ -10,13 +10,13 @@ import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.mindyhsu.minmap.main.KEY_CHAT_ROOM
 import com.mindyhsu.minmap.main.KEY_MESSAGE
-import com.mindyhsu.minmap.main.UNREAD_MESSAGE
 
 private const val CHAT_ROOM_CHANNEL = "chat room channel"
 private const val MESSAGE_CHANNEL = "message channel"
 
 class BroadcastReceiverService : Service() {
-    private var num = 0
+    private var chatRoomNum = 0
+    private var messageNum = 0
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -24,12 +24,12 @@ class BroadcastReceiverService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.extras?.let {
-            chatRoomNotification(it.getString(KEY_CHAT_ROOM))
+            if (it.getString(KEY_CHAT_ROOM) != null) {
+                chatRoomNotification(it.getString(KEY_CHAT_ROOM))
+            }
 
-            when (it.getString(KEY_MESSAGE, "")) {
-                UNREAD_MESSAGE -> {
-                    messageNotification()
-                }
+            if (it.getString(KEY_MESSAGE) != null) {
+                messageNotification(it.getString(KEY_MESSAGE))
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -62,16 +62,20 @@ class BroadcastReceiverService : Service() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
 
-            // set currentSecond as id
             // let old notification will not be cover by new notification
-            notificationManager.notify(-1, notification)
+            notificationManager.notify(chatRoomNum, notification)
+            chatRoomNum += 1
         }
     }
 
-    private fun messageNotification() {
+    private fun messageNotification(newMessageNum: String?) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.app_name)
-            val descriptionText = getString(R.string.message_channel_description)
+            val descriptionText = if (newMessageNum!!.toInt() > 1) {
+                getString(R.string.message_channel_description, newMessageNum, "s")
+            } else {
+                getString(R.string.message_channel_description, newMessageNum, "")
+            }
             val importance = NotificationManager.IMPORTANCE_DEFAULT
             val channel = NotificationChannel(MESSAGE_CHANNEL, name, importance).apply {
                 description = descriptionText
@@ -87,8 +91,8 @@ class BroadcastReceiverService : Service() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
 
-            notificationManager.notify(num, notification)
-            num += 1
+            notificationManager.notify(messageNum, notification)
+            messageNum += 1
         }
     }
 }

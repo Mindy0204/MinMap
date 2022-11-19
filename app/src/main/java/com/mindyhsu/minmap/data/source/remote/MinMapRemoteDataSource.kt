@@ -1,5 +1,6 @@
 package com.mindyhsu.minmap.data.source.remote
 
+import android.content.Context
 import android.content.Intent
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.FieldValue
@@ -10,10 +11,7 @@ import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.*
 import com.mindyhsu.minmap.data.MapDirection
 import com.mindyhsu.minmap.data.source.MinMapDataSource
-import com.mindyhsu.minmap.main.KEY_CHAT_ROOM
-import com.mindyhsu.minmap.main.KEY_MESSAGE
-import com.mindyhsu.minmap.main.MESSAGE_INTENT_FILTER
-import com.mindyhsu.minmap.main.UNREAD_MESSAGE
+import com.mindyhsu.minmap.main.*
 import com.mindyhsu.minmap.network.MinMapApi
 import com.mindyhsu.minmap.util.Util.getString
 import com.mindyhsu.minmap.util.Util.isInternetConnected
@@ -39,7 +37,30 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_LAST_MESSAGES = "lastMessage"
     private const val FIELD_LAST_UPDATE = "lastUpdate"
 
-    private val lastMessageNum = mutableMapOf<String, Int>()
+    private val sharedPreferencesChatRoom =
+        MinMapApplication.instance.getSharedPreferences(KEY_CHAT_ROOM, Context.MODE_PRIVATE)
+    private var chatRoomNum: Int?
+        set(value) {
+            if (value != null) {
+                sharedPreferencesChatRoom.edit().putInt(KEY_CHAT_ROOM, value).apply()
+            }
+        }
+        get() {
+            return sharedPreferencesChatRoom.getInt(KEY_CHAT_ROOM, 0)
+        }
+
+    private var keyChatRoomId = ""
+    private val sharedPreferencesMessage =
+        MinMapApplication.instance.getSharedPreferences(KEY_MESSAGE, Context.MODE_PRIVATE)
+    private var messageNum: Int?
+        set(value) {
+            if (value != null) {
+                sharedPreferencesMessage.edit().putInt(keyChatRoomId, value).apply()
+            }
+        }
+        get() {
+            return sharedPreferencesMessage.getInt(keyChatRoomId, 0)
+        }
 
     override suspend fun getDirection(
         startLocation: String,
@@ -352,6 +373,24 @@ object MinMapRemoteDataSource : MinMapDataSource {
             .addSnapshotListener { documents, exception ->
                 Timber.i("getLiveChatRoom addSnapshotListener detect")
 
+                if (chatRoomNum == 0) {
+                    chatRoomNum = documents?.size()
+                } else {
+                    // There's new chat room
+                    if (chatRoomNum != documents?.size() && chatRoomNum!! < documents?.size()!!) {
+                        Intent().also { intent ->
+                            intent.action = CHAT_ROOM_INTENT_FILTER
+                            MinMapApplication.instance.sendBroadcast(
+                                intent.putExtra(
+                                    KEY_CHAT_ROOM,
+                                    (documents.size().minus(chatRoomNum!!)).toString()
+                                )
+                            )
+                        }
+                        chatRoomNum = documents.size()
+                    }
+                }
+
                 documents?.let {
                     chatRoomList.clear()
                     for (document in it.documents) {
@@ -419,22 +458,34 @@ object MinMapRemoteDataSource : MinMapDataSource {
             .addSnapshotListener { documents, exception ->
                 Timber.i("getMessage addSnapshotListener detect")
 
-                // If there's new message since last read
-                if (lastMessageNum[chatRoomId] == null) {
-                    lastMessageNum[chatRoomId] = documents?.size()!!
-                } else {
-                    if (documents?.size()!! > lastMessageNum[chatRoomId]!!) {
-                        lastMessageNum[chatRoomId] = documents.size()
-
-                        if (documents.last().data[FIELD_SENDER_ID] != userId) {
-                            // Send broadcast
-                            Intent().also { intent ->
-                                intent.action = MESSAGE_INTENT_FILTER
-                                MinMapApplication.instance.sendBroadcast(
-                                    intent.putExtra(KEY_MESSAGE, UNREAD_MESSAGE)
-                                )
-                            }
+                var currentMessageNum = 0
+                documents?.let {
+                    // The number of message which send from friends
+                    for (document in it) {
+                        if (document.data[FIELD_SENDER_ID] != userId) {
+                            currentMessageNum += 1
                         }
+                    }
+                }
+
+                if (sharedPreferencesMessage.all[chatRoomId] == null) {
+                    keyChatRoomId = chatRoomId
+                    messageNum = currentMessageNum
+                } else {
+                    val messageStored = sharedPreferencesMessage.all[chatRoomId] as Int
+                    if (currentMessageNum > messageStored) {
+                        // Send broadcast
+                        Intent().also { intent ->
+                            intent.action = MESSAGE_INTENT_FILTER
+                            MinMapApplication.instance.sendBroadcast(
+                                intent.putExtra(
+                                    KEY_MESSAGE,
+                                    (currentMessageNum.minus(messageStored).toString())
+                                )
+                            )
+                        }
+                        keyChatRoomId = chatRoomId
+                        messageNum = currentMessageNum
                     }
                 }
 

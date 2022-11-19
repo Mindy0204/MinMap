@@ -16,7 +16,6 @@ const val CHAT_ROOM_INTENT_FILTER = "com.mindyhsu.minmap.DETECT_CHAT_ROOM"
 const val MESSAGE_INTENT_FILTER = "com.mindyhsu.minmap.DETECT_MESSAGE"
 const val KEY_CHAT_ROOM = "chatRoom"
 const val KEY_MESSAGE = "message"
-const val UNREAD_MESSAGE = "unread message"
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -28,22 +27,31 @@ class MainActivity : AppCompatActivity() {
 
         Timber.plant(Timber.DebugTree())
 
-        viewModel
+        viewModel.getLiveChatRoom.observe(this) {
+//            if (UserManager.id != null) {
+                viewModel.getChatRoomIds(it)
+//            }
+        }
+
+        viewModel.getChatRoomIds.observe(this) {
+            viewModel.getLiveMessage(it)
+        }
 
         registerReceiver()
         chatRoomReceiver()
+        messageReceiver()
 
         setContentView(binding.root)
     }
 
     override fun onResume() {
         super.onResume()
-        messageReceiver()
+//        messageReceiver()
     }
 
     override fun onPause() {
         super.onPause()
-        messageReceiver()
+//        messageReceiver()
     }
 
     private fun registerReceiver() {
