@@ -28,9 +28,7 @@ class MainActivity : AppCompatActivity() {
         Timber.plant(Timber.DebugTree())
 
         viewModel.getLiveChatRoom.observe(this) {
-//            if (UserManager.id != null) {
-                viewModel.getChatRoomIds(it)
-//            }
+            viewModel.getChatRoomIds(it)
         }
 
         viewModel.getChatRoomIds.observe(this) {
@@ -44,16 +42,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
     }
 
-    override fun onResume() {
-        super.onResume()
-//        messageReceiver()
-    }
-
-    override fun onPause() {
-        super.onPause()
-//        messageReceiver()
-    }
-
     private fun registerReceiver() {
         val filter = IntentFilter(Intent.ACTION_VIEW)
         registerReceiver(object : BroadcastReceiver() {
@@ -65,7 +53,7 @@ class MainActivity : AppCompatActivity() {
         val filter = IntentFilter(CHAT_ROOM_INTENT_FILTER)
         registerReceiver(object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                var chatRoom = intent?.getStringExtra(KEY_CHAT_ROOM).toString()
+                val chatRoom = intent?.getStringExtra(KEY_CHAT_ROOM).toString()
                 val i = Intent(context, BroadcastReceiverService::class.java)
                 startService(i.putExtra(KEY_CHAT_ROOM, chatRoom))
             }
@@ -76,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         val filter = IntentFilter(MESSAGE_INTENT_FILTER)
         registerReceiver(object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
-                var message = intent?.getStringExtra(KEY_MESSAGE).toString()
+                val message = intent?.getStringExtra(KEY_MESSAGE).toString()
                 val i = Intent(context, BroadcastReceiverService::class.java)
                 startService(i.putExtra(KEY_MESSAGE, message))
             }

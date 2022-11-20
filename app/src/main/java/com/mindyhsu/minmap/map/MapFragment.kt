@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -46,6 +47,17 @@ class MapFragment : Fragment(),
     private val AUTOCOMPLETE_REQUEST_CODE = 1
 
     private var showFunctionButton = -1
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setFragmentResultListener("midPoint") { requestKey, bundle ->
+            viewModel.sendEvent(
+                bundle.get("latLng") as LatLng,
+                bundle.get("participants") as List<String>
+            )
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -216,7 +228,7 @@ class MapFragment : Fragment(),
                     enableMyLocation()
                 }
             }
-            service.getLastKnownLocation(it)
+            service.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         }
 
         val latLng = location?.let { LatLng(it.latitude, it.longitude) }

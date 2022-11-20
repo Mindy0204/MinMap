@@ -1,16 +1,11 @@
 package com.mindyhsu.minmap.main
 
-import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.mindyhsu.minmap.MinMapApplication
-import com.mindyhsu.minmap.chat.DialogItem
 import com.mindyhsu.minmap.data.ChatRoom
-import com.mindyhsu.minmap.data.Message
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
-import timber.log.Timber
 
 class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
 

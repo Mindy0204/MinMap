@@ -49,6 +49,8 @@ class DialogViewModel(
     val midPoint: LiveData<LatLng>
         get() = _midPoint
 
+    val participants = chatRoomDetail.participants
+
     val uiState = DialogUiState(
         getSenderName = { senderId ->
             val sender = (chatRoomDetail.users.filter { it.id == senderId }).distinct()

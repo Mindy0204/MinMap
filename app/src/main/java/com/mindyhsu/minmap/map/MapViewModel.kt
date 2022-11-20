@@ -58,6 +58,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private val markerList = mutableListOf<Marker>()
 
+    private var participantIdList = emptyList<String>()
+
     var isStartNavigation: Boolean = false
     private var routeSteps = listOf<Step>()
     private var step = 0
@@ -396,19 +398,50 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         Timber.d("planningLocation=$planningLocation, planningLocationName=$planningLocationName")
     }
 
-    fun sendEvent() {
-        // TODO: update firebase chatRooms & users
+    fun sendEvent(midPointLocation: LatLng, participantList: List<String>) {
         coroutineScope.launch {
-            val event = Event(
-                status = 0, // not finish
-                participants = listOf(UserManager.id!!, "pq4eXE9vKfjZC3p37HsG"), // mock
-                geoHash = GeoPoint(planningLocation.latitude, planningLocation.longitude),
-                place = planningLocationName
-            )
-
             status.value = LoadApiStatus.LOADING
 
-            when (val result = repository.sendEvent(event)) {
+            participantIdList = participantList
+
+            val event = Event(
+                participants = participantList,
+                geoHash = GeoPoint(midPointLocation.latitude, midPointLocation.longitude)
+            )
+
+            val currentEventId = when (val result = repository.sendEvent(event)) {
+                is Result.Success -> {
+                    error.value = null
+                    status.value = LoadApiStatus.DONE
+                    result.data
+                }
+                is Result.Fail -> {
+                    error.value = result.error
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+                is Result.Error -> {
+                    error.value = result.exception.toString()
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+                else -> {
+                    error.value = MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+            }
+            updateUserCurrentEvent(currentEventId)
+            updateChatRoomCurrentEvent(currentEventId)
+        }
+    }
+
+    private fun updateUserCurrentEvent(currentEventId: String) {
+        coroutineScope.launch {
+            status.value = LoadApiStatus.LOADING
+
+            when (val result =
+                repository.updateUserCurrentEvent(participantIdList, currentEventId)) {
                 is Result.Success -> {
                     error.value = null
                     status.value = LoadApiStatus.DONE
@@ -426,7 +459,36 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     status.value = LoadApiStatus.ERROR
                 }
             }
-            _isOnInvitation.value = false
+        }
+    }
+
+    private fun updateChatRoomCurrentEvent(currentEventId: String) {
+        coroutineScope.launch {
+            status.value = LoadApiStatus.LOADING
+
+            when (val result =
+                repository.updateChatRoomCurrentEvent(participantIdList, currentEventId)) {
+                is Result.Success -> {
+                    error.value = null
+                    status.value = LoadApiStatus.DONE
+                    result.data
+                }
+                is Result.Fail -> {
+                    error.value = result.error
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+                is Result.Error -> {
+                    error.value = result.exception.toString()
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+                else -> {
+                    error.value = MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+            }
         }
     }
 }
