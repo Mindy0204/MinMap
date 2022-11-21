@@ -2,7 +2,6 @@ package com.mindyhsu.minmap.chat
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
@@ -19,7 +18,8 @@ import kotlinx.coroutines.launch
 
 data class ChatRoomUiState(
     val onClick: (chatRoomId: String) -> Unit,
-    val roomTitleDisplay: (id: List<String>) -> String
+    val roomTitleDisplay: (id: List<String>) -> String,
+    val roomMessageDisplay: (message: String) -> String
 )
 
 class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() {
@@ -29,19 +29,15 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     private val status = MutableLiveData<LoadApiStatus>()
     private val error = MutableLiveData<String?>()
 
-//    private val getLiveChatRooms = UserManager.id?.let { repository.getLiveChatRoom(it) }
-//    val chatRooms = getLiveChatRooms?.let { Transformations.map(getLiveChatRooms) { it } }
-
-    private val _chatRoom = MutableLiveData<List<ChatRoom>>()
-    val chatRoom: LiveData<List<ChatRoom>>
-        get() = _chatRoom
+    val getLiveChatRoom = repository.getLiveChatRoom(UserManager.id ?: "")
+    val liveChatRoom = MutableLiveData<List<ChatRoom>>()
 
     private val _navigateToDialog = MutableLiveData<ChatRoom?>()
     val navigateToDialog: LiveData<ChatRoom?>
         get() = _navigateToDialog
 
-    private var chatRoomList = MutableLiveData<List<ChatRoom>>()
-    private val userList = MutableLiveData<List<User>>()
+    private val usersIds = mutableListOf<String>()
+    private var userList = emptyList<User>()
 
     private val userNameListWithIds = mutableMapOf<String, String>()
     private val chatRoomListWithUser = mutableListOf<ChatRoom>()
@@ -62,17 +58,27 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
                 nameDisplay += userNameListWithIds[id]
             }
             return@ChatRoomUiState nameDisplay
+        },
+        roomMessageDisplay = { message ->
+            val messageLength = 15
+            if (message.length > messageLength) {
+                message.take(messageLength) + "..."
+            } else {
+                message
+            }
         }
     )
 
-    init {
-        getChatRoom()
-    }
+    fun checkUsersExist(chatRooms: List<ChatRoom>) {
+        // Current chatRoom participants' ids
+        for (chatRoom in chatRooms) {
+            usersIds.addAll(chatRoom.participants)
+        }
 
-    private fun getChatRoom() {
         coroutineScope.launch {
-            val result = UserManager.id?.let { repository.getChatRoom(it) }
-            chatRoomList.value = when (result) {
+            // Get users by ids
+            val result = repository.getUserById(usersIds)
+            userList = when (result) {
                 is Result.Success -> {
                     error.value = null
                     status.value = LoadApiStatus.DONE
@@ -81,78 +87,31 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
                 is Result.Fail -> {
                     error.value = result.error
                     status.value = LoadApiStatus.ERROR
-                    null
+                    emptyList()
                 }
                 is Result.Error -> {
                     error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
-                    null
+                    emptyList()
                 }
                 else -> {
                     error.value =
                         MinMapApplication.instance.getString(R.string.you_know_nothing)
                     status.value = LoadApiStatus.ERROR
-                    null
+                    emptyList()
                 }
             }
 
-            val usersIds = mutableListOf<String>()
-            chatRoomList.value?.let {
-                for (chatRoom in it) {
-                    usersIds.addAll(chatRoom.participants)
-                }
-            }
-            getUsersById(usersIds)
-        }
-    }
-
-    private fun getUsersById(usersIds: List<String>) {
-        coroutineScope.launch {
-            val result = repository.getUsersById(usersIds)
-            userList.value = when (result) {
-                is Result.Success -> {
-                    error.value = null
-                    status.value = LoadApiStatus.DONE
-                    result.data
-                }
-                is Result.Fail -> {
-                    error.value = result.error
-                    status.value = LoadApiStatus.ERROR
-                    null
-                }
-                is Result.Error -> {
-                    error.value = result.exception.toString()
-                    status.value = LoadApiStatus.ERROR
-                    null
-                }
-                else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
-                    status.value = LoadApiStatus.ERROR
-                    null
-                }
+            // Add users into listMapOf<id, name>
+            for (user in userList) {
+                userNameListWithIds[user.id] = user.name
             }
 
-            userList.value?.let {
-                for (user in it) {
-                    userNameListWithIds[user.id] = user.name
-                }
-            }
-
-            addNamesInChatRoom()
-        }
-    }
-
-    private fun addNamesInChatRoom() {
-        chatRoomList.value?.let { chatRooms ->
+            // Add participants' user data into chatRooms
             for (chatRoom in chatRooms) {
-
                 val userData = mutableListOf<User>()
-//            Log.d("Minddddddy","chatRoom=${chatRoom}, participants=${chatRoom.participants}")
-
                 for (participant in chatRoom.participants) {
-
-                    userList.value?.let { users ->
+                    userList.let { users ->
                         for (user in users) {
                             if (participant == user.id) {
                                 userData.add(user)
@@ -160,14 +119,11 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
                         }
                     }
                 }
-//            Log.d("Minddddddy","userData=${userData}")
                 chatRoom.users = userData
                 chatRoomListWithUser.add(chatRoom)
             }
-//        Log.d("Minddddddy", "userData=${chatRoomListWithUser[0].users}")
-//        Log.d("Minddddddy", "userData=${chatRoomListWithUser[1].users}")
+            liveChatRoom.value = chatRooms
         }
-        _chatRoom.value = chatRoomListWithUser
     }
 
     fun completeNavigateToDialog() {

@@ -31,64 +31,35 @@
         android:id="@+id/chip_group"
         android:layout_width="350dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin_16dp"
-        android:layout_marginEnd="@dimen/margin_16dp"
         app:layout_constraintBottom_toTopOf="@+id/edit_view"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintEnd_toEndOf="@+id/edit_view"
+        app:layout_constraintStart_toStartOf="@+id/edit_view">
 
         <com.google.android.material.chip.Chip
             android:id="@+id/don_not_move_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/don_not_move_chip"
-            app:layout_constraintBottom_toTopOf="@+id/where_are_you_chip"
-            app:layout_constraintEnd_toStartOf="@id/ill_be_there_chip"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/ill_be_there_chip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/ill_be_there_chip"
-            app:layout_constraintBottom_toTopOf="@+id/where_are_you_chip"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/don_not_move_chip" />
-
-        <com.google.android.material.chip.Chip
-            android:id="@+id/im_at_chip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/im_at_chip"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/where_are_you_chip"
-            app:layout_constraintStart_toStartOf="parent" />
+            android:text="@string/don_not_move_chip" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/where_are_you_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/where_are_you_chip"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/im_here_chip"
-            app:layout_constraintStart_toEndOf="@+id/im_at_chip" />
+            android:text="@string/where_are_you_chip" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/im_here_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/im_here_chip"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/where_are_you_chip" />
+            android:text="@string/im_here_chip" />
     </com.google.android.material.chip.ChipGroup>
 
     <View
         android:id="@+id/edit_view"
         android:layout_width="match_parent"
         android:layout_height="@dimen/button_height_size"
-        android:layout_marginStart="@dimen/margin_8dp"
-        android:layout_marginEnd="@dimen/margin_8dp"
+        android:layout_marginStart="@dimen/margin_16dp"
+        android:layout_marginEnd="@dimen/margin_16dp"
         android:layout_marginBottom="@dimen/margin_16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -98,28 +69,27 @@
         android:id="@+id/share_location"
         android:layout_width="@dimen/dialog_icon_size"
         android:layout_height="@dimen/dialog_icon_size"
-        android:layout_marginStart="@dimen/margin_8dp"
         android:src="@mipmap/icon_share_location"
         app:layout_constraintBottom_toBottomOf="@+id/edit_view"
         app:layout_constraintStart_toStartOf="@id/edit_view"
         app:layout_constraintTop_toTopOf="@+id/edit_view" />
 
     <ImageView
-        android:id="@+id/send_message"
-        android:layout_width="@dimen/dialog_icon_size"
-        android:layout_height="@dimen/dialog_icon_size"
-        android:layout_marginEnd="8dp"
-        android:src="@mipmap/icon_send_message"
-        app:layout_constraintBottom_toBottomOf="@+id/edit_view"
-        app:layout_constraintEnd_toStartOf="@+id/add_photo"
-        app:layout_constraintTop_toTopOf="@+id/edit_view" />
-
-    <ImageView
         android:id="@+id/add_photo"
         android:layout_width="@dimen/dialog_icon_size"
         android:layout_height="@dimen/dialog_icon_size"
-        android:layout_marginEnd="@dimen/margin_16dp"
+        android:layout_marginStart="@dimen/margin_8dp"
         android:src="@mipmap/icon_add_photo"
+        app:layout_constraintBottom_toBottomOf="@+id/edit_view"
+        app:layout_constraintStart_toEndOf="@+id/share_location"
+        app:layout_constraintTop_toTopOf="@+id/edit_view" />
+
+    <ImageView
+        android:id="@+id/send_message"
+        android:layout_width="@dimen/dialog_icon_size"
+        android:layout_height="@dimen/dialog_icon_size"
+        android:src="@mipmap/icon_send_message"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@+id/edit_view"
         app:layout_constraintEnd_toEndOf="@+id/edit_view"
         app:layout_constraintTop_toTopOf="@+id/edit_view" />
@@ -127,10 +97,12 @@
     <EditText
         android:id="@+id/my_message_edit_text"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/margin_4dp"
+        android:layout_marginEnd="@dimen/margin_4dp"
         app:layout_constraintBottom_toBottomOf="@+id/edit_view"
         app:layout_constraintEnd_toStartOf="@+id/send_message"
-        app:layout_constraintStart_toEndOf="@+id/share_location"
+        app:layout_constraintStart_toEndOf="@+id/add_photo"
         app:layout_constraintTop_toTopOf="@+id/edit_view" />
     <!--    android:layout_alignParentRight="true"-->
     <!--    android:drawableRight="@mipmap/icon_add_photo"-->

@@ -4,7 +4,7 @@
     <style name="login_title">
         <item name="fontFamily">@font/baloo_paaji_2_semibold</item>
         <item name="android:textSize">@dimen/login_title_text_size</item>
-        <item name="android:textColor">@color/gray_drak</item>
+        <item name="android:textColor">@color/gray_dark</item>
     </style>
 
     <style name="login_subtitle">
@@ -62,5 +62,10 @@
         <item name="android:gravity">center</item>
         <item name="backgroundTint">@color/light_tiffany_green</item>
         <item name="android:layout_margin">@dimen/margin_16dp</item>
+    </style>
+
+    <style name="circle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
     </style>
 </resources>

@@ -19,7 +19,7 @@ class ChatRoomAdapter(private val uiState: ChatRoomUiState) :
         fun bind(item: ChatRoom, uiState: ChatRoomUiState) {
             val participants = uiState.roomTitleDisplay(item.participants)
             binding.friendName.text = participants
-            binding.lastMessage.text = item.lastMessage
+            binding.lastMessage.text = uiState.roomMessageDisplay(item.lastMessage)
 
             if (item.eventId.isNotEmpty()) {
                 binding.eventReminder.visibility = View.VISIBLE

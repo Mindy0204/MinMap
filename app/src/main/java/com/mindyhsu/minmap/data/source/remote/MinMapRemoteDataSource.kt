@@ -1,15 +1,17 @@
 package com.mindyhsu.minmap.data.source.remote
 
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.Timestamp
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
-import com.mindyhsu.minmap.chat.DialogItem
 import com.mindyhsu.minmap.data.*
 import com.mindyhsu.minmap.data.MapDirection
 import com.mindyhsu.minmap.data.source.MinMapDataSource
+import com.mindyhsu.minmap.main.*
 import com.mindyhsu.minmap.network.MinMapApi
 import com.mindyhsu.minmap.util.Util.getString
 import com.mindyhsu.minmap.util.Util.isInternetConnected
@@ -28,11 +30,37 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_PARTICIPANTS = "participants"
     private const val FIELD_ID = "id"
     private const val FIELD_NAME = "name"
+    private const val FIELD_FRIENDS = "friends"
     private const val FIELD_MESSAGES = "messages"
     private const val FIELD_TIME = "time"
     private const val FIELD_SENDER_ID = "senderId"
     private const val FIELD_LAST_MESSAGES = "lastMessage"
     private const val FIELD_LAST_UPDATE = "lastUpdate"
+
+    private val sharedPreferencesChatRoom =
+        MinMapApplication.instance.getSharedPreferences(KEY_CHAT_ROOM, Context.MODE_PRIVATE)
+    private var chatRoomNum: Int?
+        set(value) {
+            if (value != null) {
+                sharedPreferencesChatRoom.edit().putInt(KEY_CHAT_ROOM, value).apply()
+            }
+        }
+        get() {
+            return sharedPreferencesChatRoom.getInt(KEY_CHAT_ROOM, 0)
+        }
+
+    private var keyChatRoomId = ""
+    private val sharedPreferencesMessage =
+        MinMapApplication.instance.getSharedPreferences(KEY_MESSAGE, Context.MODE_PRIVATE)
+    private var messageNum: Int?
+        set(value) {
+            if (value != null) {
+                sharedPreferencesMessage.edit().putInt(keyChatRoomId, value).apply()
+            }
+        }
+        get() {
+            return sharedPreferencesMessage.getInt(keyChatRoomId, 0)
+        }
 
     override suspend fun getDirection(
         startLocation: String,
@@ -63,12 +91,12 @@ object MinMapRemoteDataSource : MinMapDataSource {
             FirebaseFirestore.getInstance().runTransaction { transaction ->
                 Timber.d("setUser => transaction uid=$uid")
 
-                val snapshot = transaction.get(userRef)
-                if (snapshot.data == null) {
+                val document = transaction.get(userRef)
+                if (document.data == null) {
                     transaction.set(userRef, User(id = uid, image = image, name = name))
-                    Timber.d("setUser => After set user=${snapshot.data}")
+                    Timber.d("setUser => After set user=${document.data}")
                 } else {
-                    Timber.d("setUser => User=${snapshot.data}")
+                    Timber.d("setUser => User=${document.data}")
                 }
             }.addOnCompleteListener { task ->
                 Timber.d("setUser =>addOnCompleteListener")
@@ -162,7 +190,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
         }
 
-    override fun updateFriendsLocation(participantIds: List<String>): MutableLiveData<List<User>> {
+    override fun updateFriendLocation(participantIds: List<String>): MutableLiveData<List<User>> {
         val liveData = MutableLiveData<List<User>>()
         val userList = mutableListOf<User>()
         FirebaseFirestore.getInstance().collection(PATH_USERS).whereIn(FIELD_ID, participantIds)
@@ -185,7 +213,27 @@ object MinMapRemoteDataSource : MinMapDataSource {
         return liveData
     }
 
-    override suspend fun sendEvent(event: Event): Result<Boolean> =
+    override suspend fun getFriend(userId: String): Result<List<String>> =
+        suspendCoroutine { continuation ->
+            FirebaseFirestore.getInstance().collection(PATH_USERS).document(userId).get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Timber.d("getFriend => id=${task.result.id}, data=${task.result.data}")
+                        val friendList = task.result.data?.get(FIELD_FRIENDS) as List<String>
+                        val friends = friendList.filter { it != userId }
+                        continuation.resume(Result.Success(friends))
+                    } else {
+                        task.exception?.let {
+                            Timber.d("getFriend => Get documents error=${it.message}")
+                            continuation.resume(Result.Error(it))
+                            return@addOnCompleteListener
+                        }
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    }
+                }
+        }
+
+    override suspend fun sendEvent(event: Event): Result<String> =
         suspendCoroutine { continuation ->
             val events = FirebaseFirestore.getInstance().collection(PATH_EVENTS)
             val document = events.document()
@@ -195,7 +243,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
             document.set(event).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Timber.d("sendEvent => event=${task.result}")
-                    continuation.resume(Result.Success(true))
+                    continuation.resume(Result.Success(event.id))
                 } else {
                     task.exception?.let {
                         Timber.d("sendEvent => Set documents error=${it.message}")
@@ -205,6 +253,70 @@ object MinMapRemoteDataSource : MinMapDataSource {
                     continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
                 }
             }
+        }
+
+    override suspend fun updateUserCurrentEvent(
+        userId: List<String>,
+        currentEventId: String
+    ): Result<Boolean> = suspendCoroutine { continuation ->
+        FirebaseFirestore.getInstance().runBatch { batch ->
+            for (id in userId) {
+                val docRef = FirebaseFirestore.getInstance().collection(PATH_USERS).document(id)
+                batch.update(docRef, FIELD_CURRENT_EVENT, currentEventId)
+            }
+        }.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Timber.d("sendEventToUser => event=${task.result}")
+                continuation.resume(Result.Success(true))
+            } else {
+                task.exception?.let {
+                    Timber.d("sendEventToUser => Update documents error=${it.message}")
+                    continuation.resume(Result.Error(it))
+                    return@addOnCompleteListener
+                }
+                continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+            }
+        }
+    }
+
+    override suspend fun updateChatRoomCurrentEvent(
+        participants: List<String>,
+        currentEventId: String
+    ): Result<String> =
+        suspendCoroutine { continuation ->
+            FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS)
+                .whereEqualTo(FIELD_PARTICIPANTS, participants)
+                .get().addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+
+                        Timber.d("updateChatRoomEvent => event=${task.result}")
+                        val snapshot = task.result
+                        if (snapshot.isEmpty) {
+                            val chatRoomRef =
+                                FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS)
+                            val document = chatRoomRef.document()
+                            val newChatRoom = ChatRoom(
+                                eventId = currentEventId,
+                                id = document.id,
+                                participants = participants
+                            )
+                            document.set(newChatRoom)
+                            continuation.resume(Result.Success(document.id))
+                        } else {
+                            continuation.resume(Result.Success(snapshot.first().id))
+                            FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS)
+                                .document(snapshot.first().id)
+                                .update(hashMapOf<String, Any>("eventId" to currentEventId))
+                        }
+                    } else {
+                        task.exception?.let {
+                            Timber.d("updateChatRoomEvent => Update documents error=${it.message}")
+                            continuation.resume(Result.Error(it))
+                            return@addOnCompleteListener
+                        }
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    }
+                }
         }
 
     override suspend fun finishEvent(userId: String): Result<Boolean> =
@@ -261,6 +373,24 @@ object MinMapRemoteDataSource : MinMapDataSource {
             .addSnapshotListener { documents, exception ->
                 Timber.i("getLiveChatRoom addSnapshotListener detect")
 
+                if (chatRoomNum == 0) {
+                    chatRoomNum = documents?.size()
+                } else {
+                    // There's new chat room
+                    if (chatRoomNum != documents?.size() && chatRoomNum!! < documents?.size()!!) {
+                        Intent().also { intent ->
+                            intent.action = CHAT_ROOM_INTENT_FILTER
+                            MinMapApplication.instance.sendBroadcast(
+                                intent.putExtra(
+                                    KEY_CHAT_ROOM,
+                                    (documents.size().minus(chatRoomNum!!)).toString()
+                                )
+                            )
+                        }
+                        chatRoomNum = documents.size()
+                    }
+                }
+
                 documents?.let {
                     chatRoomList.clear()
                     for (document in it.documents) {
@@ -277,9 +407,11 @@ object MinMapRemoteDataSource : MinMapDataSource {
         return liveData
     }
 
-    override suspend fun getUsersById(usersIds: List<String>): Result<List<User>> =
+    override suspend fun getUserById(usersIds: List<String>): Result<List<User>> =
         suspendCoroutine { continuation ->
             // There's limit (10 queries) of Firebase whereIn filter so query all users now
+
+            // Future Upgrade
 //            FirebaseFirestore.getInstance().collection(PATH_USERS).whereIn(FIELD_ID, usersIds)
 
             FirebaseFirestore.getInstance().collection(PATH_USERS)
@@ -288,6 +420,8 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         val userNameListWithIds = mutableMapOf<String, String>()
                         val userList = mutableListOf<User>()
                         for (document in task.result) {
+
+                            // If no limit in the future, we could deprecate these logics
                             for (userId in usersIds) {
                                 if (document.id == userId) {
                                     Timber.d("getUserById => user id=${document.id}, data=${document.data}")
@@ -299,6 +433,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                     userList.add(users)
                                 }
                             }
+
                         }
                         continuation.resume(Result.Success(userList))
                     } else {
@@ -322,6 +457,37 @@ object MinMapRemoteDataSource : MinMapDataSource {
             .collection(FIELD_MESSAGES).orderBy(FIELD_TIME)
             .addSnapshotListener { documents, exception ->
                 Timber.i("getMessage addSnapshotListener detect")
+
+                var currentMessageNum = 0
+                documents?.let {
+                    // The number of message which send from friends
+                    for (document in it) {
+                        if (document.data[FIELD_SENDER_ID] != userId) {
+                            currentMessageNum += 1
+                        }
+                    }
+                }
+
+                if (sharedPreferencesMessage.all[chatRoomId] == null) {
+                    keyChatRoomId = chatRoomId
+                    messageNum = currentMessageNum
+                } else {
+                    val messageStored = sharedPreferencesMessage.all[chatRoomId] as Int
+                    if (currentMessageNum > messageStored) {
+                        // Send broadcast
+                        Intent().also { intent ->
+                            intent.action = MESSAGE_INTENT_FILTER
+                            MinMapApplication.instance.sendBroadcast(
+                                intent.putExtra(
+                                    KEY_MESSAGE,
+                                    (currentMessageNum.minus(messageStored).toString())
+                                )
+                            )
+                        }
+                        keyChatRoomId = chatRoomId
+                        messageNum = currentMessageNum
+                    }
+                }
 
                 documents?.let {
                     messageList.clear()
@@ -349,7 +515,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 )
             ).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Timber.d("sendMessages => chatRoom=${task.result}}")
+                    Timber.d("sendMessages")
                     isChatRoomInfoUpdate = true
                 } else {
                     task.exception?.let {
@@ -368,13 +534,74 @@ object MinMapRemoteDataSource : MinMapDataSource {
             message.id = document.id
             document.set(message).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Timber.d("sendMessages => message=${task.result}")
+                    Timber.d("sendMessages")
                     if (isChatRoomInfoUpdate) {
                         continuation.resume(Result.Success(true))
                     }
                 } else {
                     task.exception?.let {
                         Timber.d("sendMessages => Set documents error=${it.message}")
+                        continuation.resume(Result.Error(it))
+                        return@addOnCompleteListener
+                    }
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                }
+            }
+        }
+
+    override suspend fun setFriend(userId: String, friendId: String): Result<String> =
+        suspendCoroutine { continuation ->
+            var isUserFriendUpdate = false
+
+            // Update my friend list
+            FirebaseFirestore.getInstance().collection(PATH_USERS).document(userId).update(
+                mapOf(FIELD_FRIENDS to FieldValue.arrayUnion(friendId))
+            ).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Timber.d("setFriend => Set my friend")
+                    isUserFriendUpdate = true
+                } else {
+                    task.exception?.let {
+                        Timber.d("setFriend => Set documents error=${it.message}")
+                        continuation.resume(Result.Error(it))
+                        return@addOnCompleteListener
+                    }
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                }
+            }
+
+            // Update friend's friend list
+            FirebaseFirestore.getInstance().collection(PATH_USERS).document(friendId).update(
+                mapOf(FIELD_FRIENDS to FieldValue.arrayUnion(userId))
+            ).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Timber.d("setFriend")
+                    isUserFriendUpdate = true
+                } else {
+                    task.exception?.let {
+                        Timber.d("setFriend => Set documents error=${it.message}")
+                        isUserFriendUpdate = false
+                        continuation.resume(Result.Error(it))
+                        return@addOnCompleteListener
+                    }
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                }
+            }
+
+            // Create a chat room
+            val document = FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS).document()
+            val chatRoom = ChatRoom(id = document.id, participants = listOf(userId, friendId))
+
+            document.set(chatRoom).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Timber.d("setFriend create chat room => chatRoom=${task.result}")
+                    if (isUserFriendUpdate) {
+                        Timber.i("setFriend create chat room => chatRoom id=${document.id}")
+                        continuation.resume(Result.Success(document.id))
+                    }
+                } else {
+                    task.exception?.let {
+                        Timber.d("setFriend create chat room => Set documents error=${it.message}")
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }

@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -28,6 +29,7 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.BuildConfig
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
@@ -46,6 +48,17 @@ class MapFragment : Fragment(),
 
     private var showFunctionButton = -1
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setFragmentResultListener("midPoint") { requestKey, bundle ->
+            viewModel.sendEvent(
+                bundle.get("latLng") as LatLng,
+                bundle.get("participants") as List<String>
+            )
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -57,8 +70,10 @@ class MapFragment : Fragment(),
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
         mapFragment?.getMapAsync { googleMap ->
             map = googleMap
+            map.clear()
             map.uiSettings.setAllGesturesEnabled(true)
             showFunctionButton = -1
+            binding.sendInvitationButton.visibility = View.GONE
 
             enableMyLocation()
             getDeviceLocation()
@@ -119,16 +134,21 @@ class MapFragment : Fragment(),
             }
         }
 
-        binding.sendEventButton.setOnClickListener {
-            viewModel.sendEvent()
+        binding.sendInvitationButton.setOnClickListener {
+            findNavController().navigate(
+                SendInvitationFragmentDirections.navigateToSendEventToFriendFragment(
+                    viewModel.planningLocation,
+                    viewModel.planningLocationName
+                )
+            )
         }
 
         viewModel.isOnInvitation.observe(viewLifecycleOwner) {
             if (it) {
-                binding.sendEventButton.visibility = View.VISIBLE
+                binding.sendInvitationButton.visibility = View.VISIBLE
             } else {
                 map.clear()
-                binding.sendEventButton.visibility = View.GONE
+                binding.sendInvitationButton.visibility = View.GONE
             }
         }
 
@@ -208,11 +228,14 @@ class MapFragment : Fragment(),
                     enableMyLocation()
                 }
             }
-            service.getLastKnownLocation(it)
+            service.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         }
 
         val latLng = location?.let { LatLng(it.latitude, it.longitude) }
-        val cameraUpdate = latLng?.let { CameraUpdateFactory.newLatLngZoom(it, 15F) }
+        val cameraUpdate = latLng?.let {
+            viewModel.updateMyLocation(GeoPoint(it.latitude, it.longitude))
+            CameraUpdateFactory.newLatLngZoom(it, 15F)
+        }
         if (cameraUpdate != null) {
             map.animateCamera(cameraUpdate)
         }

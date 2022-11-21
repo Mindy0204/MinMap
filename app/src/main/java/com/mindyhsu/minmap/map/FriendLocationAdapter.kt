@@ -15,6 +15,7 @@ class FriendLocationAdapter(private val uiState: MapUiState) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: User, uiState: MapUiState) {
+            binding.friendImage
             binding.friendNameText.text = item.name
             itemView.setOnClickListener {
                 uiState.onClick(item.id)
