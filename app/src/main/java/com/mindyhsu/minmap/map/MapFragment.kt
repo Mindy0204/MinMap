@@ -98,10 +98,6 @@ class MapFragment : Fragment(),
             viewModel.updateFriendsLocation()
         }
 
-//        binding.cardViewIcon.setOnClickListener {
-//            viewModel.focusOnMeetingPoint(map)gg
-//        }
-
         val adapter = FriendLocationAdapter(viewModel.uiState)
         binding.friendsLocationRecyclerView.adapter = adapter
         viewModel.onFriendsLiveReady.observe(viewLifecycleOwner) { ready ->
@@ -109,6 +105,7 @@ class MapFragment : Fragment(),
                 viewModel.friends.observe(viewLifecycleOwner) {
                     viewModel.markFriendsLocation(map, it)
                     adapter.submitList(it)
+                    binding.friendsCardView.visibility = View.VISIBLE
                 }
             }
         }
@@ -148,9 +145,8 @@ class MapFragment : Fragment(),
 
         viewModel.isFinishNavigation.observe(viewLifecycleOwner) {
             if (it == true) {
-                binding.cardView.visibility = View.GONE
-                binding.createEventButton.visibility = View.VISIBLE
-                binding.startNavigationButton.visibility = View.GONE
+                viewModel.finishEvent()
+                binding.friendsCardView.visibility = View.GONE
                 map.clear()
                 viewModel.navigationStatus = NAVIGATION_INIT
                 findNavController().navigate(NavigationSuccessFragmentDirections.navigateToNavigationSuccessFragment())

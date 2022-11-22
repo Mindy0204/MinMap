@@ -9,8 +9,7 @@
     <!-- main page -->
     <string name="create_new_event">Start A Activity!</string>
     <string name="navigation_distance_and_duration">After %s m | %s</string>
-<!--    <string name="navigation_instruction_title">Next Step: %s</string>-->
-<!--    <string name="navigation_instruction_content">%s m | %s</string>-->
+    <string name="destination">Destination will be on the %s</string>
 
     <!-- main page button -->
     <string name="continue_button">Continue</string>
@@ -25,6 +24,8 @@
 
     <!-- send event to friend page -->
     <string name="invite_friend">Invite Friends!</string>
+    <string name="custom_location">Custom Location</string>
+    <string name="send_invitation_fail">You don\'t choose any friend</string>
 
     <!-- chat room page -->
     <string name="chat_room">Chat Room</string>

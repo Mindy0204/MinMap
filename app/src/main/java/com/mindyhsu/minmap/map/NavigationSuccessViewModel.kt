@@ -9,12 +9,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 class NavigationSuccessViewModel(private val repository: MinMapRepository) : ViewModel() {
-    private var viewModelJob = Job()
-    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
-
-    fun finishEvent() {
-        coroutineScope.launch {
-            UserManager.id?.let { repository.finishEvent(it) }
-        }
-    }
+//    private var viewModelJob = Job()
+//    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
+//
+//    fun finishEvent() {
+//        coroutineScope.launch {
+//            UserManager.id?.let { repository.finishEvent(it) }
+//        }
+//    }
 }

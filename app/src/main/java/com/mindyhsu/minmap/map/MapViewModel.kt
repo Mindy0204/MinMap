@@ -133,10 +133,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
                 }
 
-                currentEventDetail.value?.participants?.let {
-                    if (navigationStatus != NAVIGATION_INIT) {
-                        updateFriendsLocation(it)
-                    }
+                if (navigationStatus != NAVIGATION_INIT) {
+                    updateFriendsLocation()
                 }
 
                 _isOnInvitation.value = false
@@ -351,34 +349,23 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 direction = "go-straight"
             }
 
-
-            // Show step 1 first until close end location by 10 meters
             var instruction = Html.fromHtml(routeSteps[step].htmlInstructions).toString()
-//                if (step == 0 && myLocation.distanceTo(stepEndLocation).toInt() > 10) {
-//                    Html.fromHtml(routeSteps[step].htmlInstructions).toString()
-//                } else {
-//                    Html.fromHtml(routeSteps[step].htmlInstructions).toString()
-//                }
 
             if (instruction.split("on ").size != 1) {
                 instruction = instruction.split("on ").last()
             } else if (instruction.split("onto ").size != 1) {
                 instruction = instruction.split("onto ").last()
             }
-//            _navigationInstruction.value =
-//                MinMapApplication.instance.getString(
-//                    R.string.navigation_instruction,
-//                    direction,
-//                    myLocation.distanceTo(stepEndLocation).toInt().toString(),
-//                    routeSteps[step].duration.text
-//                )
-//            _navigationInstruction.value =
-//                MinMapApplication.instance.getString(
-//                    R.string.navigation_instruction,
-//                    instruction,
-//                    myLocation.distanceTo(stepEndLocation).toInt().toString(),
-//                    routeSteps[step].duration.text
-//                )
+
+            if (step == routeSteps.size - 1 && instruction.split("Destination will be on the ")
+                    .isNotEmpty()
+            ) {
+                instruction = MinMapApplication.instance.getString(
+                    R.string.destination,
+                    instruction.split("Destination will be on the ").last()
+                )
+            }
+
             _navigationInstruction.value = hashMapOf(
                 "direction" to instruction,
                 "distanceAndDuration" to MinMapApplication.instance.getString(
@@ -465,12 +452,6 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
-    fun updateFriendsLocation(participants: List<String>) {
-        val friendsList = participants.filter { it != UserManager.id }
-        friends = repository.updateFriendLocation(friendsList)
-        onFriendsLiveReady.value = true
-    }
-
     private fun checkFriendsLocation(friendId: String) {
         friends.value?.let { user ->
             for (user in user) {
@@ -480,6 +461,12 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     }
                 }
             }
+        }
+    }
+
+    fun finishEvent() {
+        coroutineScope.launch {
+            UserManager.id?.let { repository.finishEvent(it) }
         }
     }
 

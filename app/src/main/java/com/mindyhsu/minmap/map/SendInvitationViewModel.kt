@@ -1,5 +1,6 @@
 package com.mindyhsu.minmap.map
 
+import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -27,7 +28,7 @@ data class SendInvitationUiState(
 class SendInvitationViewModel(
     private val repository: MinMapRepository,
     private val eventLocation: LatLng,
-    private val eventLocationName: String
+    private var eventLocationName: String
 ) : ViewModel() {
     private var viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
@@ -39,9 +40,9 @@ class SendInvitationViewModel(
     val userList: LiveData<List<User>>
         get() = _userList
 
-    private val _completeInvitation = MutableLiveData<String>()
-    val completeInvitation: LiveData<String>
-        get() = _completeInvitation
+    private val _isInvitationSuccess = MutableLiveData<Boolean>()
+    val isInvitationSuccess: LiveData<Boolean>
+        get() =_isInvitationSuccess
 
     private val userIdList = mutableListOf<String>()
     val sendInvitationUiState = SendInvitationUiState(
@@ -59,6 +60,7 @@ class SendInvitationViewModel(
 
     private fun getFriendList() {
         coroutineScope.launch {
+
             status.value = LoadApiStatus.LOADING
 
             var friendList = emptyList<String>()
@@ -125,38 +127,46 @@ class SendInvitationViewModel(
         coroutineScope.launch {
             status.value = LoadApiStatus.LOADING
 
-            userIdList.add(UserManager.id ?: "")
+            if (userIdList.isNotEmpty()) {
+                userIdList.add(UserManager.id ?: "")
 
-            val event = Event(
-                participants = userIdList,
-                geoHash = GeoPoint(eventLocation.latitude, eventLocation.longitude),
-                place = eventLocationName
-            )
+                if (eventLocationName == "") {
+                    eventLocationName = MinMapApplication.instance.getString(R.string.custom_location)
+                }
 
-            val currentEventId = when (val result = repository.sendEvent(event)) {
-                is Result.Success -> {
-                    error.value = null
-                    status.value = LoadApiStatus.DONE
-                    result.data
+                val event = Event(
+                    participants = userIdList,
+                    geoHash = GeoPoint(eventLocation.latitude, eventLocation.longitude),
+                    place = eventLocationName
+                )
+
+                val currentEventId = when (val result = repository.sendEvent(event)) {
+                    is Result.Success -> {
+                        error.value = null
+                        status.value = LoadApiStatus.DONE
+                        result.data
+                    }
+                    is Result.Fail -> {
+                        error.value = result.error
+                        status.value = LoadApiStatus.ERROR
+                        ""
+                    }
+                    is Result.Error -> {
+                        error.value = result.exception.toString()
+                        status.value = LoadApiStatus.ERROR
+                        ""
+                    }
+                    else -> {
+                        error.value = MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        status.value = LoadApiStatus.ERROR
+                        ""
+                    }
                 }
-                is Result.Fail -> {
-                    error.value = result.error
-                    status.value = LoadApiStatus.ERROR
-                    ""
-                }
-                is Result.Error -> {
-                    error.value = result.exception.toString()
-                    status.value = LoadApiStatus.ERROR
-                    ""
-                }
-                else -> {
-                    error.value = MinMapApplication.instance.getString(R.string.you_know_nothing)
-                    status.value = LoadApiStatus.ERROR
-                    ""
-                }
+                updateUserCurrentEvent(currentEventId)
+                updateChatRoomCurrentEvent(currentEventId)
+            } else {
+                _isInvitationSuccess.value = false
             }
-            updateUserCurrentEvent(currentEventId)
-            updateChatRoomCurrentEvent(currentEventId)
         }
     }
 
@@ -193,7 +203,7 @@ class SendInvitationViewModel(
                 userIdList.sort()
             }
 
-            val chatRoomId = when (val result =
+            when (val result =
                 repository.updateChatRoomCurrentEvent(userIdList, currentEventId)) {
                 is Result.Success -> {
                     error.value = null
@@ -216,7 +226,7 @@ class SendInvitationViewModel(
                     ""
                 }
             }
-            _completeInvitation.value = currentEventId
+            _isInvitationSuccess.value = true
         }
     }
 }

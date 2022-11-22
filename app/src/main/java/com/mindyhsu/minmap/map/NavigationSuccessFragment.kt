@@ -24,7 +24,6 @@ class NavigationSuccessFragment : DialogFragment() {
         dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
 
         binding.successDialogButton.setOnClickListener {
-            viewModel.finishEvent()
             findNavController().navigateUp()
         }
 
