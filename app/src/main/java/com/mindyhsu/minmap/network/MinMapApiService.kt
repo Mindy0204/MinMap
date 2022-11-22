@@ -20,7 +20,7 @@ private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 // Log request data
 private val logging: HttpLoggingInterceptor =
     HttpLoggingInterceptor().setLevel(
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.TIMBER_VISIABLE) {
             HttpLoggingInterceptor.Level.BODY
         } else {
             HttpLoggingInterceptor.Level.NONE

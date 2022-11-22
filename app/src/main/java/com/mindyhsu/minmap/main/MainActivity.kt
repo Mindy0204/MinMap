@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.mindyhsu.minmap.BroadcastReceiverService
+import com.mindyhsu.minmap.BuildConfig
 import com.mindyhsu.minmap.databinding.ActivityMainBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import timber.log.Timber
@@ -25,7 +26,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
 
-        Timber.plant(Timber.DebugTree())
+        if (BuildConfig.TIMBER_VISIABLE) {
+            Timber.plant(Timber.DebugTree())
+        }
 
         viewModel.getLiveChatRoom.observe(this) {
             viewModel.getChatRoomIds(it)

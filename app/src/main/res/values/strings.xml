@@ -8,7 +8,9 @@
 
     <!-- main page -->
     <string name="create_new_event">Start A Activity!</string>
-    <string name="navigation_instruction">Next: %s  |  %s meters  |  %s</string>
+    <string name="navigation_distance_and_duration">After %s m | %s</string>
+<!--    <string name="navigation_instruction_title">Next Step: %s</string>-->
+<!--    <string name="navigation_instruction_content">%s m | %s</string>-->
 
     <!-- main page button -->
     <string name="continue_button">Continue</string>

@@ -1,20 +1,26 @@
 package com.mindyhsu.minmap.map
 
 import android.content.Context
+import android.content.Intent
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.text.Html
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.SimpleTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.*
 import com.google.firebase.firestore.GeoPoint
-import com.mindyhsu.minmap.BuildConfig
-import com.mindyhsu.minmap.MinMapApplication
-import com.mindyhsu.minmap.R
+import com.mindyhsu.minmap.*
 import com.mindyhsu.minmap.data.*
 import com.mindyhsu.minmap.data.Step
 import com.mindyhsu.minmap.data.source.MinMapRepository
@@ -25,11 +31,14 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import com.mindyhsu.minmap.network.LoadApiStatus
 import timber.log.Timber
-import kotlin.math.roundToInt
 
 data class MapUiState(
     val onClick: (friendId: String) -> Unit
 )
+
+const val NAVIGATION_INIT = 0
+const val NAVIGATION_ING = 1
+const val NAVIGATION_PAUSE = 2
 
 class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var viewModelJob = Job()
@@ -60,13 +69,14 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private var participantIdList = emptyList<String>()
 
-    var isStartNavigation: Boolean = false
+    var navigationStatus: Int = NAVIGATION_INIT
+
     private var routeSteps = listOf<Step>()
     private var step = 0
-    private var direction = "go-straight"
+    var direction = "go-straight"
 
-    private var _navigationInstruction = MutableLiveData<String>()
-    val navigationInstruction: LiveData<String>
+    private var _navigationInstruction = MutableLiveData<HashMap<String, String>>()
+    val navigationInstruction: LiveData<HashMap<String, String>>
         get() = _navigationInstruction
 
     private var _isFinishNavigation = MutableLiveData<Boolean>()
@@ -121,6 +131,12 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     val location = LatLng(geo.latitude, geo.longitude)
                     map.addMarker(MarkerOptions().position(location))
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
+                }
+
+                currentEventDetail.value?.participants?.let {
+                    if (navigationStatus != NAVIGATION_INIT) {
+                        updateFriendsLocation(it)
+                    }
                 }
 
                 _isOnInvitation.value = false
@@ -188,7 +204,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
             currentEventDetail.value?.let {
                 val data = hashMapOf(
-                    "place" to it.place + " |",
+                    "place" to it.place,
                     "participants" to currentEventParticipants
                 )
                 currentEventDisplay.value = data
@@ -275,7 +291,9 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 }
                 map.addPolyline(polylineOptions)
             }
-            isStartNavigation = true
+            if (navigationStatus != NAVIGATION_INIT) {
+                navigationStatus = NAVIGATION_ING
+            }
         }
 
     }
@@ -300,37 +318,105 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
+    private fun startNavigationForegroundService(
+        instructionTitle: String,
+        instructionContent: String
+    ) {
+        val serviceIntent = Intent(MinMapApplication.instance, ForegroundService::class.java)
+        serviceIntent.putExtra("instructionTitle", instructionTitle)
+        serviceIntent.putExtra("instructionContent", instructionContent)
+        ContextCompat.startForegroundService(MinMapApplication.instance, serviceIntent)
+    }
+
     private fun showNavigationInstruction(myLocation: Location) {
-        val stepEndLocation = Location("stepEndLocation")
-        stepEndLocation.latitude = routeSteps[step].endLocation.lat
-        stepEndLocation.longitude = routeSteps[step].endLocation.lng
+        if (routeSteps.isNotEmpty()) {
+            val stepEndLocation = Location("stepEndLocation")
+            stepEndLocation.latitude = routeSteps[step].endLocation.lat
+            stepEndLocation.longitude = routeSteps[step].endLocation.lng
 
-        if (step + 1 < routeSteps.size) {
-            routeSteps[step + 1].maneuver?.let {
-                direction = it
+            // Show next direction
+            if (step + 1 < routeSteps.size) {
+                routeSteps[step + 1].maneuver?.let {
+                    direction = it
+
+                    direction = if (direction.contains("right")) {
+                        "right"
+                    } else if (direction.contains("left")) {
+                        "left"
+                    } else {
+                        "go-straight"
+                    }
+                }
+            } else {
+                direction = "go-straight"
             }
-        } else {
-            direction = "go-straight"
-        }
 
-        _navigationInstruction.value =
-            MinMapApplication.instance.getString(
-                R.string.navigation_instruction,
-                direction,
-                myLocation.distanceTo(stepEndLocation).toInt().toString(),
-                routeSteps[step].duration.text
+
+            // Show step 1 first until close end location by 10 meters
+            var instruction = Html.fromHtml(routeSteps[step].htmlInstructions).toString()
+//                if (step == 0 && myLocation.distanceTo(stepEndLocation).toInt() > 10) {
+//                    Html.fromHtml(routeSteps[step].htmlInstructions).toString()
+//                } else {
+//                    Html.fromHtml(routeSteps[step].htmlInstructions).toString()
+//                }
+
+            if (instruction.split("on ").size != 1) {
+                instruction = instruction.split("on ").last()
+            } else if (instruction.split("onto ").size != 1) {
+                instruction = instruction.split("onto ").last()
+            }
+//            _navigationInstruction.value =
+//                MinMapApplication.instance.getString(
+//                    R.string.navigation_instruction,
+//                    direction,
+//                    myLocation.distanceTo(stepEndLocation).toInt().toString(),
+//                    routeSteps[step].duration.text
+//                )
+//            _navigationInstruction.value =
+//                MinMapApplication.instance.getString(
+//                    R.string.navigation_instruction,
+//                    instruction,
+//                    myLocation.distanceTo(stepEndLocation).toInt().toString(),
+//                    routeSteps[step].duration.text
+//                )
+            _navigationInstruction.value = hashMapOf(
+                "direction" to instruction,
+                "distanceAndDuration" to MinMapApplication.instance.getString(
+                    R.string.navigation_distance_and_duration,
+                    myLocation.distanceTo(stepEndLocation).toInt().toString(),
+                    routeSteps[step].duration.text
+                )
             )
 
-        // Last step
-        if (step == routeSteps.size - 1 && myLocation.distanceTo(stepEndLocation).toInt() <= 15) {
-            locationManager.removeUpdates(locationListener)
-            _isFinishNavigation.value = true
-        }
+            startNavigationForegroundService(
+                instruction,
+                MinMapApplication.instance.getString(
+                    R.string.navigation_distance_and_duration,
+                    myLocation.distanceTo(stepEndLocation).toInt().toString(),
+                    routeSteps[step].duration.text
+                )
+            )
 
-        // Other steps
-        if (myLocation.distanceTo(stepEndLocation).toInt() == 0) {
-            if (step < routeSteps.size - 1) {
-                step++
+            val finalStepLocation = Location("finalStepLocation")
+            finalStepLocation.latitude = routeSteps[routeSteps.size - 1].endLocation.lat
+            finalStepLocation.longitude = routeSteps[routeSteps.size - 1].endLocation.lng
+
+            // Last step
+            if (step == routeSteps.size - 1 && myLocation.distanceTo(stepEndLocation)
+                    .toInt() <= 15
+            ) {
+                locationManager.removeUpdates(locationListener)
+                _isFinishNavigation.value = true
+            } else if (myLocation.distanceTo(finalStepLocation).toInt() <= 15) {
+                locationManager.removeUpdates(locationListener)
+                _isFinishNavigation.value = true
+            }
+
+            // Other steps
+            if (myLocation.distanceTo(stepEndLocation).toInt() == 0) {
+                if (step < routeSteps.size - 1) {
+                    step++
+                }
             }
         }
     }
@@ -345,14 +431,28 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
         for (user in users) {
             user.geoHash?.let {
-                val marker = map.addMarker(
-                    MarkerOptions()
-                        .position(LatLng(it.latitude, it.longitude))
-                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_profile))
-                        .alpha(0.7F)
-                )
 
-                marker?.let { marker -> markerList.add(marker) }
+                Glide.with(MinMapApplication.instance)
+                    .load(user.image).circleCrop()
+                    .into(object : SimpleTarget<Drawable>() {
+                        override fun onResourceReady(
+                            resource: Drawable,
+                            transition: Transition<in Drawable>?
+                        ) {
+
+                            val marker = map.addMarker(
+                                MarkerOptions()
+                                    .position(LatLng(it.latitude, it.longitude))
+                                    .icon(
+                                        BitmapDescriptorFactory.fromBitmap(
+                                            (resource as BitmapDrawable).bitmap
+                                        )
+                                    )
+                            )
+
+                            marker?.let { marker -> markerList.add(marker) }
+                        }
+                    })
             }
         }
     }
@@ -363,6 +463,12 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             friends = repository.updateFriendLocation(friendsList)
             onFriendsLiveReady.value = true
         }
+    }
+
+    fun updateFriendsLocation(participants: List<String>) {
+        val friendsList = participants.filter { it != UserManager.id }
+        friends = repository.updateFriendLocation(friendsList)
+        onFriendsLiveReady.value = true
     }
 
     private fun checkFriendsLocation(friendId: String) {

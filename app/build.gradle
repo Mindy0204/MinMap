@@ -20,7 +20,7 @@ android {
         applicationId "com.mindyhsu.minmap"
         minSdk 21
         targetSdk 32
-        versionCode 4
+        versionCode 7
         versionName "1.0.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -28,8 +28,13 @@ android {
 
     buildTypes {
         release {
+            buildConfigField("Boolean", "TIMBER_VISIABLE", "false")
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            buildConfigField("Boolean", "TIMBER_VISIABLE", "true")
         }
     }
     compileOptions {
