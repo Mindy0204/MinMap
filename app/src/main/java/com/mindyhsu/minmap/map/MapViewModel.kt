@@ -40,6 +40,10 @@ const val NAVIGATION_INIT = 0
 const val NAVIGATION_ING = 1
 const val NAVIGATION_PAUSE = 2
 
+const val DIRECTION_GO_STRAIGHT = "Go Straight"
+const val DIRECTION_TURN_RIGHT = "Turn Right"
+const val DIRECTION_TURN_LEFT = "Turn Left"
+
 class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
@@ -92,6 +96,11 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private val locationManager = MinMapApplication.instance
         .getSystemService(Context.LOCATION_SERVICE) as LocationManager
+
+    private val locationListener = LocationListener {
+        showNavigationInstruction(it)
+        updateMyLocation(GeoPoint(it.latitude, it.longitude))
+    }
 
     val uiState = MapUiState(
         onClick = { friendId ->
@@ -226,7 +235,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 map.addMarker(
                     MarkerOptions()
                         .position(LatLng(eventLocationLat, eventLocationLng))
-                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point))
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point_color))
                 )
 
                 val directionResult = when (result) {
@@ -296,11 +305,6 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     }
 
-    private val locationListener = LocationListener {
-        showNavigationInstruction(it)
-        updateMyLocation(GeoPoint(it.latitude, it.longitude))
-    }
-
     fun startNavigation() {
         locationManager.requestLocationUpdates(
             LocationManager.GPS_PROVIDER,
@@ -326,6 +330,12 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         ContextCompat.startForegroundService(MinMapApplication.instance, serviceIntent)
     }
 
+    private fun exitNavigationForegroundService() {
+        val serviceIntent = Intent(MinMapApplication.instance, ForegroundService::class.java)
+        serviceIntent.putExtra("navigationComplete", "Navigation Complete")
+        ContextCompat.startForegroundService(MinMapApplication.instance, serviceIntent)
+    }
+
     private fun showNavigationInstruction(myLocation: Location) {
         if (routeSteps.isNotEmpty()) {
             val stepEndLocation = Location("stepEndLocation")
@@ -338,15 +348,15 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     direction = it
 
                     direction = if (direction.contains("right")) {
-                        "right"
+                        DIRECTION_TURN_RIGHT
                     } else if (direction.contains("left")) {
-                        "left"
+                        DIRECTION_TURN_LEFT
                     } else {
-                        "go-straight"
+                        DIRECTION_GO_STRAIGHT
                     }
                 }
             } else {
-                direction = "go-straight"
+                direction = DIRECTION_GO_STRAIGHT
             }
 
             var instruction = Html.fromHtml(routeSteps[step].htmlInstructions).toString()
@@ -378,9 +388,10 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             startNavigationForegroundService(
                 instruction,
                 MinMapApplication.instance.getString(
-                    R.string.navigation_distance_and_duration,
+                    R.string.navigation_foreground,
                     myLocation.distanceTo(stepEndLocation).toInt().toString(),
-                    routeSteps[step].duration.text
+                    routeSteps[step].duration.text,
+                    direction
                 )
             )
 
@@ -394,9 +405,11 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             ) {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
+                exitNavigationForegroundService()
             } else if (myLocation.distanceTo(finalStepLocation).toInt() <= 15) {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
+                exitNavigationForegroundService()
             }
 
             // Other steps
@@ -474,7 +487,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         map.addMarker(
             MarkerOptions()
                 .position(latLng)
-                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point))
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point_color))
         )
 
         val cameraPosition = CameraPosition.Builder()

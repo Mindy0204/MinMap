@@ -7,9 +7,12 @@
     <string name="login">Sign In with Google</string>
 
     <!-- main page -->
+    <!-- foreground service notification -->
     <string name="create_new_event">Start A Activity!</string>
     <string name="navigation_distance_and_duration">After %s m | %s</string>
     <string name="destination">Destination will be on the %s</string>
+    <string name="navigation_foreground">Next\nAfter %s m | %s  %s</string>
+    <string name="exit_navigation">Exit Navigation</string>
 
     <!-- main page button -->
     <string name="continue_button">Continue</string>

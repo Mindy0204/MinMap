@@ -7,8 +7,8 @@ import android.content.IntentFilter
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import com.mindyhsu.minmap.BroadcastReceiverService
-import com.mindyhsu.minmap.BuildConfig
+import androidx.core.content.ContextCompat
+import com.mindyhsu.minmap.*
 import com.mindyhsu.minmap.databinding.ActivityMainBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import timber.log.Timber
@@ -42,6 +42,10 @@ class MainActivity : AppCompatActivity() {
         chatRoomReceiver()
         messageReceiver()
 
+        if (intent.extras?.get(EXIT_NAVIGATION) == EXIT_NAVIGATION) {
+            exitNavigationForegroundService()
+        }
+
         setContentView(binding.root)
     }
 
@@ -72,5 +76,11 @@ class MainActivity : AppCompatActivity() {
                 startService(i.putExtra(KEY_MESSAGE, message))
             }
         }, filter)
+    }
+
+    private fun exitNavigationForegroundService() {
+        val serviceIntent = Intent(MinMapApplication.instance, ForegroundService::class.java)
+        serviceIntent.putExtra("navigationComplete", "Navigation Complete")
+        ContextCompat.startForegroundService(MinMapApplication.instance, serviceIntent)
     }
 }

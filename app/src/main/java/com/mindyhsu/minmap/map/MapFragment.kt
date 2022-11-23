@@ -45,7 +45,6 @@ class MapFragment : Fragment(),
     private lateinit var map: GoogleMap
     private val AUTOCOMPLETE_REQUEST_CODE = 1
 
-    private var showFunctionButton = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,7 +67,11 @@ class MapFragment : Fragment(),
         // Initialize Map
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
+//        viewModel.onFriendsLiveReady.removeObservers(viewLifecycleOwner)
+//        viewModel.friends.removeObservers(viewLifecycleOwner)
+//        viewModel.isFinishNavigation.removeObservers(viewLifecycleOwner)
 
+        Timber.d("status=${viewModel.navigationStatus}")
         if (viewModel.navigationStatus != NAVIGATION_INIT) {
             viewModel.navigationStatus = NAVIGATION_PAUSE
         }
@@ -76,7 +79,6 @@ class MapFragment : Fragment(),
         mapFragment?.getMapAsync { googleMap ->
             map = googleMap
             map.uiSettings.setAllGesturesEnabled(true)
-            showFunctionButton = -1
             binding.sendInvitationButton.visibility = View.GONE
 
             enableMyLocation()
@@ -96,6 +98,10 @@ class MapFragment : Fragment(),
             viewModel.startNavigation()
             viewModel.navigationStatus = NAVIGATION_ING
             viewModel.updateFriendsLocation()
+        }
+
+        binding.meetingLocationButton.setOnClickListener {
+            viewModel.focusOnMeetingPoint(map)
         }
 
         val adapter = FriendLocationAdapter(viewModel.uiState)
@@ -118,13 +124,13 @@ class MapFragment : Fragment(),
             binding.cardViewNextDirectionIcon.visibility = View.VISIBLE
 
             when (viewModel.direction) {
-                "go-straight" -> {
+                DIRECTION_GO_STRAIGHT -> {
                     binding.cardViewNextDirectionIcon.setImageResource(R.mipmap.icon_go_straight)
                 }
-                "right" -> {
+                DIRECTION_TURN_RIGHT -> {
                     binding.cardViewNextDirectionIcon.setImageResource(R.mipmap.icon_turn_right)
                 }
-                "left" -> {
+                DIRECTION_TURN_LEFT -> {
                     binding.cardViewNextDirectionIcon.setImageResource(R.mipmap.icon_turn_left)
                 }
                 else -> {
@@ -169,14 +175,6 @@ class MapFragment : Fragment(),
                 map.clear()
                 binding.sendInvitationButton.visibility = View.GONE
             }
-        }
-
-        binding.menuButton.setOnClickListener {
-            showAdvancedFunction()
-        }
-
-        binding.planningButton.setOnClickListener {
-            searchPlace()
         }
 
         binding.chatButton.setOnClickListener {
@@ -249,7 +247,7 @@ class MapFragment : Fragment(),
             }
             service.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         }
-
+        // TODO: smooth
         val latLng = location?.let { LatLng(it.latitude, it.longitude) }
         val cameraUpdate = latLng?.let {
             viewModel.updateMyLocation(GeoPoint(it.latitude, it.longitude))
@@ -275,6 +273,7 @@ class MapFragment : Fragment(),
                 binding.createEventButton.text = context?.getString(R.string.create_new_event)
                 binding.cardView.visibility = View.GONE
                 binding.startNavigationButton.visibility = View.GONE
+                binding.meetingLocationButton.visibility = View.GONE
 
                 // Function
                 map.setOnMapClickListener(this)
@@ -285,6 +284,7 @@ class MapFragment : Fragment(),
                 // UI
                 map.setOnMapClickListener(null)
                 binding.createEventButton.visibility = View.GONE
+                binding.meetingLocationButton.visibility = View.VISIBLE
 
                 if (viewModel.navigationStatus == NAVIGATION_INIT
                     || viewModel.navigationStatus == NAVIGATION_PAUSE
@@ -305,30 +305,11 @@ class MapFragment : Fragment(),
 
                     // Function
                     viewModel.deviceLocation.observe(viewLifecycleOwner) { myLocation ->
-                        if (myLocation != null) {
+                        if (myLocation != null && viewModel.currentEventId?.value != "") {
                             viewModel.getCurrentEventLocation(map, myLocation)
                         }
                     }
                 }
-            }
-        }
-    }
-
-    private fun showAdvancedFunction() {
-        when (showFunctionButton) {
-            -1 -> {
-                showFunctionButton = 0
-                binding.chatButton.visibility = View.VISIBLE
-                binding.planningButton.visibility = View.VISIBLE
-                binding.backToPositionButton.visibility = View.GONE
-                map.uiSettings.setAllGesturesEnabled(false)
-            }
-            0 -> {
-                showFunctionButton = -1
-                binding.chatButton.visibility = View.GONE
-                binding.planningButton.visibility = View.GONE
-                binding.backToPositionButton.visibility = View.VISIBLE
-                map.uiSettings.setAllGesturesEnabled(true)
             }
         }
     }
@@ -369,7 +350,7 @@ class MapFragment : Fragment(),
         map.addMarker(
             MarkerOptions()
                 .position(latLng)
-                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point))
+                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point_color))
         )
 
         val cameraPosition = CameraPosition.Builder()
