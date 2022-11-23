@@ -77,7 +77,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private var routeSteps = listOf<Step>()
     private var step = 0
-    var direction = "go-straight"
+    var direction = DIRECTION_GO_STRAIGHT
 
     private var _navigationInstruction = MutableLiveData<HashMap<String, String>>()
     val navigationInstruction: LiveData<HashMap<String, String>>
@@ -479,7 +479,33 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     fun finishEvent() {
         coroutineScope.launch {
-            UserManager.id?.let { repository.finishEvent(it) }
+            _isFinishNavigation.value = false
+
+            val chatRoomId = when (val result =
+                repository.getChatRoomByCurrentEventId(getCurrentEventId?.value ?: "")) {
+                is Result.Success -> {
+                    error.value = null
+                    status.value = LoadApiStatus.DONE
+                    result.data
+                }
+                is Result.Fail -> {
+                    error.value = result.error
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+                is Result.Error -> {
+                    error.value = result.exception.toString()
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+                else -> {
+                    error.value = MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+            }
+
+            repository.finishEvent(UserManager.id ?: "", getCurrentEventId?.value ?: "", chatRoomId)
         }
     }
 

@@ -45,7 +45,6 @@ class MapFragment : Fragment(),
     private lateinit var map: GoogleMap
     private val AUTOCOMPLETE_REQUEST_CODE = 1
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -67,11 +66,6 @@ class MapFragment : Fragment(),
         // Initialize Map
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
-//        viewModel.onFriendsLiveReady.removeObservers(viewLifecycleOwner)
-//        viewModel.friends.removeObservers(viewLifecycleOwner)
-//        viewModel.isFinishNavigation.removeObservers(viewLifecycleOwner)
-
-        Timber.d("status=${viewModel.navigationStatus}")
         if (viewModel.navigationStatus != NAVIGATION_INIT) {
             viewModel.navigationStatus = NAVIGATION_PAUSE
         }
@@ -270,10 +264,10 @@ class MapFragment : Fragment(),
             if (it == "") {
                 // UI
                 binding.createEventButton.visibility = View.VISIBLE
-                binding.createEventButton.text = context?.getString(R.string.create_new_event)
                 binding.cardView.visibility = View.GONE
                 binding.startNavigationButton.visibility = View.GONE
                 binding.meetingLocationButton.visibility = View.GONE
+                binding.friendsCardView.visibility = View.GONE
 
                 // Function
                 map.setOnMapClickListener(this)
@@ -285,6 +279,7 @@ class MapFragment : Fragment(),
                 map.setOnMapClickListener(null)
                 binding.createEventButton.visibility = View.GONE
                 binding.meetingLocationButton.visibility = View.VISIBLE
+                binding.cardViewIcon.visibility = View.VISIBLE
 
                 if (viewModel.navigationStatus == NAVIGATION_INIT
                     || viewModel.navigationStatus == NAVIGATION_PAUSE
@@ -360,6 +355,47 @@ class MapFragment : Fragment(),
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
         viewModel.onPlanningLocation(map, latLng, "")
+    }
+
+    private fun initWithEventUi() {
+        binding.lottieMapFragment.visibility = View.GONE
+        binding.meetingLocationButton.visibility = View.GONE
+        binding.cardView.visibility = View.VISIBLE
+        binding.cardViewIcon.visibility = View.VISIBLE
+        binding.cardViewText.visibility = View.VISIBLE
+        binding.cardViewNextDirectionIcon.visibility = View.GONE
+        binding.cardViewText2.visibility = View.GONE
+        binding.createEventButton.visibility = View.GONE
+        binding.friendsCardView.visibility = View.GONE
+        binding.startNavigationButton.visibility = View.VISIBLE
+    }
+
+    private fun initWithoutEventUi(){
+        binding.lottieMapFragment.visibility = View.GONE
+        binding.meetingLocationButton.visibility = View.GONE
+        binding.cardView.visibility = View.GONE
+        binding.cardViewIcon.visibility = View.GONE
+        binding.cardViewText.visibility = View.GONE
+        binding.cardViewNextDirectionIcon.visibility = View.GONE
+        binding.cardViewText2.visibility = View.GONE
+        binding.createEventButton.visibility = View.VISIBLE
+        binding.friendsCardView.visibility = View.GONE
+        binding.startNavigationButton.visibility = View.GONE
+
+        map.setOnMapClickListener(this)
+    }
+
+    private fun duringNavigationUi() {
+        binding.lottieMapFragment.visibility = View.GONE
+        binding.meetingLocationButton.visibility = View.VISIBLE
+        binding.cardView.visibility = View.VISIBLE
+        binding.cardViewIcon.visibility = View.VISIBLE
+        binding.cardViewText.visibility = View.VISIBLE
+        binding.cardViewNextDirectionIcon.visibility = View.VISIBLE
+        binding.cardViewText2.visibility = View.VISIBLE
+        binding.createEventButton.visibility = View.GONE
+        binding.friendsCardView.visibility = View.VISIBLE
+        binding.startNavigationButton.visibility = View.GONE
     }
 }
 

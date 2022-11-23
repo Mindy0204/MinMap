@@ -35,9 +35,11 @@ interface MinMapDataSource {
 
     suspend fun updateChatRoomCurrentEvent(participants: List<String>, currentEventId: String): Result<String>
 
-    suspend fun finishEvent(userId: String): Result<Boolean>
+    suspend fun finishEvent(userId: String, eventId: String, chatRoomId: String): Result<Boolean>
 
     suspend fun getChatRoom(userId: String): Result<List<ChatRoom>>
+
+    suspend fun getChatRoomByCurrentEventId(currentEventId: String): Result<String>
 
     fun getLiveChatRoom(userId: String): MutableLiveData<List<ChatRoom>>
 
