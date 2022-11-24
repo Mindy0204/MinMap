@@ -2,6 +2,7 @@ package com.mindyhsu.minmap.map
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Location
@@ -433,20 +434,19 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             user.geoHash?.let {
 
                 Glide.with(MinMapApplication.instance)
+                    .asBitmap()
                     .load(user.image).circleCrop()
-                    .into(object : SimpleTarget<Drawable>() {
+                    .into(object : SimpleTarget<Bitmap>() {
                         override fun onResourceReady(
-                            resource: Drawable,
-                            transition: Transition<in Drawable>?
+                            resource: Bitmap,
+                            transition: Transition<in Bitmap>?
                         ) {
 
                             val marker = map.addMarker(
                                 MarkerOptions()
                                     .position(LatLng(it.latitude, it.longitude))
                                     .icon(
-                                        BitmapDescriptorFactory.fromBitmap(
-                                            (resource as BitmapDrawable).bitmap
-                                        )
+                                        BitmapDescriptorFactory.fromBitmap(resource)
                                     )
                             )
 
