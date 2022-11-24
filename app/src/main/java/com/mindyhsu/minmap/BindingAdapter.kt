@@ -17,11 +17,3 @@ fun bindImage(imageView: ImageView, imageUrl: String?) {
             .into(imageView)
     }
 }
-
-fun bindApiStatus(view: ProgressBar, status: LoadApiStatus?) {
-    when (status) {
-        LoadApiStatus.LOADING -> view.visibility = View.VISIBLE
-        LoadApiStatus.DONE, LoadApiStatus.ERROR -> view.visibility = View.GONE
-        else -> view.visibility = View.VISIBLE
-    }
-}

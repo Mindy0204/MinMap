@@ -5,16 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/friend_pic"
         android:layout_width="@dimen/chat_room_friend_pic_size"
         android:layout_height="@dimen/chat_room_friend_pic_size"
         android:layout_marginBottom="@dimen/margin_16dp"
-        android:alpha="0.4"
         android:src="@mipmap/icon_profile"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/circle" />
 
     <ImageView
         android:id="@+id/event_reminder"

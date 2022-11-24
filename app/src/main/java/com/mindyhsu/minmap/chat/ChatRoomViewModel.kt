@@ -15,12 +15,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 data class ChatRoomUiState(
     val onClick: (chatRoomId: String) -> Unit,
     val roomTitleDisplay: (id: List<String>) -> String,
-    val roomMessageDisplay: (message: String) -> String
+    val roomMessageDisplay: (message: String) -> String,
+    val roomPicDisplay: (image: List<User>) -> String
 )
+
+private const val groupPic =
+    "https://memeprod.ap-south-1.linodeobjects.com/user-template/596519cf22dbc8cc2506add9a4a7d3c1.png"
 
 class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var viewModelJob = Job()
@@ -65,6 +70,20 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
                 message.take(messageLength) + "..."
             } else {
                 message
+            }
+        },
+        roomPicDisplay = {
+            val users = it.filter { it.id != UserManager.id }
+            val userImageList = mutableSetOf<String>()
+            for (user in users) {
+                userImageList.add(user.image)
+            }
+
+            // If there's only one friend in this chatroom, show him/ her pic
+            return@ChatRoomUiState if (userImageList.size == 1) {
+                userImageList.first()
+            } else {
+                groupPic
             }
         }
     )

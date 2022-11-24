@@ -1,14 +1,15 @@
 package com.mindyhsu.minmap.chat
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.mindyhsu.minmap.bindImage
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.databinding.ItemChatRoomBinding
+import timber.log.Timber
 
 class ChatRoomAdapter(private val uiState: ChatRoomUiState) :
     ListAdapter<ChatRoom, ChatRoomAdapter.ChatRoomViewHolder>(ChatRoomDiffCallback()) {
@@ -20,6 +21,7 @@ class ChatRoomAdapter(private val uiState: ChatRoomUiState) :
             val participants = uiState.roomTitleDisplay(item.participants)
             binding.friendName.text = participants
             binding.lastMessage.text = uiState.roomMessageDisplay(item.lastMessage)
+            bindImage(binding.friendPic, uiState.roomPicDisplay(item.users))
 
             if (item.eventId.isNotEmpty()) {
                 binding.eventReminder.visibility = View.VISIBLE
