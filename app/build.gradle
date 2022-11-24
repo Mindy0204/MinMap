@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'org.jlleitschuh.gradle.ktlint'
     id 'androidx.navigation.safeargs.kotlin'
     id 'com.google.gms.google-services'
@@ -27,13 +26,26 @@ android {
     }
 
     buildTypes {
+
+        Properties properties = new Properties()
+        // load local.properties
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+        // read property from local.properties
+        def mapAPIKey = properties.getProperty('MAPS_API_KEY')
+
         release {
+            // BuildConfig can used by java code directly
+            buildConfigField "String", "APIKEY_MAP", mapAPIKey
+
             buildConfigField("Boolean", "TIMBER_VISIABLE", "false")
 
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
+            buildConfigField "String", "APIKEY_MAP", mapAPIKey
+
             buildConfigField("Boolean", "TIMBER_VISIABLE", "true")
         }
     }
@@ -79,7 +91,7 @@ dependencies {
 
     // Google Map Places SDK
     implementation 'com.google.android.libraries.places:places:2.6.0'
-    
+
     //Timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
 

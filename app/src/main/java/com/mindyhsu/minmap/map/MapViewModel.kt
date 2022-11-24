@@ -228,7 +228,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 val result = repository.getDirection(
                     startLocation = "${myLocation.latitude}, ${myLocation.longitude}",
                     endLocation = "$eventLocationLat, $eventLocationLng",
-                    apiKey = BuildConfig.MAPS_API_KEY,
+                    apiKey = BuildConfig.APIKEY_MAP,
                     mode = "walking"
                 )
 

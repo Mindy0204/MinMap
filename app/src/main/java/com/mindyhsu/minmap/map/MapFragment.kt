@@ -311,7 +311,7 @@ class MapFragment : Fragment(),
 
     private fun searchPlace() {
         // Initialize Places SDK
-        context?.let { Places.initialize(it, BuildConfig.MAPS_API_KEY) }
+        context?.let { Places.initialize(it, BuildConfig.APIKEY_MAP) }
 
         // Set the fields to specify which types of place data to return after the user has made a selection
         val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG)
