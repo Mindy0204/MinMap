@@ -336,7 +336,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 .update(userUpdate)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        Timber.d("finishEvent => event=${task.result}")
+                        Timber.i("finishEvent => Finish update user current event")
 
                         // Count how many participant arrive
                         val eventRef = FirebaseFirestore.getInstance().collection(PATH_EVENTS)
@@ -346,12 +346,11 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             document.data?.let {
 
                                 // Not all participants arrive
-                                if (it[FIELD_STATUS] != (it[FIELD_PARTICIPANTS] as List<String>).size - 1) {
+                                if (it[FIELD_STATUS] != ((it[FIELD_PARTICIPANTS] as List<String>).size - 1).toLong()) {
                                     val eventUpdate = hashMapOf<String, Any>(
-                                        FIELD_STATUS to (it[FIELD_STATUS] as Int) + 1
+                                        FIELD_STATUS to (it[FIELD_STATUS] as Long) + 1
                                     )
                                     transaction.update(eventRef, eventUpdate)
-                                    Timber.d("finishEvent => After update event status=${it[FIELD_STATUS]}")
                                 } else {
                                     // All participants arrive
                                     Timber.d("finishEvent => Current event status=${it[FIELD_STATUS]}")
@@ -365,10 +364,10 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                         .update(chatRoomUpdate)
                                         .addOnCompleteListener { task ->
                                             if (task.isSuccessful) {
-                                                Timber.d("finishEvent => chat room=${task.result}")
+                                                Timber.i("finishEvent => Finish update chat room event id")
                                             } else {
                                                 task.exception?.let {
-                                                    Timber.d("finishEvent => Update documents error=${it.message}")
+                                                    Timber.d("finishEvent => Update chat room event id error=${it.message}")
                                                     continuation.resume(Result.Error(it))
                                                     return@addOnCompleteListener
                                                 }
@@ -384,14 +383,13 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                 }
                             }
                         }.addOnCompleteListener { task ->
-                            Timber.i("finishEvent =>addOnCompleteListener")
                             if (task.isSuccessful) {
-                                Timber.d("finishEvent => Update event=${task.result}")
+                                Timber.i("finishEvent => Finish update event status")
                                 continuation.resume(Result.Success(true))
 
                             } else {
                                 task.exception?.let {
-                                    Timber.d("finishEvent => Update documents error=${it.message}")
+                                    Timber.d("finishEvent => Update event status error=${it.message}")
                                     continuation.resume(Result.Error(it))
                                     return@addOnCompleteListener
                                 }
@@ -408,7 +406,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
 
                     } else {
                         task.exception?.let {
-                            Timber.d("finishEvent => Update documents error=${it.message}")
+                            Timber.d("finishEvent => Update user current event error=${it.message}")
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
