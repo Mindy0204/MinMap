@@ -34,6 +34,7 @@ import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessFragmentDirections
 import timber.log.Timber
 
 
@@ -155,7 +156,7 @@ class MapFragment : Fragment(),
 
         binding.sendInvitationButton.setOnClickListener {
             findNavController().navigate(
-                SendInvitationFragmentDirections.navigateToSendEventToFriendFragment(
+                NavigationSuccessFragmentDirections.navigateToSendEventToFriendFragment(
                     viewModel.planningLocation,
                     viewModel.planningLocationName
                 )
@@ -278,21 +279,19 @@ class MapFragment : Fragment(),
                 // UI
                 map.setOnMapClickListener(null)
                 binding.createEventButton.visibility = View.GONE
-                binding.meetingLocationButton.visibility = View.VISIBLE
-                binding.cardViewIcon.visibility = View.VISIBLE
 
                 if (viewModel.navigationStatus == NAVIGATION_INIT
                     || viewModel.navigationStatus == NAVIGATION_PAUSE
                 ) {
-                    // UI: navigation card
-                    binding.startNavigationButton.visibility =
-                        if (viewModel.navigationStatus == NAVIGATION_INIT) {
-                            View.VISIBLE
-                        } else {
-                            View.GONE
-                        }
-
                     viewModel.currentEventDisplay.observe(viewLifecycleOwner) { display ->
+                        binding.startNavigationButton.visibility =
+                            if (viewModel.navigationStatus == NAVIGATION_INIT) {
+                                View.VISIBLE
+                            } else {
+                                View.GONE
+                            }
+                        binding.meetingLocationButton.visibility = View.VISIBLE
+                        binding.cardViewIcon.visibility = View.VISIBLE
                         binding.cardView.visibility = View.VISIBLE
                         binding.cardViewText.text = display["place"]
                         binding.cardViewText2.visibility = View.GONE
@@ -355,47 +354,6 @@ class MapFragment : Fragment(),
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
         viewModel.onPlanningLocation(map, latLng, "")
-    }
-
-    private fun initWithEventUi() {
-        binding.lottieMapFragment.visibility = View.GONE
-        binding.meetingLocationButton.visibility = View.GONE
-        binding.cardView.visibility = View.VISIBLE
-        binding.cardViewIcon.visibility = View.VISIBLE
-        binding.cardViewText.visibility = View.VISIBLE
-        binding.cardViewNextDirectionIcon.visibility = View.GONE
-        binding.cardViewText2.visibility = View.GONE
-        binding.createEventButton.visibility = View.GONE
-        binding.friendsCardView.visibility = View.GONE
-        binding.startNavigationButton.visibility = View.VISIBLE
-    }
-
-    private fun initWithoutEventUi(){
-        binding.lottieMapFragment.visibility = View.GONE
-        binding.meetingLocationButton.visibility = View.GONE
-        binding.cardView.visibility = View.GONE
-        binding.cardViewIcon.visibility = View.GONE
-        binding.cardViewText.visibility = View.GONE
-        binding.cardViewNextDirectionIcon.visibility = View.GONE
-        binding.cardViewText2.visibility = View.GONE
-        binding.createEventButton.visibility = View.VISIBLE
-        binding.friendsCardView.visibility = View.GONE
-        binding.startNavigationButton.visibility = View.GONE
-
-        map.setOnMapClickListener(this)
-    }
-
-    private fun duringNavigationUi() {
-        binding.lottieMapFragment.visibility = View.GONE
-        binding.meetingLocationButton.visibility = View.VISIBLE
-        binding.cardView.visibility = View.VISIBLE
-        binding.cardViewIcon.visibility = View.VISIBLE
-        binding.cardViewText.visibility = View.VISIBLE
-        binding.cardViewNextDirectionIcon.visibility = View.VISIBLE
-        binding.cardViewText2.visibility = View.VISIBLE
-        binding.createEventButton.visibility = View.GONE
-        binding.friendsCardView.visibility = View.VISIBLE
-        binding.startNavigationButton.visibility = View.GONE
     }
 }
 

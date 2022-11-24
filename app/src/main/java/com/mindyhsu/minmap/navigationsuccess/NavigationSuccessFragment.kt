@@ -1,4 +1,4 @@
-package com.mindyhsu.minmap.map
+package com.mindyhsu.minmap.navigationsuccess
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable

@@ -15,7 +15,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 data class ChatRoomUiState(
     val onClick: (chatRoomId: String) -> Unit,
@@ -32,6 +31,7 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     private val status = MutableLiveData<LoadApiStatus>()
+
     private val error = MutableLiveData<String?>()
 
     val getLiveChatRoom = repository.getLiveChatRoom(UserManager.id ?: "")
@@ -95,6 +95,8 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
         }
 
         coroutineScope.launch {
+            status.value = LoadApiStatus.LOADING
+
             // Get users by ids
             val result = repository.getUserById(usersIds)
             userList = when (result) {

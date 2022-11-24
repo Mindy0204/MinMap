@@ -1,6 +1,5 @@
-package com.mindyhsu.minmap.map
+package com.mindyhsu.minmap.sendinvitation
 
-import android.widget.Toast
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -18,7 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import timber.log.Timber
 
 data class SendInvitationUiState(
     val onClick: (userId: String) -> Unit,

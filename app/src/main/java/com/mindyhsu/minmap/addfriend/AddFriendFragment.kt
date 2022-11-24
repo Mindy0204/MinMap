@@ -1,4 +1,4 @@
-package com.mindyhsu.minmap.chat
+package com.mindyhsu.minmap.addfriend
 
 import android.graphics.Bitmap
 import android.graphics.Color

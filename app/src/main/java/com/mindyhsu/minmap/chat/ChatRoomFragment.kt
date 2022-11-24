@@ -3,6 +3,7 @@ package com.mindyhsu.minmap.chat
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,8 +13,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.mindyhsu.minmap.R
+import com.mindyhsu.minmap.addfriend.AddFriendFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentChatRoomBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import com.mindyhsu.minmap.network.LoadApiStatus
 import timber.log.Timber
 
 
@@ -45,12 +48,17 @@ class ChatRoomFragment : Fragment() {
             cameraCheckPermission()
         }
 
+        // Check if there's any new user, then get the user data
         viewModel.getLiveChatRoom.observe(viewLifecycleOwner) {
             viewModel.checkUsersExist(it)
         }
 
+        // Final chat room with participants data
         viewModel.liveChatRoom.observe(viewLifecycleOwner) {
-            adapter.submitList(it)
+            Handler().postDelayed({
+                adapter.submitList(it)
+                binding.chatRoomLottie.visibility = View.GONE
+            }, 1000)
             adapter.notifyDataSetChanged()
         }
 

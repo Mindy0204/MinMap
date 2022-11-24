@@ -1,4 +1,4 @@
-package com.mindyhsu.minmap.map
+package com.mindyhsu.minmap.navigationsuccess
 
 import androidx.lifecycle.ViewModel
 import com.mindyhsu.minmap.data.source.MinMapRepository

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.google.android.gms.maps.model.LatLng
 import com.mindyhsu.minmap.data.source.MinMapRepository
-import com.mindyhsu.minmap.map.SendInvitationViewModel
+import com.mindyhsu.minmap.sendinvitation.SendInvitationViewModel
 
 class SendInvitationViewModelFactory(
     private val repository: MinMapRepository,

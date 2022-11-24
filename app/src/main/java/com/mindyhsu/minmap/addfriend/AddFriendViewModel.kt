@@ -1,4 +1,4 @@
-package com.mindyhsu.minmap.chat
+package com.mindyhsu.minmap.addfriend
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -1,4 +1,4 @@
-package com.mindyhsu.minmap.map
+package com.mindyhsu.minmap.sendinvitation
 
 import android.view.LayoutInflater
 import android.view.View
