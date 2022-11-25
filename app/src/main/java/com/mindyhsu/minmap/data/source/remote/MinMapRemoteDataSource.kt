@@ -77,7 +77,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
         return try {
             // this will run on a thread managed by Retrofit
             val listResult =
-                MinMapApi.retrofitService.getDirection(startLocation, endLocation, apiKey, mode)
+                MinMapApi.retrofitService.getDirection(startLocation, endLocation, mode, apiKey)
 
             Result.Success(listResult)
         } catch (e: Exception) {
