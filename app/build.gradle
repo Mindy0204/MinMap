@@ -17,9 +17,9 @@ android {
 
     defaultConfig {
         applicationId "com.mindyhsu.minmap"
-        minSdk 21
+        minSdk 26
         targetSdk 32
-        versionCode 9
+        versionCode 11
         versionName "1.0.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -33,11 +33,9 @@ android {
 
         // read property from local.properties
         def mapAPIKey = properties.getProperty('MAPS_API_KEY')
-        def directionAPIKey = properties.getProperty('DIRECTION_API_KEY')
 
         release {
             // BuildConfig can used by java code directly
-            buildConfigField "String", "APIKEY_DIRECTION", directionAPIKey
             buildConfigField "String", "APIKEY_MAP", mapAPIKey
             resValue  "string", "APIKEY_MAP", mapAPIKey
 
@@ -47,7 +45,6 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
-            buildConfigField "String", "APIKEY_DIRECTION", directionAPIKey
             buildConfigField "String", "APIKEY_MAP", mapAPIKey
             resValue  "string", "APIKEY_MAP", mapAPIKey
 

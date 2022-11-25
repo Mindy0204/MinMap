@@ -32,6 +32,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import com.mindyhsu.minmap.network.LoadApiStatus
 import timber.log.Timber
+import java.util.*
+import kotlin.collections.HashMap
 
 data class MapUiState(
     val onClick: (friendId: String) -> Unit
@@ -44,6 +46,9 @@ const val NAVIGATION_PAUSE = 2
 const val DIRECTION_GO_STRAIGHT = "Go Straight"
 const val DIRECTION_TURN_RIGHT = "Turn Right"
 const val DIRECTION_TURN_LEFT = "Turn Left"
+
+private const val encodedString = BuildConfig.APIKEY_MAP
+val decodedString: String = String(Base64.getDecoder().decode(encodedString))
 
 class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var viewModelJob = Job()
@@ -229,7 +234,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 val result = repository.getDirection(
                     startLocation = "${myLocation.latitude}, ${myLocation.longitude}",
                     endLocation = "$eventLocationLat, $eventLocationLng",
-                    apiKey = BuildConfig.APIKEY_DIRECTION,
+                    apiKey = decodedString,
                     mode = "walking"
                 )
 
