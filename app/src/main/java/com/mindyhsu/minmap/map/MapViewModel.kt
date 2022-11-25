@@ -3,6 +3,7 @@ package com.mindyhsu.minmap.map
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.location.Location
@@ -302,7 +303,12 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                         }
                     }
                 }
-                map.addPolyline(polylineOptions)
+                val polyline = map.addPolyline(polylineOptions)
+                polyline.color = MinMapApplication.instance.getColor(R.color.lake_blue)
+                polyline.startCap = RoundCap()
+                polyline.endCap = RoundCap()
+                polyline.jointType = JointType.ROUND
+                polyline.width = 15F
             }
             if (navigationStatus != NAVIGATION_INIT) {
                 navigationStatus = NAVIGATION_ING
@@ -365,7 +371,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 direction = DIRECTION_GO_STRAIGHT
             }
 
-            var instruction = Html.fromHtml(routeSteps[step].htmlInstructions).toString()
+            var instruction =
+                Html.fromHtml(routeSteps[step].htmlInstructions).toString().replace("\n", "")
 
             if (instruction.split("on ").size != 1) {
                 instruction = instruction.split("on ").last()

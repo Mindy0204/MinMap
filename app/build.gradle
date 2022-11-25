@@ -19,7 +19,7 @@ android {
         applicationId "com.mindyhsu.minmap"
         minSdk 26
         targetSdk 32
-        versionCode 11
+        versionCode 12
         versionName "1.0.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -33,11 +33,12 @@ android {
 
         // read property from local.properties
         def mapAPIKey = properties.getProperty('MAPS_API_KEY')
+        def oriAPIKey = properties.getProperty('ORI_API_KEY')
 
         release {
             // BuildConfig can used by java code directly
             buildConfigField "String", "APIKEY_MAP", mapAPIKey
-            resValue  "string", "APIKEY_MAP", mapAPIKey
+            resValue "string", "APIKEY_MAP", oriAPIKey
 
             buildConfigField("Boolean", "TIMBER_VISIABLE", "false")
 
@@ -46,7 +47,7 @@ android {
         }
         debug {
             buildConfigField "String", "APIKEY_MAP", mapAPIKey
-            resValue  "string", "APIKEY_MAP", mapAPIKey
+            resValue "string", "APIKEY_MAP", oriAPIKey
 
             buildConfigField("Boolean", "TIMBER_VISIABLE", "true")
         }

@@ -243,7 +243,7 @@ class MapFragment : Fragment(),
             }
             service.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         }
-        // TODO: smooth
+
         val latLng = location?.let { LatLng(it.latitude, it.longitude) }
         val cameraUpdate = latLng?.let {
             viewModel.updateMyLocation(GeoPoint(it.latitude, it.longitude))
