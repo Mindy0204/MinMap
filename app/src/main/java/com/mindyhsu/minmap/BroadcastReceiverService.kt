@@ -1,5 +1,6 @@
 package com.mindyhsu.minmap
 
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -9,14 +10,15 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.mindyhsu.minmap.main.KEY_CHAT_ROOM
+import com.mindyhsu.minmap.main.KEY_EVENT
 import com.mindyhsu.minmap.main.KEY_MESSAGE
+import timber.log.Timber
 
 private const val CHAT_ROOM_CHANNEL = "chat room channel"
 private const val MESSAGE_CHANNEL = "message channel"
+private const val EVENT_CHANNEL = "event channel"
 
 class BroadcastReceiverService : Service() {
-    private var chatRoomNum = 0
-    private var messageNum = 0
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -30,6 +32,10 @@ class BroadcastReceiverService : Service() {
 
             if (it.getString(KEY_MESSAGE) != null) {
                 messageNotification(it.getString(KEY_MESSAGE))
+            }
+
+            if (it.getString(KEY_EVENT) != null) {
+                eventNotification()
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -51,8 +57,8 @@ class BroadcastReceiverService : Service() {
                 description = descriptionText
             }
 
-            var builder = NotificationCompat.Builder(this, CHAT_ROOM_CHANNEL)
-                .setSmallIcon(R.mipmap.icon_planning)
+            val builder = NotificationCompat.Builder(this, CHAT_ROOM_CHANNEL)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle(descriptionText)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             val notification = builder.build()
@@ -63,8 +69,7 @@ class BroadcastReceiverService : Service() {
             notificationManager.createNotificationChannel(channel)
 
             // let old notification will not be cover by new notification
-            notificationManager.notify(chatRoomNum, notification)
-            chatRoomNum += 1
+            notificationManager.notify(0x01, notification)
         }
     }
 
@@ -82,7 +87,7 @@ class BroadcastReceiverService : Service() {
             }
 
             var builder = NotificationCompat.Builder(this, MESSAGE_CHANNEL)
-                .setSmallIcon(R.mipmap.icon_planning)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
                 .setContentTitle(descriptionText)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             val notification = builder.build()
@@ -91,8 +96,31 @@ class BroadcastReceiverService : Service() {
                 getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
 
-            notificationManager.notify(messageNum, notification)
-            messageNum += 1
+            notificationManager.notify(0x02, notification)
+        }
+    }
+
+    private fun eventNotification() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = getString(R.string.app_name)
+            val descriptionText = getString(R.string.event_channel_description)
+            val importance = NotificationManager.IMPORTANCE_HIGH
+            val channel = NotificationChannel(EVENT_CHANNEL, name, importance).apply {
+                description = descriptionText
+            }
+
+            var builder = NotificationCompat.Builder(this, EVENT_CHANNEL)
+                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setContentTitle(descriptionText)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+            val notification = builder.build()
+
+            val notificationManager: NotificationManager =
+                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+
+            notificationManager.notify(0x03, notification)
         }
     }
 }

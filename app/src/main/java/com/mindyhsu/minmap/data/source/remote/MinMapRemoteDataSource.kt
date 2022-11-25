@@ -142,10 +142,19 @@ object MinMapRemoteDataSource : MinMapDataSource {
             .addSnapshotListener { document, exception ->
                 Timber.i("getLiveUser addSnapshotListener detect")
                 val data = document?.toObject(User::class.java)
-                if (data?.currentEvent == null) {
+
+                if (data?.currentEvent == "") {
                     liveData.value = ""
                 } else {
-                    liveData.value = data.currentEvent
+                    liveData.value = data?.currentEvent
+
+                    // New event notification
+                    Intent().also { intent ->
+                        intent.action = EVENT_INTENT_FILTER
+                        MinMapApplication.instance.sendBroadcast(
+                            intent.putExtra(KEY_EVENT, KEY_EVENT)
+                        )
+                    }
                 }
 
                 exception?.let {
