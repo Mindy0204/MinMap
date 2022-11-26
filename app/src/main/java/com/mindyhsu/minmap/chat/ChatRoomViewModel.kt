@@ -155,7 +155,8 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
         val result = mutableListOf<ChatRoom>()
         liveChatRoom.value?.let {
             for (chatRoom in it) {
-                if (chatRoom.users.any { it.name.contains(text, true) }) {
+                val users = chatRoom.users.filter { it.name != UserManager.name }
+                if (users.any { it.name.contains(text, true) }) {
                     result.add(chatRoom)
                 }
             }
