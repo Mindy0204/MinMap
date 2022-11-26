@@ -58,7 +58,7 @@ class BroadcastReceiverService : Service() {
             }
 
             val builder = NotificationCompat.Builder(this, CHAT_ROOM_CHANNEL)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(R.mipmap.icon_launcher_minmap_dark)
                 .setContentTitle(descriptionText)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             val notification = builder.build()
@@ -87,7 +87,7 @@ class BroadcastReceiverService : Service() {
             }
 
             var builder = NotificationCompat.Builder(this, MESSAGE_CHANNEL)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(R.mipmap.icon_launcher_minmap_dark)
                 .setContentTitle(descriptionText)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             val notification = builder.build()
@@ -110,7 +110,7 @@ class BroadcastReceiverService : Service() {
             }
 
             var builder = NotificationCompat.Builder(this, EVENT_CHANNEL)
-                .setSmallIcon(R.mipmap.ic_launcher_round)
+                .setSmallIcon(R.mipmap.icon_launcher_minmap_dark)
                 .setContentTitle(descriptionText)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setPriority(NotificationCompat.PRIORITY_MAX)

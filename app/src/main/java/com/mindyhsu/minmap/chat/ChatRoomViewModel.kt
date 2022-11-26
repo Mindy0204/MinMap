@@ -37,6 +37,10 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     val getLiveChatRoom = repository.getLiveChatRoom(UserManager.id ?: "")
     val liveChatRoom = MutableLiveData<List<ChatRoom>>()
 
+    private val _searchResult = MutableLiveData<List<ChatRoom>>()
+    val searchResult: LiveData<List<ChatRoom>>
+        get() = _searchResult
+
     private val _navigateToDialog = MutableLiveData<ChatRoom?>()
     val navigateToDialog: LiveData<ChatRoom?>
         get() = _navigateToDialog
@@ -144,6 +148,18 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
                 chatRoomListWithUser.add(chatRoom)
             }
             liveChatRoom.value = chatRooms
+        }
+    }
+
+    fun search(text: String) {
+        val result = mutableListOf<ChatRoom>()
+        liveChatRoom.value?.let {
+            for (chatRoom in it) {
+                if (chatRoom.users.any { it.name.contains(text, true) }) {
+                    result.add(chatRoom)
+                }
+            }
+            _searchResult.value = result
         }
     }
 

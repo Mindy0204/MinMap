@@ -32,7 +32,7 @@
 
     <!-- chat room page -->
     <string name="chat_room">Chat Room</string>
-    <string name="chat_room_search_bar">Search Friend or Dialog</string>
+    <string name="chat_room_search_bar">Search Friend</string>
 
     <!-- dialog page -->
     <string name="loading">Loading</string>

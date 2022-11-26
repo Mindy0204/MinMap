@@ -50,11 +50,11 @@ class ForegroundService : Service() {
                     .setContentTitle(title)
                     .setContentText(content)
                     .addAction(
-                        R.mipmap.icon_arrived,
+                        R.mipmap.icon_launcher,
                         getString(R.string.exit_navigation),
                         pendingIntent
                     )
-                    .setSmallIcon(R.mipmap.ic_launcher_round).build()
+                    .setSmallIcon(R.mipmap.icon_launcher_minmap_dark).build()
 
             if (it.getString("navigationComplete") != null) {
                 stopForeground(true)

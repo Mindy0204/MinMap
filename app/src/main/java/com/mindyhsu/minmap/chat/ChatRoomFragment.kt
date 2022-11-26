@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -60,6 +61,13 @@ class ChatRoomFragment : Fragment() {
                 binding.chatRoomLottie.visibility = View.GONE
             }, 1000)
             adapter.notifyDataSetChanged()
+        }
+
+        binding.chatRoomSearchBar.doOnTextChanged { text, _, _, _ ->
+            viewModel.search(text.toString())
+            viewModel.searchResult.observe(viewLifecycleOwner) {
+                adapter.submitList(it)
+            }
         }
 
         return binding.root
