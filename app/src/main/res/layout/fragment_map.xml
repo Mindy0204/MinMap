@@ -14,6 +14,27 @@
         map:cameraZoom="13"
         tools:context=".map.MapFragment" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ar_constraint"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <fragment
+            android:id="@+id/ar"
+            android:name="com.mindyhsu.minmap.ar.PlacesArFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/create_event_button"
         style="@style/white_button"
@@ -27,17 +48,17 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/back_to_position_button"
+        android:id="@+id/ar_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/margin_16dp"
         android:backgroundTint="@color/white"
-        android:src="@mipmap/icon_gps"
+        android:src="@mipmap/icon_ar"
         app:borderWidth="0dp"
         app:fabSize="mini"
-        app:layout_constraintBottom_toTopOf="@+id/chat_button"
-        app:layout_constraintEnd_toEndOf="@id/chat_button"
-        app:layout_constraintStart_toStartOf="@+id/chat_button" />
+        app:layout_constraintBottom_toTopOf="@+id/meeting_location_button"
+        app:layout_constraintEnd_toEndOf="@+id/back_to_position_button"
+        app:layout_constraintStart_toStartOf="@+id/back_to_position_button" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/meeting_location_button"
@@ -52,6 +73,19 @@
         app:layout_constraintBottom_toTopOf="@+id/back_to_position_button"
         app:layout_constraintEnd_toEndOf="@+id/back_to_position_button"
         app:layout_constraintStart_toStartOf="@+id/back_to_position_button" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/back_to_position_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/margin_16dp"
+        android:backgroundTint="@color/white"
+        android:src="@mipmap/icon_gps"
+        app:borderWidth="0dp"
+        app:fabSize="mini"
+        app:layout_constraintBottom_toTopOf="@+id/chat_button"
+        app:layout_constraintEnd_toEndOf="@id/chat_button"
+        app:layout_constraintStart_toStartOf="@+id/chat_button" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/chat_button"

@@ -5,15 +5,22 @@ import android.app.Activity
 import android.content.Context.LOCATION_SERVICE
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.location.Criteria
 import android.location.LocationManager
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
+import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
@@ -28,19 +35,37 @@ import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
+import com.google.ar.sceneform.AnchorNode
+import com.google.ar.sceneform.ux.ArFragment
 import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.BuildConfig
+import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
+import com.mindyhsu.minmap.addfriend.AddFriendFragmentDirections
+import com.mindyhsu.minmap.ar.*
+import com.mindyhsu.minmap.chat.ChatRoomFragment
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import com.mindyhsu.minmap.main.MainActivity
 import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessFragmentDirections
 import timber.log.Timber
 import java.util.*
 
 
 class MapFragment : Fragment(),
-    OnRequestPermissionsResultCallback, OnMapClickListener {
+    OnRequestPermissionsResultCallback, OnMapClickListener, SensorEventListener {
+
+    // Sensor
+    private lateinit var sensorManager: SensorManager
+    private val accelerometerReading = FloatArray(3)
+    private val magnetometerReading = FloatArray(3)
+    private val rotationMatrix = FloatArray(9)
+    private val orientationAngles = FloatArray(3)
+
+    private var anchorNode: AnchorNode? = null
+    private var markers: MutableList<Marker> = emptyList<Marker>().toMutableList()
+
     private lateinit var binding: FragmentMapBinding
     private val viewModel by viewModels<MapViewModel> { getVmFactory() }
 
@@ -56,6 +81,8 @@ class MapFragment : Fragment(),
                 bundle.get("participants") as List<String>
             )
         }
+
+        sensorManager = MinMapApplication.instance.getSystemService()!!
     }
 
     override fun onCreateView(
@@ -177,7 +204,39 @@ class MapFragment : Fragment(),
             findNavController().navigate(ChatRoomFragmentDirections.navigateToChatRoomFragment())
         }
 
+        binding.arButton.setOnClickListener {
+            if (binding.arConstraint.visibility == View.VISIBLE) {
+                binding.arConstraint.visibility = View.GONE
+            } else {
+                binding.arConstraint.visibility = View.VISIBLE
+                setUpAr()
+            }
+        }
+
         return binding.root
+    }
+
+    override fun onResume() {
+        super.onResume()
+        sensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD)?.also {
+            sensorManager.registerListener(
+                this,
+                it,
+                SensorManager.SENSOR_DELAY_NORMAL
+            )
+        }
+        sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)?.also {
+            sensorManager.registerListener(
+                this,
+                it,
+                SensorManager.SENSOR_DELAY_NORMAL
+            )
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(this)
     }
 
     private fun enableMyLocation() {
@@ -204,6 +263,22 @@ class MapFragment : Fragment(),
         }
     }
 
+    private fun cameraCheckPermission() {
+        context?.let { context ->
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            } else {
+                requestPermissions(
+                    arrayOf(
+                        Manifest.permission.CAMERA
+                    ), CAMERA_PERMISSION_REQUEST_CODE
+                )
+            }
+        }
+    }
+
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -211,14 +286,21 @@ class MapFragment : Fragment(),
     ) {
         when (requestCode) {
             LOCATION_PERMISSION_REQUEST_CODE -> {
-
-                // If request is cancelled, the result arrays are empty.
                 if (grantResults.isNotEmpty() &&
                     grantResults[0] == PackageManager.PERMISSION_GRANTED
                 ) {
                     getDeviceLocation()
                 }
             }
+
+//            CAMERA_PERMISSION_REQUEST_CODE -> {
+//                if (grantResults.isNotEmpty() &&
+//                    grantResults[0] == PackageManager.PERMISSION_GRANTED
+//                ) {
+//
+//                }
+//            }
+
             else -> super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         }
     }
@@ -258,6 +340,7 @@ class MapFragment : Fragment(),
 
     companion object {
         const val LOCATION_PERMISSION_REQUEST_CODE = 1
+        const val CAMERA_PERMISSION_REQUEST_CODE = 2
     }
 
     private fun showCurrentEvent() {
@@ -269,6 +352,7 @@ class MapFragment : Fragment(),
                 binding.cardView.visibility = View.GONE
                 binding.startNavigationButton.visibility = View.GONE
                 binding.meetingLocationButton.visibility = View.GONE
+                binding.arButton.visibility = View.GONE
                 binding.friendsCardView.visibility = View.GONE
 
                 // Function
@@ -355,6 +439,91 @@ class MapFragment : Fragment(),
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
         viewModel.onPlanningLocation(map, latLng, "")
+    }
+
+    private fun setUpAr() {
+        Timber.d("wayne, setUpAr")
+        val arFragment = childFragmentManager.findFragmentById(R.id.ar) as ArFragment?
+        arFragment?.setOnTapArPlaneListener { hitResult, _, _ ->
+            val anchor = hitResult.createAnchor()
+            anchorNode = AnchorNode(anchor)
+            addPlaces(anchorNode!!)
+        }
+    }
+
+    // TODO: vector, latLng, 錨點, 方位
+    private fun addPlaces(anchorNode: AnchorNode) {
+        val currentLocation = viewModel.currentLocation
+        Timber.d("wayne, currentLocation=$currentLocation")
+        viewModel.stepLatLngs.add(0, LatLng(25.0377771,121.5326929))
+        viewModel.stepLatLngs.add(1, LatLng(25.0380789,121.5326495))
+        val steps = viewModel.stepLatLngs
+        for (step in steps) {
+
+            val place = com.mindyhsu.minmap.ar.Place(
+                "id", "icon", "name",
+                Geometry(
+                    GeometryLocation(
+                        step.latitude,
+                        step.longitude
+                    )
+                )
+            )
+            Timber.d("wayne, place: ${place.geometry.location.latLng}")
+            val placeNode = PlaceNode(requireContext(), place)
+            placeNode.setParent(anchorNode)
+            placeNode.localPosition = place.getPositionVector(
+                0f,
+                LatLng(
+                    place.geometry.location.lat,
+                    place.geometry.location.lng
+                )
+            )
+            placeNode.setOnTapListener { _, _ ->
+                showInfoWindow(place)
+            }
+        }
+    }
+
+    private fun showInfoWindow(place: com.mindyhsu.minmap.ar.Place) {
+        // Show in AR
+        val matchingPlaceNode = anchorNode?.children?.filter {
+            it is PlaceNode
+        }?.first {
+            val otherPlace = (it as PlaceNode).place ?: return@first false
+            return@first otherPlace == place
+        } as? PlaceNode
+        matchingPlaceNode?.showInfoWindow()
+
+        // Show as marker
+        val matchingMarker = markers.firstOrNull {
+            val placeTag = (it.tag as? com.mindyhsu.minmap.ar.Place) ?: return@firstOrNull false
+            return@firstOrNull placeTag == place
+        }
+        matchingMarker?.showInfoWindow()
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        if (event == null) {
+            return
+        }
+        if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
+            System.arraycopy(event.values, 0, accelerometerReading, 0, accelerometerReading.size)
+        } else if (event.sensor.type == Sensor.TYPE_MAGNETIC_FIELD) {
+            System.arraycopy(event.values, 0, magnetometerReading, 0, magnetometerReading.size)
+        }
+
+        // Update rotation matrix, which is needed to update orientation angles.
+        SensorManager.getRotationMatrix(
+            rotationMatrix,
+            null,
+            accelerometerReading,
+            magnetometerReading
+        )
+        SensorManager.getOrientation(rotationMatrix, orientationAngles)
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 }
 

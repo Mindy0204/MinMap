@@ -20,7 +20,7 @@
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_check_event.xml" value="0.16666666666666666" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_dialog.xml" value="0.3333333333333333" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_login.xml" value="0.22" />
-        <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_map.xml" value="0.1" />
+        <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_map.xml" value="0.3333333333333333" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_map_search.xml" value="0.2859375" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_maps.xml" value="0.22" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_navigation_success.xml" value="0.3333333333333333" />
@@ -35,6 +35,7 @@
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/item_my_dialog.xml" value="0.425" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/item_send_event_to_friend.xml" value="0.4239583333333333" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/item_send_invitation.xml" value="0.1" />
+        <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/place_view.xml" value="0.2557291666666667" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.127" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/mipmap-anydpi-v26/ic_launcher_minmap.xml" value="0.1895" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/mipmap-anydpi-v26/ic_launcher_minmap_dark.xml" value="0.1895" />

@@ -115,6 +115,9 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     )
 
+    var currentLocation: LatLng? = null
+    var stepLatLngs: MutableList<LatLng> = mutableListOf()
+
     fun getCurrentEventLocation(map: GoogleMap, myLocation: LatLng) {
         coroutineScope.launch {
             currentEventId?.value?.let {

@@ -15,8 +15,7 @@
         android:id="@+id/mapsFragment"
         android:name="com.mindyhsu.minmap.map.MapFragment"
         android:label="fragment_maps"
-        tools:layout="@layout/fragment_map">
-    </fragment>
+        tools:layout="@layout/fragment_map"></fragment>
 
     <dialog
         android:id="@+id/sendEventToFriendFragment"
@@ -53,7 +52,7 @@
         android:label="DialogFragment">
         <argument
             android:name="chatRoomDetail"
-            app:argType="com.mindyhsu.minmap.data.ChatRoom"/>
+            app:argType="com.mindyhsu.minmap.data.ChatRoom" />
         <action
             android:id="@+id/action_dialogFragment_to_mapsFragment"
             app:destination="@id/mapsFragment" />
@@ -64,6 +63,11 @@
         android:name="com.mindyhsu.minmap.addfriend.AddFriendFragment"
         android:label="fragment_add_friend"
         tools:layout="@layout/fragment_add_friend" />
+
+    <fragment
+        android:id="@+id/placesArFragment"
+        android:name="com.mindyhsu.minmap.ar.PlacesArFragment"
+        android:label="fragment_places_ar" />
 
     <!-- Global action -->
     <action
@@ -88,4 +92,7 @@
     <action
         android:id="@+id/navigate_to_add_friend_fragment"
         app:destination="@id/addFriendFragment" />
+    <action
+        android:id="@+id/navigate_to_places_ar_fragment"
+        app:destination="@id/placesArFragment" />
 </navigation>
