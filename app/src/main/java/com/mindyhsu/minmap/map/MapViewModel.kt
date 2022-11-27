@@ -165,7 +165,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             val location = LatLng(geo.latitude, geo.longitude)
             val cameraPosition = CameraPosition.Builder()
                 .target(location)
-                .zoom(16F)
+                .zoom(17F)
                 .build()
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
         }

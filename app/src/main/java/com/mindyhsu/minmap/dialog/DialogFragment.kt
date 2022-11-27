@@ -81,6 +81,12 @@ class DialogFragment : Fragment() {
         binding.imHereChip.setOnClickListener {
             viewModel.sendMessage(getString(R.string.im_here_chip))
         }
+        binding.waitChip.setOnClickListener {
+            viewModel.sendMessage(getString(R.string.wait_chip))
+        }
+        binding.hurryUpChip.setOnClickListener {
+            viewModel.sendMessage(getString(R.string.hurry_up_chip))
+        }
 
         binding.myMessageEditText.doOnTextChanged { text, start, before, count ->
             if (text?.trim().toString() == "") {

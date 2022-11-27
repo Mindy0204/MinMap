@@ -59,6 +59,22 @@
             android:backgroundTint="@color/gray_light"
             android:text="@string/im_here_chip"
             android:textColor="@color/black" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/wait_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/gray_light"
+            android:text="@string/wait_chip"
+            android:textColor="@color/black" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/hurry_up_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/gray_light"
+            android:text="@string/hurry_up_chip"
+            android:textColor="@color/black" />
     </com.google.android.material.chip.ChipGroup>
 
     <View

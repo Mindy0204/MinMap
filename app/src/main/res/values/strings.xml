@@ -39,6 +39,8 @@
     <string name="don_not_move_chip">Don\'t Move!</string>
     <string name="where_are_you_chip">Where are you?</string>
     <string name="im_here_chip">I\'m here</string>
+    <string name="wait_chip">Wait me a second!</string>
+    <string name="hurry_up_chip">Hurry up!</string>
     <string name="im_at_chip">I\'m at %s</string>
     <string name="ill_be_there_chip">I\'ll be there in 5 minutes</string>
 
