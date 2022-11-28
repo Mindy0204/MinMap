@@ -241,7 +241,7 @@ class MapFragment : Fragment(),
                     enableMyLocation()
                 }
             }
-            service.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            service.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
         }
 
         val latLng = location?.let { LatLng(it.latitude, it.longitude) }
