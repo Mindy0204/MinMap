@@ -7,8 +7,12 @@
     <string name="login">Sign In with Google</string>
 
     <!-- main page -->
+    <!-- foreground service notification -->
     <string name="create_new_event">Start A Activity!</string>
-    <string name="navigation_instruction">Next: %s  |  %s meters  |  %s</string>
+    <string name="navigation_distance_and_duration">After %s m | %s</string>
+    <string name="destination">Destination will be on the %s</string>
+    <string name="navigation_foreground">Next\nAfter %s m | %s  %s</string>
+    <string name="exit_navigation">Exit Navigation</string>
 
     <!-- main page button -->
     <string name="continue_button">Continue</string>
@@ -23,16 +27,20 @@
 
     <!-- send event to friend page -->
     <string name="invite_friend">Invite Friends!</string>
+    <string name="custom_location">Custom Location</string>
+    <string name="send_invitation_fail">You don\'t choose any friend</string>
 
     <!-- chat room page -->
     <string name="chat_room">Chat Room</string>
-    <string name="chat_room_search_bar">Search Friend or Dialog</string>
+    <string name="chat_room_search_bar">Search Friend</string>
 
     <!-- dialog page -->
     <string name="loading">Loading</string>
     <string name="don_not_move_chip">Don\'t Move!</string>
     <string name="where_are_you_chip">Where are you?</string>
     <string name="im_here_chip">I\'m here</string>
+    <string name="wait_chip">Wait me a second!</string>
+    <string name="hurry_up_chip">Hurry up!</string>
     <string name="im_at_chip">I\'m at %s</string>
     <string name="ill_be_there_chip">I\'ll be there in 5 minutes</string>
 
@@ -49,6 +57,7 @@
     <!-- notification -->
     <string name="message_channel_description">You have %s new message%s</string>
     <string name="chat_room_channel_description">You have %s new chat room%s</string>
+    <string name="event_channel_description">You have a new event</string>
 
     <string name="internet_not_connected">Internet is not connected</string>
     <string name="you_know_nothing">You know nothing</string>

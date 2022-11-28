@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".chat.DialogFragment">
 
     <TextView
@@ -39,19 +40,41 @@
             android:id="@+id/don_not_move_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/don_not_move_chip" />
+            android:backgroundTint="@color/gray_light"
+            android:text="@string/don_not_move_chip"
+            android:textColor="@color/black" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/where_are_you_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/where_are_you_chip" />
+            android:backgroundTint="@color/gray_light"
+            android:text="@string/where_are_you_chip"
+            android:textColor="@color/black" />
 
         <com.google.android.material.chip.Chip
             android:id="@+id/im_here_chip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/im_here_chip" />
+            android:backgroundTint="@color/gray_light"
+            android:text="@string/im_here_chip"
+            android:textColor="@color/black" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/wait_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/gray_light"
+            android:text="@string/wait_chip"
+            android:textColor="@color/black" />
+
+        <com.google.android.material.chip.Chip
+            android:id="@+id/hurry_up_chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/gray_light"
+            android:text="@string/hurry_up_chip"
+            android:textColor="@color/black" />
     </com.google.android.material.chip.ChipGroup>
 
     <View
@@ -96,6 +119,7 @@
 
     <EditText
         android:id="@+id/my_message_edit_text"
+        style="@style/general_text"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginStart="@dimen/margin_4dp"
@@ -104,8 +128,5 @@
         app:layout_constraintEnd_toStartOf="@+id/send_message"
         app:layout_constraintStart_toEndOf="@+id/add_photo"
         app:layout_constraintTop_toTopOf="@+id/edit_view" />
-    <!--    android:layout_alignParentRight="true"-->
-    <!--    android:drawableRight="@mipmap/icon_add_photo"-->
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

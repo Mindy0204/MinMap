@@ -20,7 +20,7 @@
 
     <dialog
         android:id="@+id/sendEventToFriendFragment"
-        android:name="com.mindyhsu.minmap.map.SendInvitationFragment"
+        android:name="com.mindyhsu.minmap.sendinvitation.SendInvitationFragment"
         android:label="fragment_send_event_to_friend"
         tools:layout="@layout/fragment_send_invitation">
         <argument
@@ -33,7 +33,7 @@
 
     <dialog
         android:id="@+id/navigationSuccessFragment"
-        android:name="com.mindyhsu.minmap.map.NavigationSuccessFragment"
+        android:name="com.mindyhsu.minmap.navigationsuccess.NavigationSuccessFragment"
         android:label="fragment_navigation_success"
         tools:layout="@layout/fragment_navigation_success" />
 
@@ -61,7 +61,7 @@
 
     <dialog
         android:id="@+id/addFriendFragment"
-        android:name="com.mindyhsu.minmap.chat.AddFriendFragment"
+        android:name="com.mindyhsu.minmap.addfriend.AddFriendFragment"
         android:label="fragment_add_friend"
         tools:layout="@layout/fragment_add_friend" />
 

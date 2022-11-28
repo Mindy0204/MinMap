@@ -2,14 +2,13 @@ package com.mindyhsu.minmap.factory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.mindyhsu.minmap.chat.AddFriendViewModel
+import com.mindyhsu.minmap.addfriend.AddFriendViewModel
 import com.mindyhsu.minmap.chat.ChatRoomViewModel
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.LoginViewModel
 import com.mindyhsu.minmap.main.MainViewModel
 import com.mindyhsu.minmap.map.MapViewModel
-import com.mindyhsu.minmap.map.NavigationSuccessViewModel
-import com.mindyhsu.minmap.map.SendInvitationViewModel
+import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessViewModel
 
 class ViewModelFactory constructor(
     private val repository: MinMapRepository

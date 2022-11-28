@@ -40,6 +40,12 @@
         <item name="android:textColor">@color/gray</item>
     </style>
 
+    <style name="navigation_instruction_text">
+        <item name="fontFamily">@font/baloo_paaji_2</item>
+        <item name="android:textSize">@dimen/navigation_instruction_text_size</item>
+        <item name="android:textColor">@color/gray</item>
+    </style>
+
     <style name="navigation_friend_name_text">
         <item name="fontFamily">@font/baloo_paaji_2</item>
         <item name="android:textSize">@dimen/navigation_friend_name_text_size</item>

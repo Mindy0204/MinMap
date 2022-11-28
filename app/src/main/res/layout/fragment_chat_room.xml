@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".chat.ChatRoomFragment">
 
     <TextView
@@ -42,9 +43,26 @@
         android:layout_marginStart="@dimen/margin_8dp"
         android:layout_marginTop="@dimen/margin_16dp"
         android:hint="@string/chat_room_search_bar"
+        android:singleLine="true"
         app:layout_constraintEnd_toEndOf="@+id/chat_room_title_text"
         app:layout_constraintStart_toEndOf="@+id/chat_room_search_icon"
         app:layout_constraintTop_toBottomOf="@+id/chat_room_title_text" />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/chat_room_lottie"
+        android:layout_width="@dimen/lottie_size"
+        android:layout_height="0dp"
+        android:layout_centerInParent="true"
+        android:background="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="w,1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/chat_room_search_bar"
+        app:lottie_autoPlay="true"
+        app:lottie_fileName="loading.json"
+        app:lottie_loop="true"
+        app:lottie_speed="1" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/chat_room_recyclerview"

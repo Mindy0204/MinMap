@@ -29,6 +29,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_GEO_HASH = "geoHash"
     private const val FIELD_PARTICIPANTS = "participants"
     private const val FIELD_ID = "id"
+    private const val FIELD_EVENT_ID = "eventId"
     private const val FIELD_NAME = "name"
     private const val FIELD_FRIENDS = "friends"
     private const val FIELD_MESSAGES = "messages"
@@ -36,6 +37,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_SENDER_ID = "senderId"
     private const val FIELD_LAST_MESSAGES = "lastMessage"
     private const val FIELD_LAST_UPDATE = "lastUpdate"
+    private const val FIELD_STATUS = "status"
 
     private val sharedPreferencesChatRoom =
         MinMapApplication.instance.getSharedPreferences(KEY_CHAT_ROOM, Context.MODE_PRIVATE)
@@ -75,7 +77,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
         return try {
             // this will run on a thread managed by Retrofit
             val listResult =
-                MinMapApi.retrofitService.getDirection(startLocation, endLocation, apiKey, mode)
+                MinMapApi.retrofitService.getDirection(startLocation, endLocation, mode, apiKey)
 
             Result.Success(listResult)
         } catch (e: Exception) {
@@ -99,7 +101,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                     Timber.d("setUser => User=${document.data}")
                 }
             }.addOnCompleteListener { task ->
-                Timber.d("setUser =>addOnCompleteListener")
+                Timber.i("setUser =>addOnCompleteListener")
 
                 if (task.isSuccessful) {
                     Timber.d("setUser => Set/ Update user=${task.result}")
@@ -140,10 +142,19 @@ object MinMapRemoteDataSource : MinMapDataSource {
             .addSnapshotListener { document, exception ->
                 Timber.i("getLiveUser addSnapshotListener detect")
                 val data = document?.toObject(User::class.java)
-                if (data?.currentEvent == null) {
+
+                if (data?.currentEvent == "") {
                     liveData.value = ""
                 } else {
-                    liveData.value = data.currentEvent
+                    liveData.value = data?.currentEvent
+
+                    // New event notification
+                    Intent().also { intent ->
+                        intent.action = EVENT_INTENT_FILTER
+                        MinMapApplication.instance.sendBroadcast(
+                            intent.putExtra(KEY_EVENT, KEY_EVENT)
+                        )
+                    }
                 }
 
                 exception?.let {
@@ -319,26 +330,100 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
         }
 
-    override suspend fun finishEvent(userId: String): Result<Boolean> =
+    override suspend fun finishEvent(
+        userId: String,
+        eventId: String,
+        chatRoomId: String
+    ): Result<Boolean> =
         suspendCoroutine { continuation ->
-            val updates = hashMapOf<String, Any>(
+            val userUpdate = hashMapOf<String, Any>(
                 FIELD_CURRENT_EVENT to ""
             )
 
-            FirebaseFirestore.getInstance().collection(PATH_USERS).document(userId).update(updates)
+            // Clean user's current event
+            FirebaseFirestore.getInstance().collection(PATH_USERS).document(userId)
+                .update(userUpdate)
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
-                        Timber.d("finishEvent => event=${task.result}")
-                        continuation.resume(Result.Success(true))
+                        Timber.i("finishEvent => Finish update user current event")
+
+                        // Count how many participant arrive
+                        val eventRef = FirebaseFirestore.getInstance().collection(PATH_EVENTS)
+                            .document(eventId)
+                        FirebaseFirestore.getInstance().runTransaction { transaction ->
+                            val document = transaction.get(eventRef)
+                            document.data?.let {
+
+                                // Not all participants arrive
+                                if (it[FIELD_STATUS] != ((it[FIELD_PARTICIPANTS] as List<String>).size - 1).toLong()) {
+                                    val eventUpdate = hashMapOf<String, Any>(
+                                        FIELD_STATUS to (it[FIELD_STATUS] as Long) + 1
+                                    )
+                                    transaction.update(eventRef, eventUpdate)
+                                } else {
+                                    // All participants arrive
+                                    Timber.d("finishEvent => Current event status=${it[FIELD_STATUS]}")
+
+                                    // Clean chat room eventId
+                                    val chatRoomUpdate = hashMapOf<String, Any>(
+                                        FIELD_EVENT_ID to ""
+                                    )
+                                    FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS)
+                                        .document(chatRoomId)
+                                        .update(chatRoomUpdate)
+                                        .addOnCompleteListener { task ->
+                                            if (task.isSuccessful) {
+                                                Timber.i("finishEvent => Finish update chat room event id")
+                                            } else {
+                                                task.exception?.let {
+                                                    Timber.d("finishEvent => Update chat room event id error=${it.message}")
+                                                    continuation.resume(Result.Error(it))
+                                                    return@addOnCompleteListener
+                                                }
+                                                continuation.resume(
+                                                    Result.Fail(
+                                                        MinMapApplication.instance.getString(
+                                                            R.string.you_know_nothing
+                                                        )
+                                                    )
+                                                )
+                                            }
+                                        }
+                                }
+                            }
+                        }.addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                Timber.i("finishEvent => Finish update event status")
+                                continuation.resume(Result.Success(true))
+
+                            } else {
+                                task.exception?.let {
+                                    Timber.d("finishEvent => Update event status error=${it.message}")
+                                    continuation.resume(Result.Error(it))
+                                    return@addOnCompleteListener
+                                }
+                                continuation.resume(
+                                    Result.Fail(
+                                        MinMapApplication.instance.getString(
+                                            R.string.you_know_nothing
+                                        )
+                                    )
+                                )
+                            }
+                        }
+
+
                     } else {
                         task.exception?.let {
-                            Timber.d("finishEvent => Update documents error=${it.message}")
+                            Timber.d("finishEvent => Update user current event error=${it.message}")
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
                         continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
                     }
                 }
+
+
         }
 
     override suspend fun getChatRoom(userId: String): Result<List<ChatRoom>> =
@@ -357,6 +442,29 @@ object MinMapRemoteDataSource : MinMapDataSource {
                     } else {
                         task.exception?.let {
                             Timber.d("getChatRoom => Get documents error=${it.message}")
+                            continuation.resume(Result.Error(it))
+                            return@addOnCompleteListener
+                        }
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    }
+                }
+        }
+
+    override suspend fun getChatRoomByCurrentEventId(currentEventId: String): Result<String> =
+        suspendCoroutine { continuation ->
+            FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS)
+                .whereEqualTo(FIELD_EVENT_ID, currentEventId).get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        var chatRoomId = ""
+                        task.result.documents[0]?.let {
+                            Timber.d("getChatRoomByCurrentEventId => chatRoom id=${it.id}, data=${it.data}")
+                            chatRoomId = it.id
+                        }
+                        continuation.resume(Result.Success(chatRoomId))
+                    } else {
+                        task.exception?.let {
+                            Timber.d("getChatRoomByCurrentEventId => Get documents error=${it.message}")
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
@@ -515,7 +623,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 )
             ).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Timber.d("sendMessages")
+                    Timber.i("sendMessages")
                     isChatRoomInfoUpdate = true
                 } else {
                     task.exception?.let {
@@ -534,7 +642,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
             message.id = document.id
             document.set(message).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Timber.d("sendMessages")
+                    Timber.i("sendMessages")
                     if (isChatRoomInfoUpdate) {
                         continuation.resume(Result.Success(true))
                     }
@@ -558,7 +666,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 mapOf(FIELD_FRIENDS to FieldValue.arrayUnion(friendId))
             ).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Timber.d("setFriend => Set my friend")
+                    Timber.i("setFriend => Set my friend")
                     isUserFriendUpdate = true
                 } else {
                     task.exception?.let {
@@ -575,7 +683,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 mapOf(FIELD_FRIENDS to FieldValue.arrayUnion(userId))
             ).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Timber.d("setFriend")
+                    Timber.i("setFriend")
                     isUserFriendUpdate = true
                 } else {
                     task.exception?.let {
@@ -596,7 +704,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 if (task.isSuccessful) {
                     Timber.d("setFriend create chat room => chatRoom=${task.result}")
                     if (isUserFriendUpdate) {
-                        Timber.i("setFriend create chat room => chatRoom id=${document.id}")
+                        Timber.d("setFriend create chat room => chatRoom id=${document.id}")
                         continuation.resume(Result.Success(document.id))
                     }
                 } else {

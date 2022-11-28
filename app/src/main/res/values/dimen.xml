@@ -12,6 +12,7 @@
     <dimen name="general_text_size">18sp</dimen>
     <dimen name="general_small_text_size">16sp</dimen>
     <dimen name="dialog_time_text_size">12sp</dimen>
+    <dimen name="navigation_instruction_text_size">20sp</dimen>
     <dimen name="navigation_friend_name_text_size">12sp</dimen>
     <dimen name="button_text_size">16sp</dimen>
 
@@ -21,11 +22,12 @@
 
     <dimen name="login_lottie_size">220dp</dimen>
     <dimen name="navigation_success_lottie_size">100dp</dimen>
+    <dimen name="lottie_size">300dp</dimen>
 
     <dimen name="button_height_size">48dp</dimen>
     <dimen name="google_login_button_height_size">60dp</dimen>
 
-    <dimen name="navigation_icon_size">24dp</dimen>
+    <dimen name="navigation_icon_size">36dp</dimen>
     <dimen name="navigation_instruction_view_size">135dp</dimen>
     <dimen name="navigation_friend_pic_size">32dp</dimen>
     <dimen name="invitation_icon_size">36dp</dimen>

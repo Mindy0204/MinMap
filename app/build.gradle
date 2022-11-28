@@ -1,11 +1,11 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
     id 'org.jlleitschuh.gradle.ktlint'
     id 'androidx.navigation.safeargs.kotlin'
     id 'com.google.gms.google-services'
     id 'kotlin-parcelize'
+    id 'com.google.firebase.crashlytics'
 }
 
 ktlint {
@@ -18,18 +18,39 @@ android {
 
     defaultConfig {
         applicationId "com.mindyhsu.minmap"
-        minSdk 21
+        minSdk 26
         targetSdk 32
-        versionCode 4
-        versionName "1.0.3"
+        versionCode 14
+        versionName "1.0.5"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+
+        Properties properties = new Properties()
+        // load local.properties
+        properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+        // read property from local.properties
+        def mapAPIKey = properties.getProperty('MAPS_API_KEY')
+        def oriAPIKey = properties.getProperty('ORI_API_KEY')
+
         release {
+            // BuildConfig can used by java code directly
+            buildConfigField "String", "APIKEY_MAP", mapAPIKey
+            resValue "string", "APIKEY_MAP", oriAPIKey
+
+            buildConfigField("Boolean", "TIMBER_VISIABLE", "false")
+
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            buildConfigField "String", "APIKEY_MAP", mapAPIKey
+            resValue "string", "APIKEY_MAP", oriAPIKey
+
+            buildConfigField("Boolean", "TIMBER_VISIABLE", "true")
         }
     }
     compileOptions {
@@ -74,8 +95,8 @@ dependencies {
 
     // Google Map Places SDK
     implementation 'com.google.android.libraries.places:places:2.6.0'
-    
-    //Timber
+
+    // Timber
     implementation 'com.jakewharton.timber:timber:5.0.1'
 
     // Lottie
@@ -84,7 +105,7 @@ dependencies {
     // Glide
     implementation "com.github.bumptech.glide:glide:$version_glide"
 
-    // firebase
+    // Firebase
     implementation platform('com.google.firebase:firebase-bom:31.0.2')
     implementation 'com.google.firebase:firebase-auth-ktx:21.1.0'
     implementation 'com.google.firebase:firebase-firestore-ktx:24.4.0'
@@ -95,6 +116,10 @@ dependencies {
 
     // QR code
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
+
+    // Crashlytics
+    implementation 'com.google.firebase:firebase-crashlytics-ktx:18.3.2'
+    implementation 'com.google.firebase:firebase-analytics-ktx:21.2.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'
