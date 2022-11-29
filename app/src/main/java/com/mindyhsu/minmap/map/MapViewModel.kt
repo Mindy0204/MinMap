@@ -27,6 +27,7 @@ import com.mindyhsu.minmap.data.*
 import com.mindyhsu.minmap.data.Step
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
+import com.mindyhsu.minmap.main.MainActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -80,7 +81,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private var participantIdList = emptyList<String>()
 
-    var navigationStatus: Int = NAVIGATION_INIT
+//    var navigationStatus: Int = NAVIGATION_INIT
+    var navigationStatus = MutableLiveData<Int>(NAVIGATION_INIT)
 
     private var routeSteps = listOf<Step>()
     private var step = 0
@@ -149,7 +151,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
                 }
 
-                if (navigationStatus != NAVIGATION_INIT) {
+                if (navigationStatus.value != NAVIGATION_INIT) {
                     updateFriendsLocation()
                 }
 
@@ -310,8 +312,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 polyline.jointType = JointType.ROUND
                 polyline.width = 15F
             }
-            if (navigationStatus != NAVIGATION_INIT) {
-                navigationStatus = NAVIGATION_ING
+            if (navigationStatus.value != NAVIGATION_INIT) {
+                navigationStatus.value = NAVIGATION_ING
             }
         }
 
@@ -346,6 +348,10 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         val serviceIntent = Intent(MinMapApplication.instance, ForegroundService::class.java)
         serviceIntent.putExtra("navigationComplete", "Navigation Complete")
         ContextCompat.startForegroundService(MinMapApplication.instance, serviceIntent)
+    }
+
+    fun removeLocationManager() {
+        locationManager.removeUpdates(locationListener)
     }
 
     private fun showNavigationInstruction(myLocation: Location) {

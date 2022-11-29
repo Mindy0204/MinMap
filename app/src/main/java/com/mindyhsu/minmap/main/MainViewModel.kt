@@ -10,12 +10,16 @@ import com.mindyhsu.minmap.login.UserManager
 class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private val _getLiveChatRoom = repository.getLiveChatRoom(UserManager.id ?: "")
-    val getLiveChatRoom : LiveData<List<ChatRoom>>
-    get() = _getLiveChatRoom
+    val getLiveChatRoom: LiveData<List<ChatRoom>>
+        get() = _getLiveChatRoom
 
     private val _getChatRoomIds = MutableLiveData<List<String>>()
     val getChatRoomIds: LiveData<List<String>>
         get() = _getChatRoomIds
+
+    private val _foregroundStop = MutableLiveData<Boolean?>()
+    val foregroundStop: LiveData<Boolean?>
+        get() = _foregroundStop
 
     fun getChatRoomIds(chatRooms: List<ChatRoom>) {
         val chatRoomIds = mutableListOf<String>()
@@ -31,6 +35,14 @@ class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
         for (chatRoomId in chatRoomIds) {
             repository.getMessage(chatRoomId, UserManager.id ?: "")
         }
+    }
+
+    fun stopForegroundUpdate() {
+        _foregroundStop.value = true
+    }
+
+    fun onForegroundUpdateStopped() {
+        _foregroundStop.value = null
     }
 
 
