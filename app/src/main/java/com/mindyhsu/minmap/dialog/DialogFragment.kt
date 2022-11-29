@@ -1,29 +1,20 @@
-package com.mindyhsu.minmap.chat
+package com.mindyhsu.minmap.dialog
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethodManager
-import android.widget.Toast
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.os.bundleOf
-import androidx.core.widget.doAfterTextChanged
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.firebase.Timestamp
-import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.databinding.FragmentDialogBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import com.mindyhsu.minmap.map.MapFragmentDirections
-import java.util.*
+import java.util.regex.Pattern
 
 class DialogFragment : Fragment() {
 

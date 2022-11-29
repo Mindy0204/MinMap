@@ -1,17 +1,16 @@
-package com.mindyhsu.minmap.chat
+package com.mindyhsu.minmap.dialog
 
+import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.Timestamp
-import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.data.Message
 import com.mindyhsu.minmap.databinding.ItemDialogDateBinding
 import com.mindyhsu.minmap.databinding.ItemFriendDialogBinding
 import com.mindyhsu.minmap.databinding.ItemMyDialogBinding
-import kotlinx.coroutines.flow.combine
 import java.text.SimpleDateFormat
 
 sealed class DialogItem {
@@ -50,7 +49,7 @@ class DialogAdapter(private val uiState: DialogUiState) :
     class DialogDateViewHolder(private var binding: ItemDialogDateBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: DialogItem.DialogDate) {
+        fun bind(item: DialogItem.DialogDate, uiStatue: DialogUiState) {
             val dateFormat = SimpleDateFormat("yyyy-MM-dd")
             binding.dialogDateText.text = dateFormat.format(item.time.toDate())
         }
@@ -59,8 +58,18 @@ class DialogAdapter(private val uiState: DialogUiState) :
     class MyDialogViewHolder(private var binding: ItemMyDialogBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(item: DialogItem.MyDialog) {
+        fun bind(item: DialogItem.MyDialog, uiStatue: DialogUiState) {
+
+            // If text is a URL -> draw under line
+            if (uiStatue.showUrlUnderLine(item.message.text)) {
+                binding.dialogText.paint.flags = Paint.UNDERLINE_TEXT_FLAG
+                binding.dialogText.setOnClickListener {
+
+                    uiStatue.clickUrl(item.message.text)
+                }
+            }
             binding.dialogText.text = item.message.text
+
 
             val dateFormat = SimpleDateFormat("HH:mm")
             binding.dialogTimeText.text = dateFormat.format(item.time.toDate())
@@ -72,6 +81,14 @@ class DialogAdapter(private val uiState: DialogUiState) :
 
         fun bind(item: DialogItem.FriendDialog, uiStatue: DialogUiState) {
             binding.dialogNameText.text = uiStatue.getSenderName(item.senderId)
+
+            // If text is a URL -> draw under line
+            if (uiStatue.showUrlUnderLine(item.message.text)) {
+                binding.dialogText.paint.flags = Paint.UNDERLINE_TEXT_FLAG
+                binding.dialogText.setOnClickListener {
+                    uiStatue.clickUrl(item.message.text)
+                }
+            }
             binding.dialogText.text = item.message.text
 
             val dateFormat = SimpleDateFormat("HH:mm")
@@ -127,7 +144,7 @@ class DialogAdapter(private val uiState: DialogUiState) :
         when (holder) {
             is MyDialogViewHolder -> {
                 val item = getItem(position) as DialogItem.MyDialog
-                holder.bind(item)
+                holder.bind(item, uiState)
             }
             is FriendDialogViewHolder -> {
                 val item = getItem(position) as DialogItem.FriendDialog
@@ -135,7 +152,7 @@ class DialogAdapter(private val uiState: DialogUiState) :
             }
             is DialogDateViewHolder -> {
                 val item = getItem(position) as DialogItem.DialogDate
-                holder.bind(item)
+                holder.bind(item, uiState)
             }
         }
     }

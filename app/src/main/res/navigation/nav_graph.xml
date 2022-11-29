@@ -49,7 +49,7 @@
 
     <fragment
         android:id="@+id/dialogFragment"
-        android:name="com.mindyhsu.minmap.chat.DialogFragment"
+        android:name="com.mindyhsu.minmap.dialog.DialogFragment"
         android:label="DialogFragment">
         <argument
             android:name="chatRoomDetail"

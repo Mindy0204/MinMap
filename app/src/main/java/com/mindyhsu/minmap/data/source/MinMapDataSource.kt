@@ -1,9 +1,7 @@
 package com.mindyhsu.minmap.data.source
 
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
-import com.mindyhsu.minmap.chat.DialogItem
 import com.mindyhsu.minmap.data.*
 
 interface MinMapDataSource {
