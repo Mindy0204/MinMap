@@ -698,7 +698,8 @@ object MinMapRemoteDataSource : MinMapDataSource {
 
             // Create a chat room
             val document = FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS).document()
-            val chatRoom = ChatRoom(id = document.id, participants = listOf(userId, friendId))
+            val participants = listOf(userId, friendId).sorted()
+            val chatRoom = ChatRoom(id = document.id, participants = participants)
 
             document.set(chatRoom).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
