@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.messaging.FirebaseMessaging
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.*
@@ -718,4 +719,20 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
             }
         }
+
+    override suspend fun getFCMToken(): Result<String> = suspendCoroutine { continuation ->
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Timber.d("getFCMToken => Get token=${task.result}")
+                continuation.resume(Result.Success(task.result))
+            } else {
+                task.exception?.let {
+                    Timber.d("getFCMToken => Get token error=${it.message}")
+                    continuation.resume(Result.Error(it))
+                    return@addOnCompleteListener
+                }
+                continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+            }
+        }
+    }
 }

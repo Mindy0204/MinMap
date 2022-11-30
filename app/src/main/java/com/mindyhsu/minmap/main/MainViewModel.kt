@@ -3,9 +3,18 @@ package com.mindyhsu.minmap.main
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.mindyhsu.minmap.MinMapApplication
+import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.ChatRoom
+import com.mindyhsu.minmap.data.Result
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
+import com.mindyhsu.minmap.network.LoadApiStatus
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
 
@@ -20,6 +29,16 @@ class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
     private val _foregroundStop = MutableLiveData<Boolean?>()
     val foregroundStop: LiveData<Boolean?>
         get() = _foregroundStop
+
+    private var viewModelJob = Job()
+    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
+
+    private val status = MutableLiveData<LoadApiStatus>()
+    private val error = MutableLiveData<String?>()
+
+    init {
+        getFCMToken()
+    }
 
     fun getChatRoomIds(chatRooms: List<ChatRoom>) {
         val chatRoomIds = mutableListOf<String>()
@@ -45,5 +64,32 @@ class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
         _foregroundStop.value = null
     }
 
-
+    private fun getFCMToken() {
+        coroutineScope.launch {
+            val token = when (val result = repository.getFCMToken()) {
+                is Result.Success -> {
+                    error.value = null
+                    status.value = LoadApiStatus.DONE
+                    result.data
+                }
+                is Result.Fail -> {
+                    error.value = result.error
+                    status.value = LoadApiStatus.ERROR
+                    null
+                }
+                is Result.Error -> {
+                    error.value = result.exception.toString()
+                    status.value = LoadApiStatus.ERROR
+                    null
+                }
+                else -> {
+                    error.value =
+                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    status.value = LoadApiStatus.ERROR
+                    null
+                }
+            }
+            Timber.d("minddddy, FCM token=${token}")
+        }
+    }
 }

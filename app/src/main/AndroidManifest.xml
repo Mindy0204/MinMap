@@ -25,6 +25,14 @@
 
         <service android:name=".BroadcastReceiverService"/>
         <service android:name=".ForegroundService"/>
+        <service
+            android:name=".FCMService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"

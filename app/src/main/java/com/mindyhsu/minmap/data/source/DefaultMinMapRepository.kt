@@ -92,4 +92,8 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
     override suspend fun setFriend(userId: String, friendId: String): Result<String> {
         return remoteDataSource.setFriend(userId, friendId)
     }
+
+    override suspend fun getFCMToken(): Result<String> {
+        return remoteDataSource.getFCMToken()
+    }
 }
