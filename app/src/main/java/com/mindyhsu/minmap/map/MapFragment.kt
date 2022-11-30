@@ -18,6 +18,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -79,6 +81,7 @@ class MapFragment : Fragment(),
         mapFragment?.getMapAsync { googleMap ->
             map = googleMap
             map.uiSettings.setAllGesturesEnabled(true)
+            map.uiSettings.isMapToolbarEnabled = false
             binding.sendInvitationButton.visibility = View.GONE
 
             enableMyLocation()
@@ -108,6 +111,7 @@ class MapFragment : Fragment(),
         binding.friendsLocationRecyclerView.adapter = adapter
         viewModel.onFriendsLiveReady.observe(viewLifecycleOwner) { ready ->
             if (ready) {
+                binding.friendsLocationRecyclerView.visibility = View.VISIBLE
                 viewModel.friends.observe(viewLifecycleOwner) {
                     viewModel.markFriendsLocation(map, it)
                     adapter.submitList(it)
@@ -289,12 +293,15 @@ class MapFragment : Fragment(),
                 binding.startNavigationButton.visibility = View.GONE
                 binding.meetingLocationButton.visibility = View.GONE
                 binding.friendsCardView.visibility = View.GONE
+                binding.friendsLocationRecyclerView.visibility = View.GONE
 
                 // Function
                 map.setOnMapClickListener(this)
                 binding.createEventButton.setOnClickListener {
                     searchPlace()
                 }
+                viewModel.currentEventDisplay.removeObservers(viewLifecycleOwner)
+
             } else {
                 // UI
                 map.setOnMapClickListener(null)
@@ -303,6 +310,7 @@ class MapFragment : Fragment(),
                 if (viewModel.navigationStatus.value == NAVIGATION_INIT
                     || viewModel.navigationStatus.value == NAVIGATION_PAUSE
                 ) {
+
                     viewModel.currentEventDisplay.observe(viewLifecycleOwner) { display ->
                         binding.startNavigationButton.visibility =
                             if (viewModel.navigationStatus.value == NAVIGATION_INIT) {
