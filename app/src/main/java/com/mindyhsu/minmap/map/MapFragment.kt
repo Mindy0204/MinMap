@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.LocationManager
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -34,6 +35,7 @@ import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.EXIT_NAVIGATION
+import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
@@ -52,6 +54,8 @@ class MapFragment : Fragment(),
 
     private lateinit var map: GoogleMap
     private val AUTOCOMPLETE_REQUEST_CODE = 1
+
+    private lateinit var textToSpeech: TextToSpeech
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,6 +130,12 @@ class MapFragment : Fragment(),
             binding.cardViewText2.text = it["distanceAndDuration"]
             binding.cardViewIcon.setImageResource(R.mipmap.icon_go_straight)
             binding.cardViewNextDirectionIcon.visibility = View.VISIBLE
+
+            textToSpeech = TextToSpeech(context, TextToSpeech.OnInitListener { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    viewModel.startTextToSpeech(textToSpeech)
+                }
+            })
 
             when (viewModel.direction) {
                 DIRECTION_GO_STRAIGHT -> {

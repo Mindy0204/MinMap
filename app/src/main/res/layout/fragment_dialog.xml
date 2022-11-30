@@ -98,16 +98,6 @@
         app:layout_constraintTop_toTopOf="@+id/edit_view" />
 
     <ImageView
-        android:id="@+id/add_photo"
-        android:layout_width="@dimen/dialog_icon_size"
-        android:layout_height="@dimen/dialog_icon_size"
-        android:layout_marginStart="@dimen/margin_8dp"
-        android:src="@mipmap/icon_add_photo"
-        app:layout_constraintBottom_toBottomOf="@+id/edit_view"
-        app:layout_constraintStart_toEndOf="@+id/share_location"
-        app:layout_constraintTop_toTopOf="@+id/edit_view" />
-
-    <ImageView
         android:id="@+id/send_message"
         android:layout_width="@dimen/dialog_icon_size"
         android:layout_height="@dimen/dialog_icon_size"
@@ -126,7 +116,7 @@
         android:layout_marginEnd="@dimen/margin_4dp"
         app:layout_constraintBottom_toBottomOf="@+id/edit_view"
         app:layout_constraintEnd_toStartOf="@+id/send_message"
-        app:layout_constraintStart_toEndOf="@+id/add_photo"
+        app:layout_constraintStart_toEndOf="@+id/share_location"
         app:layout_constraintTop_toTopOf="@+id/edit_view" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
