@@ -85,7 +85,6 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
                         setUser(user.uid, accountResult.photoUrl.toString(), name)
                     }
                 }
-                _isSignIn.value = UserManager.id != null
             } else {
                 task.exception?.let {
                     Timber.d("signInGoogleWithFirebaseAuth => Request error=${it.message}")
@@ -121,6 +120,7 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
                     null
                 }
             }
+            _isSignIn.value = UserManager.id != null
         }
     }
 }
