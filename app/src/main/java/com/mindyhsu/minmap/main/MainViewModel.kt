@@ -30,16 +30,6 @@ class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
     val foregroundStop: LiveData<Boolean?>
         get() = _foregroundStop
 
-    private var viewModelJob = Job()
-    private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
-
-    private val status = MutableLiveData<LoadApiStatus>()
-    private val error = MutableLiveData<String?>()
-
-    init {
-        getFCMToken()
-    }
-
     fun getChatRoomIds(chatRooms: List<ChatRoom>) {
         val chatRoomIds = mutableListOf<String>()
         getLiveChatRoom.value?.let {
@@ -62,34 +52,5 @@ class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     fun onForegroundUpdateStopped() {
         _foregroundStop.value = null
-    }
-
-    private fun getFCMToken() {
-        coroutineScope.launch {
-            val token = when (val result = repository.getFCMToken()) {
-                is Result.Success -> {
-                    error.value = null
-                    status.value = LoadApiStatus.DONE
-                    result.data
-                }
-                is Result.Fail -> {
-                    error.value = result.error
-                    status.value = LoadApiStatus.ERROR
-                    null
-                }
-                is Result.Error -> {
-                    error.value = result.exception.toString()
-                    status.value = LoadApiStatus.ERROR
-                    null
-                }
-                else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
-                    status.value = LoadApiStatus.ERROR
-                    null
-                }
-            }
-            Timber.d("minddddy, FCM token=${token}")
-        }
     }
 }

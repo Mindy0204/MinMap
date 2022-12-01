@@ -8,5 +8,6 @@ data class User(
     val geoHash: GeoPoint? = null,
     val id: String = "",
     val image: String = "",
-    val name: String = ""
+    val name: String = "",
+    val fcmToken: String = ""
 )

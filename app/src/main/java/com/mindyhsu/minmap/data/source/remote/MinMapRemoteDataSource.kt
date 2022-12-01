@@ -87,7 +87,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
         }
     }
 
-    override suspend fun setUser(uid: String, image: String, name: String): Result<Boolean> =
+    override suspend fun setUser(uid: String, image: String, name: String, fcmToken: String): Result<Boolean> =
         suspendCoroutine { continuation ->
             Timber.d("setUser => setUser uid=$uid")
             val userRef = FirebaseFirestore.getInstance().collection(PATH_USERS).document(uid)
@@ -96,7 +96,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
 
                 val document = transaction.get(userRef)
                 if (document.data == null) {
-                    transaction.set(userRef, User(id = uid, image = image, name = name))
+                    transaction.set(userRef, User(id = uid, image = image, name = name, fcmToken = fcmToken))
                     Timber.d("setUser => After set user=${document.data}")
                 } else {
                     Timber.d("setUser => User=${document.data}")

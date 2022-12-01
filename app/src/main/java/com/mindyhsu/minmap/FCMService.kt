@@ -20,6 +20,7 @@ class FCMService : FirebaseMessagingService() {
 
     // Handle FCM messages
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        Timber.i("minddddy, FCM onMessageReceived")
         // key-value
         if (remoteMessage.data.isNotEmpty()) {
             Timber.d("minddddy, FCM message=${remoteMessage.data}")

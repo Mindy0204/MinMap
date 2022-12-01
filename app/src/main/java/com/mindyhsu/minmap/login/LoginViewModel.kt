@@ -81,8 +81,8 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
                     UserManager.id = user.uid
                     UserManager.image = accountResult.photoUrl.toString()
                     UserManager.name = accountResult.displayName
-                    accountResult.displayName?.let { name ->
-                        setUser(user.uid, accountResult.photoUrl.toString(), name)
+                    accountResult.displayName?.let {
+                        getFCMToken()
                     }
                 }
             } else {
@@ -93,9 +93,43 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
-    private fun setUser(id: String, image: String, name: String) {
+    private fun getFCMToken() {
         coroutineScope.launch {
-            val result = repository.setUser(id, image, name)
+            val fcmToken = when (val result = repository.getFCMToken()) {
+                is Result.Success -> {
+                    error.value = null
+                    status.value = LoadApiStatus.DONE
+                    result.data
+                }
+                is Result.Fail -> {
+                    error.value = result.error
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+                is Result.Error -> {
+                    error.value = result.exception.toString()
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+                else -> {
+                    error.value =
+                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    status.value = LoadApiStatus.ERROR
+                    ""
+                }
+            }
+            setUser(
+                id = UserManager.id ?: "",
+                image = accountResult.photoUrl.toString(),
+                name = UserManager.name ?: "",
+                fcmToken = fcmToken
+            )
+        }
+    }
+
+    private fun setUser(id: String, image: String, name: String, fcmToken: String) {
+        coroutineScope.launch {
+            val result = repository.setUser(id, image, name, fcmToken)
 
             hasUserData.value = when (result) {
                 is Result.Success -> {
