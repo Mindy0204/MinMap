@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
 //        registerReceiver()
         chatRoomReceiver()
         messageReceiver()
-        eventReceiver()
+//        eventReceiver()
 
         if (intent.extras?.get(EXIT_NAVIGATION) == EXIT_NAVIGATION) {
             exitNavigationForegroundService()
@@ -94,16 +94,16 @@ class MainActivity : AppCompatActivity() {
         }, filter)
     }
 
-    private fun eventReceiver() {
-        val filter = IntentFilter(EVENT_INTENT_FILTER)
-        registerReceiver(object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                val message = intent?.getStringExtra(KEY_EVENT).toString()
-                val i = Intent(context, BroadcastReceiverService::class.java)
-                startService(i.putExtra(KEY_EVENT, message))
-            }
-        }, filter)
-    }
+//    private fun eventReceiver() {
+//        val filter = IntentFilter(EVENT_INTENT_FILTER)
+//        registerReceiver(object : BroadcastReceiver() {
+//            override fun onReceive(context: Context?, intent: Intent?) {
+//                val message = intent?.getStringExtra(KEY_EVENT).toString()
+//                val i = Intent(context, BroadcastReceiverService::class.java)
+//                startService(i.putExtra(KEY_EVENT, message))
+//            }
+//        }, filter)
+//    }
 
     private fun exitNavigationForegroundService() {
 

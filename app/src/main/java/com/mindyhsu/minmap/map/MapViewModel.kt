@@ -321,7 +321,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     fun startNavigation() {
         locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,
+            LocationManager.NETWORK_PROVIDER,
             0L,
             0F,
             locationListener

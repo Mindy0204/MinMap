@@ -54,7 +54,7 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
         googleSignInClient = GoogleSignIn.getClient(MinMapApplication.instance, gso)
 
         val account = GoogleSignIn.getLastSignedInAccount(MinMapApplication.instance)
-        _isSignIn.value = account != null
+//        _isSignIn.value = account != null
 
         auth = Firebase.auth
     }
