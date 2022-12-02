@@ -20,8 +20,8 @@ android {
         applicationId "com.mindyhsu.minmap"
         minSdk 26
         targetSdk 32
-        versionCode 14
-        versionName "1.0.5"
+        versionCode 15
+        versionName "1.0.6"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -119,7 +119,10 @@ dependencies {
 
     // Crashlytics
     implementation 'com.google.firebase:firebase-crashlytics-ktx:18.3.2'
+
+    // Firebase Cloud Messaging and Analytics
     implementation 'com.google.firebase:firebase-analytics-ktx:21.2.0'
+    implementation 'com.google.firebase:firebase-messaging-ktx:23.1.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

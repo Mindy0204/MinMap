@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.GeoPoint
+import com.google.firebase.messaging.FirebaseMessaging
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.*
@@ -29,8 +30,10 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_GEO_HASH = "geoHash"
     private const val FIELD_PARTICIPANTS = "participants"
     private const val FIELD_ID = "id"
+    private const val FIELD_IMAGE = "image"
     private const val FIELD_EVENT_ID = "eventId"
     private const val FIELD_NAME = "name"
+    private const val FIELD_FCM_TOKEN = "fcmToken"
     private const val FIELD_FRIENDS = "friends"
     private const val FIELD_MESSAGES = "messages"
     private const val FIELD_TIME = "time"
@@ -86,7 +89,12 @@ object MinMapRemoteDataSource : MinMapDataSource {
         }
     }
 
-    override suspend fun setUser(uid: String, image: String, name: String): Result<Boolean> =
+    override suspend fun setUser(
+        uid: String,
+        image: String,
+        name: String,
+        fcmToken: String
+    ): Result<Boolean> =
         suspendCoroutine { continuation ->
             Timber.d("setUser => setUser uid=$uid")
             val userRef = FirebaseFirestore.getInstance().collection(PATH_USERS).document(uid)
@@ -95,10 +103,21 @@ object MinMapRemoteDataSource : MinMapDataSource {
 
                 val document = transaction.get(userRef)
                 if (document.data == null) {
-                    transaction.set(userRef, User(id = uid, image = image, name = name))
-                    Timber.d("setUser => After set user=${document.data}")
+                    transaction.set(
+                        userRef,
+                        User(id = uid, image = image, name = name, fcmToken = fcmToken)
+                    )
+                    Timber.i("setUser => After set user")
                 } else {
-                    Timber.d("setUser => User=${document.data}")
+                    val updates = hashMapOf<String, Any>(
+                        FIELD_ID to uid,
+                        FIELD_IMAGE to image,
+                        FIELD_NAME to name,
+                        FIELD_FCM_TOKEN to fcmToken
+                    )
+                    transaction.update(userRef, updates)
+
+                    Timber.i("setUser => After update user")
                 }
             }.addOnCompleteListener { task ->
                 Timber.i("setUser =>addOnCompleteListener")
@@ -698,7 +717,8 @@ object MinMapRemoteDataSource : MinMapDataSource {
 
             // Create a chat room
             val document = FirebaseFirestore.getInstance().collection(PATH_CHAT_ROOMS).document()
-            val chatRoom = ChatRoom(id = document.id, participants = listOf(userId, friendId))
+            val participants = listOf(userId, friendId).sorted()
+            val chatRoom = ChatRoom(id = document.id, participants = participants)
 
             document.set(chatRoom).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
@@ -717,4 +737,20 @@ object MinMapRemoteDataSource : MinMapDataSource {
                 }
             }
         }
+
+    override suspend fun getFCMToken(): Result<String> = suspendCoroutine { continuation ->
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                Timber.d("getFCMToken => Get token=${task.result}")
+                continuation.resume(Result.Success(task.result))
+            } else {
+                task.exception?.let {
+                    Timber.d("getFCMToken => Get token error=${it.message}")
+                    continuation.resume(Result.Error(it))
+                    return@addOnCompleteListener
+                }
+                continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+            }
+        }
+    }
 }

@@ -1,9 +1,7 @@
 package com.mindyhsu.minmap.data.source
 
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
-import com.mindyhsu.minmap.chat.DialogItem
 import com.mindyhsu.minmap.data.*
 
 interface MinMapDataSource {
@@ -15,7 +13,7 @@ interface MinMapDataSource {
         mode: String
     ): Result<MapDirection>
 
-    suspend fun setUser(uid: String, image: String, name: String): Result<Boolean>
+    suspend fun setUser(uid: String, image: String, name: String, fcmToken: String): Result<Boolean>
 
     suspend fun getUserEvent(userId: String): Result<String>
 
@@ -50,4 +48,6 @@ interface MinMapDataSource {
     suspend fun sendMessage(chatRoomId: String, message: Message): Result<Boolean>
 
     suspend fun setFriend(userId: String, friendId: String): Result<String>
+
+    suspend fun getFCMToken(): Result<String>
 }

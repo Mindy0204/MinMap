@@ -16,7 +16,7 @@ import timber.log.Timber
 
 private const val CHAT_ROOM_CHANNEL = "chat room channel"
 private const val MESSAGE_CHANNEL = "message channel"
-private const val EVENT_CHANNEL = "event channel"
+//private const val EVENT_CHANNEL = "event channel"
 
 class BroadcastReceiverService : Service() {
 
@@ -34,9 +34,9 @@ class BroadcastReceiverService : Service() {
                 messageNotification(it.getString(KEY_MESSAGE))
             }
 
-            if (it.getString(KEY_EVENT) != null) {
-                eventNotification()
-            }
+//            if (it.getString(KEY_EVENT) != null) {
+//                eventNotification()
+//            }
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -100,27 +100,27 @@ class BroadcastReceiverService : Service() {
         }
     }
 
-    private fun eventNotification() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = getString(R.string.app_name)
-            val descriptionText = getString(R.string.event_channel_description)
-            val importance = NotificationManager.IMPORTANCE_HIGH
-            val channel = NotificationChannel(EVENT_CHANNEL, name, importance).apply {
-                description = descriptionText
-            }
-
-            var builder = NotificationCompat.Builder(this, EVENT_CHANNEL)
-                .setSmallIcon(R.mipmap.icon_launcher_minmap_dark)
-                .setContentTitle(descriptionText)
-                .setDefaults(Notification.DEFAULT_ALL)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-            val notification = builder.build()
-
-            val notificationManager: NotificationManager =
-                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-            notificationManager.createNotificationChannel(channel)
-
-            notificationManager.notify(0x03, notification)
-        }
-    }
+//    private fun eventNotification() {
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//            val name = getString(R.string.app_name)
+//            val descriptionText = getString(R.string.event_channel_description)
+//            val importance = NotificationManager.IMPORTANCE_HIGH
+//            val channel = NotificationChannel(EVENT_CHANNEL, name, importance).apply {
+//                description = descriptionText
+//            }
+//
+//            var builder = NotificationCompat.Builder(this, EVENT_CHANNEL)
+//                .setSmallIcon(R.mipmap.icon_launcher_minmap_dark)
+//                .setContentTitle(descriptionText)
+//                .setDefaults(Notification.DEFAULT_ALL)
+//                .setPriority(NotificationCompat.PRIORITY_MAX)
+//            val notification = builder.build()
+//
+//            val notificationManager: NotificationManager =
+//                getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+//            notificationManager.createNotificationChannel(channel)
+//
+//            notificationManager.notify(0x03, notification)
+//        }
+//    }
 }

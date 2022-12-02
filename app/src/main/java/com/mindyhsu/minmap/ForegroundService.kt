@@ -24,6 +24,8 @@ class ForegroundService : Service() {
     override fun onBind(p0: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+
+
         intent?.extras?.let {
             val title = intent.getStringExtra("instructionTitle")
             val content = intent.getStringExtra("instructionContent")
@@ -54,12 +56,13 @@ class ForegroundService : Service() {
                         getString(R.string.exit_navigation),
                         pendingIntent
                     )
-                    .setSmallIcon(R.mipmap.icon_planning).build()
+                    .setSmallIcon(R.mipmap.icon_planning)
+                    .setSilent(true)
+                    .build()
 
             if (it.getString("navigationComplete") != null) {
                 stopForeground(true)
                 Timber.d("status stopForeground")
-
             } else {
                 createNotificationChannel()
                 startForeground(-2, notification)

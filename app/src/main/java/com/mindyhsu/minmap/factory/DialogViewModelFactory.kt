@@ -2,7 +2,7 @@ package com.mindyhsu.minmap.factory
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.mindyhsu.minmap.chat.DialogViewModel
+import com.mindyhsu.minmap.dialog.DialogViewModel
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.data.source.MinMapRepository
 

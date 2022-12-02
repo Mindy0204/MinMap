@@ -20,7 +20,7 @@
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_check_event.xml" value="0.16666666666666666" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_dialog.xml" value="0.3333333333333333" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_login.xml" value="0.22" />
-        <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_map.xml" value="0.1" />
+        <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_map.xml" value="0.22" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_map_search.xml" value="0.2859375" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_maps.xml" value="0.22" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/layout/fragment_navigation_success.xml" value="0.3333333333333333" />
@@ -40,6 +40,8 @@
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/mipmap-anydpi-v26/ic_launcher_minmap_dark.xml" value="0.1895" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/mipmap-anydpi-v26/ic_launcher_minmap_dark_round.xml" value="0.1895" />
         <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/mipmap-anydpi-v26/ic_launcher_minmap_round.xml" value="0.1895" />
+        <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/mipmap-anydpi-v26/ic_launcher_minmap_theme.xml" value="0.189" />
+        <entry key="..\:/Users/mindy/AndroidStudioProjects/MinMap/app/src/main/res/mipmap-anydpi-v26/ic_launcher_minmap_theme_round.xml" value="0.2725" />
       </map>
     </option>
   </component>

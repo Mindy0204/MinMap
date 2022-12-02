@@ -6,7 +6,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
@@ -16,15 +15,23 @@
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher_minmap"
+        android:icon="@mipmap/ic_launcher_minmap_dark"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_minmap_round"
+        android:roundIcon="@mipmap/ic_launcher_minmap_dark_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MinMap"
         tools:targetApi="31">
 
         <service android:name=".BroadcastReceiverService"/>
         <service android:name=".ForegroundService"/>
+        <service
+            android:name=".FCMService"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
+                <action android:name="com.google.firebase.MESSAGING_EVENT"/>
+            </intent-filter>
+        </service>
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -37,6 +44,7 @@
             android:name=".main.MainActivity"
             android:exported="true"
             android:screenOrientation="portrait"
+            android:launchMode="singleTop"
             android:label="@string/title_main">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

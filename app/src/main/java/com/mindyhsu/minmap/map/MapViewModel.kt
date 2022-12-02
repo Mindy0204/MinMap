@@ -3,12 +3,11 @@ package com.mindyhsu.minmap.map
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
-import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
+import android.speech.tts.TextToSpeech
+import android.speech.tts.Voice
 import android.text.Html
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
@@ -24,17 +23,17 @@ import com.google.android.gms.maps.model.*
 import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.*
 import com.mindyhsu.minmap.data.*
-import com.mindyhsu.minmap.data.Step
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
+import com.mindyhsu.minmap.network.LoadApiStatus
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import com.mindyhsu.minmap.network.LoadApiStatus
+import org.w3c.dom.Text
 import timber.log.Timber
 import java.util.*
-import kotlin.collections.HashMap
+
 
 data class MapUiState(
     val onClick: (friendId: String) -> Unit
@@ -80,7 +79,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private var participantIdList = emptyList<String>()
 
-    var navigationStatus: Int = NAVIGATION_INIT
+    var navigationStatus = MutableLiveData<Int>(NAVIGATION_INIT)
 
     private var routeSteps = listOf<Step>()
     private var step = 0
@@ -89,6 +88,9 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var _navigationInstruction = MutableLiveData<HashMap<String, String>>()
     val navigationInstruction: LiveData<HashMap<String, String>>
         get() = _navigationInstruction
+
+    private var foregroundDistanceAndDuration = ""
+    private var distance = -1
 
     private var _isFinishNavigation = MutableLiveData<Boolean>()
     val isFinishNavigation: LiveData<Boolean>
@@ -149,7 +151,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
                 }
 
-                if (navigationStatus != NAVIGATION_INIT) {
+                if (navigationStatus.value != NAVIGATION_INIT) {
                     updateFriendsLocation()
                 }
 
@@ -310,8 +312,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 polyline.jointType = JointType.ROUND
                 polyline.width = 15F
             }
-            if (navigationStatus != NAVIGATION_INIT) {
-                navigationStatus = NAVIGATION_ING
+            if (navigationStatus.value != NAVIGATION_INIT) {
+                navigationStatus.value = NAVIGATION_ING
             }
         }
 
@@ -319,7 +321,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     fun startNavigation() {
         locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,
+            LocationManager.NETWORK_PROVIDER,
             0L,
             0F,
             locationListener
@@ -346,6 +348,10 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         val serviceIntent = Intent(MinMapApplication.instance, ForegroundService::class.java)
         serviceIntent.putExtra("navigationComplete", "Navigation Complete")
         ContextCompat.startForegroundService(MinMapApplication.instance, serviceIntent)
+    }
+
+    fun removeLocationManager() {
+        locationManager.removeUpdates(locationListener)
     }
 
     private fun showNavigationInstruction(myLocation: Location) {
@@ -389,6 +395,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 )
             }
 
+            distance = myLocation.distanceTo(stepEndLocation).toInt()
+
             _navigationInstruction.value = hashMapOf(
                 "direction" to instruction,
                 "distanceAndDuration" to MinMapApplication.instance.getString(
@@ -398,14 +406,15 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 )
             )
 
+            foregroundDistanceAndDuration = MinMapApplication.instance.getString(
+                R.string.navigation_foreground,
+                myLocation.distanceTo(stepEndLocation).toInt().toString(),
+                routeSteps[step].duration.text,
+                direction
+            )
             startNavigationForegroundService(
                 instruction,
-                MinMapApplication.instance.getString(
-                    R.string.navigation_foreground,
-                    myLocation.distanceTo(stepEndLocation).toInt().toString(),
-                    routeSteps[step].duration.text,
-                    direction
-                )
+                foregroundDistanceAndDuration
             )
 
             val finalStepLocation = Location("finalStepLocation")
@@ -414,12 +423,12 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
             // Last step
             if (step == routeSteps.size - 1 && myLocation.distanceTo(stepEndLocation)
-                    .toInt() <= 15
+                    .toInt() <= 20
             ) {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
                 exitNavigationForegroundService()
-            } else if (myLocation.distanceTo(finalStepLocation).toInt() <= 15) {
+            } else if (myLocation.distanceTo(finalStepLocation).toInt() <= 20) {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
                 exitNavigationForegroundService()
@@ -431,6 +440,17 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     step++
                 }
             }
+        }
+    }
+
+    fun startTextToSpeech(textToSpeech: TextToSpeech) {
+        textToSpeech.stop()
+
+        // Voice reminder every 20 meters
+        if ((distance % 20) == 0 && (distance % 20) != 0) {
+            textToSpeech.language = Locale.ENGLISH
+            textToSpeech.setSpeechRate(0.75F)
+            textToSpeech.speak(foregroundDistanceAndDuration, TextToSpeech.QUEUE_FLUSH, null)
         }
     }
 

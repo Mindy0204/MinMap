@@ -8,15 +8,20 @@ import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.LocationManager
 import android.os.Bundle
+import android.speech.tts.TextToSpeech
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -29,11 +34,14 @@ import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.firebase.firestore.GeoPoint
-import com.mindyhsu.minmap.BuildConfig
+import com.mindyhsu.minmap.EXIT_NAVIGATION
+import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import com.mindyhsu.minmap.main.MainActivity
+import com.mindyhsu.minmap.main.MainViewModel
 import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessFragmentDirections
 import timber.log.Timber
 import java.util.*
@@ -46,6 +54,8 @@ class MapFragment : Fragment(),
 
     private lateinit var map: GoogleMap
     private val AUTOCOMPLETE_REQUEST_CODE = 1
+
+    private lateinit var textToSpeech: TextToSpeech
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,13 +78,14 @@ class MapFragment : Fragment(),
         // Initialize Map
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
-        if (viewModel.navigationStatus != NAVIGATION_INIT) {
-            viewModel.navigationStatus = NAVIGATION_PAUSE
+        if (viewModel.navigationStatus.value != NAVIGATION_INIT) {
+            viewModel.navigationStatus.value = NAVIGATION_PAUSE
         }
 
         mapFragment?.getMapAsync { googleMap ->
             map = googleMap
             map.uiSettings.setAllGesturesEnabled(true)
+            map.uiSettings.isMapToolbarEnabled = false
             binding.sendInvitationButton.visibility = View.GONE
 
             enableMyLocation()
@@ -92,7 +103,7 @@ class MapFragment : Fragment(),
             binding.startNavigationButton.visibility = View.GONE
             binding.cardViewText.text = getString(R.string.start_navigation_button)
             viewModel.startNavigation()
-            viewModel.navigationStatus = NAVIGATION_ING
+            viewModel.navigationStatus.value = NAVIGATION_ING
             viewModel.updateFriendsLocation()
         }
 
@@ -104,6 +115,7 @@ class MapFragment : Fragment(),
         binding.friendsLocationRecyclerView.adapter = adapter
         viewModel.onFriendsLiveReady.observe(viewLifecycleOwner) { ready ->
             if (ready) {
+                binding.friendsLocationRecyclerView.visibility = View.VISIBLE
                 viewModel.friends.observe(viewLifecycleOwner) {
                     viewModel.markFriendsLocation(map, it)
                     adapter.submitList(it)
@@ -118,6 +130,12 @@ class MapFragment : Fragment(),
             binding.cardViewText2.text = it["distanceAndDuration"]
             binding.cardViewIcon.setImageResource(R.mipmap.icon_go_straight)
             binding.cardViewNextDirectionIcon.visibility = View.VISIBLE
+
+            textToSpeech = TextToSpeech(context, TextToSpeech.OnInitListener { status ->
+                if (status == TextToSpeech.SUCCESS) {
+                    viewModel.startTextToSpeech(textToSpeech)
+                }
+            })
 
             when (viewModel.direction) {
                 DIRECTION_GO_STRAIGHT -> {
@@ -150,7 +168,7 @@ class MapFragment : Fragment(),
                 viewModel.finishEvent()
                 binding.friendsCardView.visibility = View.GONE
                 map.clear()
-                viewModel.navigationStatus = NAVIGATION_INIT
+                viewModel.navigationStatus.value = NAVIGATION_INIT
                 findNavController().navigate(NavigationSuccessFragmentDirections.navigateToNavigationSuccessFragment())
             }
         }
@@ -171,6 +189,21 @@ class MapFragment : Fragment(),
                 map.clear()
                 binding.sendInvitationButton.visibility = View.GONE
             }
+        }
+
+        // Communicate between viewModel
+        // When exit navigation of foreground service clicked
+        val mainViewModel = ViewModelProvider(requireActivity())[MainViewModel::class.java]
+        mainViewModel.foregroundStop.observe(requireActivity()) {
+            if (it == true) {
+                viewModel.removeLocationManager()
+                mainViewModel.onForegroundUpdateStopped()
+                viewModel.navigationStatus.value = NAVIGATION_INIT
+            }
+        }
+
+        viewModel.navigationStatus.observe(viewLifecycleOwner) {
+            showCurrentEvent()
         }
 
         binding.chatButton.setOnClickListener {
@@ -270,23 +303,27 @@ class MapFragment : Fragment(),
                 binding.startNavigationButton.visibility = View.GONE
                 binding.meetingLocationButton.visibility = View.GONE
                 binding.friendsCardView.visibility = View.GONE
+                binding.friendsLocationRecyclerView.visibility = View.GONE
 
                 // Function
                 map.setOnMapClickListener(this)
                 binding.createEventButton.setOnClickListener {
                     searchPlace()
                 }
+                viewModel.currentEventDisplay.removeObservers(viewLifecycleOwner)
+
             } else {
                 // UI
                 map.setOnMapClickListener(null)
                 binding.createEventButton.visibility = View.GONE
 
-                if (viewModel.navigationStatus == NAVIGATION_INIT
-                    || viewModel.navigationStatus == NAVIGATION_PAUSE
+                if (viewModel.navigationStatus.value == NAVIGATION_INIT
+                    || viewModel.navigationStatus.value == NAVIGATION_PAUSE
                 ) {
+
                     viewModel.currentEventDisplay.observe(viewLifecycleOwner) { display ->
                         binding.startNavigationButton.visibility =
-                            if (viewModel.navigationStatus == NAVIGATION_INIT) {
+                            if (viewModel.navigationStatus.value == NAVIGATION_INIT) {
                                 View.VISIBLE
                             } else {
                                 View.GONE

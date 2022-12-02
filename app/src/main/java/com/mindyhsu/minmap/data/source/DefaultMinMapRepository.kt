@@ -1,9 +1,7 @@
 package com.mindyhsu.minmap.data.source
 
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
-import com.mindyhsu.minmap.chat.DialogItem
 import com.mindyhsu.minmap.data.*
 
 class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
@@ -17,8 +15,8 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
         return remoteDataSource.getDirection(startLocation, endLocation, apiKey, mode)
     }
 
-    override suspend fun setUser(uid: String, image: String, name: String): Result<Boolean> {
-        return remoteDataSource.setUser(uid, image, name)
+    override suspend fun setUser(uid: String, image: String, name: String, fcmToken: String): Result<Boolean> {
+        return remoteDataSource.setUser(uid, image, name, fcmToken)
     }
 
     override suspend fun getUserEvent(userId: String): Result<String> {
@@ -93,5 +91,9 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
 
     override suspend fun setFriend(userId: String, friendId: String): Result<String> {
         return remoteDataSource.setFriend(userId, friendId)
+    }
+
+    override suspend fun getFCMToken(): Result<String> {
+        return remoteDataSource.getFCMToken()
     }
 }

@@ -1,5 +1,9 @@
-package com.mindyhsu.minmap.chat
+package com.mindyhsu.minmap.dialog
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Bundle
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -21,9 +25,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.regex.Pattern
+
 
 data class DialogUiState(
-    val getSenderName: (senderId: String) -> String
+    val getSenderName: (senderId: String) -> String,
+    val showUrlUnderLine: (String) -> Boolean,
+    val clickUrl: (String) -> Unit
 )
 
 class DialogViewModel(
@@ -55,6 +63,15 @@ class DialogViewModel(
         getSenderName = { senderId ->
             val sender = (chatRoomDetail.users.filter { it.id == senderId }).distinct()
             sender[0].name
+        },
+        showUrlUnderLine = { url ->
+            showUrl(url)
+        },
+        clickUrl = { url ->
+            val intent = Intent(Intent.ACTION_VIEW)
+            intent.data = Uri.parse(url)
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            MinMapApplication.instance.startActivity(intent)
         }
     )
 
@@ -181,5 +198,12 @@ class DialogViewModel(
             }
             _midPoint.value = LatLng(totalLat / listSize, totalLon / listSize)
         }
+    }
+
+    private fun showUrl(url: String): Boolean {
+        val urlFormat = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$"
+        val pattern = Pattern.compile(urlFormat)
+        val matcher = pattern.matcher(url)
+        return matcher.find()
     }
 }

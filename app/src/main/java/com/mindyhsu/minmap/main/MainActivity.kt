@@ -8,9 +8,12 @@ import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.mindyhsu.minmap.*
 import com.mindyhsu.minmap.databinding.ActivityMainBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import com.mindyhsu.minmap.map.MapFragment
 import timber.log.Timber
 
 const val CHAT_ROOM_INTENT_FILTER = "com.mindyhsu.minmap.DETECT_CHAT_ROOM"
@@ -43,13 +46,23 @@ class MainActivity : AppCompatActivity() {
 //        registerReceiver()
         chatRoomReceiver()
         messageReceiver()
-        eventReceiver()
+//        eventReceiver()
 
         if (intent.extras?.get(EXIT_NAVIGATION) == EXIT_NAVIGATION) {
             exitNavigationForegroundService()
         }
 
         setContentView(binding.root)
+    }
+
+    override fun onNewIntent(intent: Intent?) {
+        super.onNewIntent(intent)
+
+        if (intent?.extras?.get(EXIT_NAVIGATION) == EXIT_NAVIGATION) {
+            exitNavigationForegroundService()
+            val bundle = Bundle()
+            bundle.putString(EXIT_NAVIGATION, EXIT_NAVIGATION)
+        }
     }
 
     private fun registerReceiver() {
@@ -81,18 +94,21 @@ class MainActivity : AppCompatActivity() {
         }, filter)
     }
 
-    private fun eventReceiver() {
-        val filter = IntentFilter(EVENT_INTENT_FILTER)
-        registerReceiver(object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                val message = intent?.getStringExtra(KEY_EVENT).toString()
-                val i = Intent(context, BroadcastReceiverService::class.java)
-                startService(i.putExtra(KEY_EVENT, message))
-            }
-        }, filter)
-    }
+//    private fun eventReceiver() {
+//        val filter = IntentFilter(EVENT_INTENT_FILTER)
+//        registerReceiver(object : BroadcastReceiver() {
+//            override fun onReceive(context: Context?, intent: Intent?) {
+//                val message = intent?.getStringExtra(KEY_EVENT).toString()
+//                val i = Intent(context, BroadcastReceiverService::class.java)
+//                startService(i.putExtra(KEY_EVENT, message))
+//            }
+//        }, filter)
+//    }
 
     private fun exitNavigationForegroundService() {
+
+        viewModel.stopForegroundUpdate()
+
         val serviceIntent = Intent(MinMapApplication.instance, ForegroundService::class.java)
         serviceIntent.putExtra("navigationComplete", "Navigation Complete")
         ContextCompat.startForegroundService(MinMapApplication.instance, serviceIntent)
