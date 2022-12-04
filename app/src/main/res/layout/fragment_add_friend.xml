@@ -57,8 +57,10 @@
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/add_friend_button"
         style="@style/green_button"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/floating_button_width"
         android:layout_height="wrap_content"
+        android:paddingStart="@dimen/floating_button_padding"
+        android:paddingEnd="@dimen/floating_button_padding"
         android:text="@string/add_friend"
         app:layout_constraintBottom_toBottomOf="@+id/add_friend_dialog"
         app:layout_constraintEnd_toEndOf="@+id/add_friend_dialog"

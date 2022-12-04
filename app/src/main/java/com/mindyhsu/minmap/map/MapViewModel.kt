@@ -447,7 +447,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         textToSpeech.stop()
 
         // Voice reminder every 20 meters
-        if ((distance % 20) == 0 && (distance % 20) != 0) {
+        if ((distance % 20) == 0) {
             textToSpeech.language = Locale.ENGLISH
             textToSpeech.setSpeechRate(0.75F)
             textToSpeech.speak(foregroundDistanceAndDuration, TextToSpeech.QUEUE_FLUSH, null)
