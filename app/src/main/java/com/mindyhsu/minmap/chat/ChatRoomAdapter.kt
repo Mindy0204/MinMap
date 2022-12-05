@@ -25,6 +25,8 @@ class ChatRoomAdapter(private val uiState: ChatRoomUiState) :
 
             if (item.eventId.isNotEmpty()) {
                 binding.eventReminder.visibility = View.VISIBLE
+            } else {
+                binding.eventReminder.visibility = View.GONE
             }
 
             itemView.setOnClickListener {
