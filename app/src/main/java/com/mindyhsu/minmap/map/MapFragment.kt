@@ -79,7 +79,7 @@ class MapFragment : Fragment(),
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment?
 
         if (viewModel.navigationStatus.value != NAVIGATION_INIT) {
-            viewModel.navigationStatus.value = NAVIGATION_PAUSE
+            viewModel.onNavigationPause()
         }
 
         mapFragment?.getMapAsync { googleMap ->
@@ -103,7 +103,7 @@ class MapFragment : Fragment(),
             binding.startNavigationButton.visibility = View.GONE
             binding.cardViewText.text = getString(R.string.start_navigation_button)
             viewModel.startNavigation()
-            viewModel.navigationStatus.value = NAVIGATION_ING
+            viewModel.onNavigation()
             viewModel.updateFriendsLocation()
         }
 
@@ -168,7 +168,7 @@ class MapFragment : Fragment(),
                 viewModel.finishEvent()
                 binding.friendsCardView.visibility = View.GONE
                 map.clear()
-                viewModel.navigationStatus.value = NAVIGATION_INIT
+                viewModel.onNavigationInit()
                 findNavController().navigate(NavigationSuccessFragmentDirections.navigateToNavigationSuccessFragment())
             }
         }
@@ -198,7 +198,7 @@ class MapFragment : Fragment(),
             if (it == true) {
                 viewModel.removeLocationManager()
                 mainViewModel.onForegroundUpdateStopped()
-                viewModel.navigationStatus.value = NAVIGATION_INIT
+                viewModel.onNavigationInit()
             }
         }
 

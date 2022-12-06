@@ -79,7 +79,9 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private var participantIdList = emptyList<String>()
 
-    var navigationStatus = MutableLiveData<Int>(NAVIGATION_INIT)
+    private val _navigationStatus = MutableLiveData<Int>(NAVIGATION_INIT)
+    val navigationStatus: LiveData<Int>
+        get() = _navigationStatus
 
     private var routeSteps = listOf<Step>()
     private var step = 0
@@ -151,7 +153,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15F))
                 }
 
-                if (navigationStatus.value != NAVIGATION_INIT) {
+                if (_navigationStatus.value != NAVIGATION_INIT) {
                     updateFriendsLocation()
                 }
 
@@ -312,8 +314,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 polyline.jointType = JointType.ROUND
                 polyline.width = 15F
             }
-            if (navigationStatus.value != NAVIGATION_INIT) {
-                navigationStatus.value = NAVIGATION_ING
+            if (_navigationStatus.value != NAVIGATION_INIT) {
+                onNavigation()
             }
         }
 
@@ -654,5 +656,15 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 }
             }
         }
+    }
+
+    fun onNavigationInit() {
+        _navigationStatus.value = NAVIGATION_INIT
+    }
+    fun onNavigation() {
+        _navigationStatus.value = NAVIGATION_ING
+    }
+    fun onNavigationPause() {
+        _navigationStatus.value = NAVIGATION_PAUSE
     }
 }
