@@ -40,7 +40,7 @@ class SendInvitationViewModel(
 
     private val _isInvitationSuccess = MutableLiveData<Boolean>()
     val isInvitationSuccess: LiveData<Boolean>
-        get() =_isInvitationSuccess
+        get() = _isInvitationSuccess
 
     private val userIdList = mutableListOf<String>()
     val sendInvitationUiState = SendInvitationUiState(
@@ -201,8 +201,10 @@ class SendInvitationViewModel(
                 userIdList.sort()
             }
 
-            when (val result =
-                repository.updateChatRoomCurrentEvent(userIdList, currentEventId)) {
+            when (
+                val result =
+                    repository.updateChatRoomCurrentEvent(userIdList, currentEventId)
+            ) {
                 is Result.Success -> {
                     error.value = null
                     status.value = LoadApiStatus.DONE

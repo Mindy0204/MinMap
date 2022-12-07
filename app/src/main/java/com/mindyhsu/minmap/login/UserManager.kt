@@ -3,7 +3,6 @@ package com.mindyhsu.minmap.login
 import android.content.Context
 import com.mindyhsu.minmap.MinMapApplication
 
-
 object UserManager {
     private val sharedPreferencesId =
         MinMapApplication.instance.getSharedPreferences("id", Context.MODE_PRIVATE)

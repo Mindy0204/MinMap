@@ -11,6 +11,6 @@ data class ChatRoom(
     var participants: List<String> = emptyList(),
     var lastUpdate: Timestamp? = null,
     var lastMessage: String = ""
-): Parcelable {
+) : Parcelable {
     var users: List<User> = emptyList()
 }

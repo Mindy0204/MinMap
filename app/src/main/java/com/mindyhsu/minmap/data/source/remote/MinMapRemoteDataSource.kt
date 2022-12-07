@@ -16,9 +16,9 @@ import com.mindyhsu.minmap.main.*
 import com.mindyhsu.minmap.network.MinMapApi
 import com.mindyhsu.minmap.util.Util.getString
 import com.mindyhsu.minmap.util.Util.isInternetConnected
-import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import timber.log.Timber
 
 object MinMapRemoteDataSource : MinMapDataSource {
 
@@ -414,7 +414,6 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             if (task.isSuccessful) {
                                 Timber.i("finishEvent => Finish update event status")
                                 continuation.resume(Result.Success(true))
-
                             } else {
                                 task.exception?.let {
                                     Timber.d("finishEvent => Update event status error=${it.message}")
@@ -430,8 +429,6 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                 )
                             }
                         }
-
-
                     } else {
                         task.exception?.let {
                             Timber.d("finishEvent => Update user current event error=${it.message}")
@@ -441,8 +438,6 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
                     }
                 }
-
-
         }
 
     override suspend fun getChatRoom(userId: String): Result<List<ChatRoom>> =
@@ -560,7 +555,6 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                     userList.add(users)
                                 }
                             }
-
                         }
                         continuation.resume(Result.Success(userList))
                     } else {

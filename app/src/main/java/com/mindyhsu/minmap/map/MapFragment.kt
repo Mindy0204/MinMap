@@ -19,8 +19,6 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -34,21 +32,18 @@ import com.google.android.libraries.places.widget.Autocomplete
 import com.google.android.libraries.places.widget.AutocompleteActivity
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.firebase.firestore.GeoPoint
-import com.mindyhsu.minmap.EXIT_NAVIGATION
-import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
 import com.mindyhsu.minmap.ext.getVmFactory
-import com.mindyhsu.minmap.main.MainActivity
 import com.mindyhsu.minmap.main.MainViewModel
 import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessFragmentDirections
-import timber.log.Timber
 import java.util.*
 
-
-class MapFragment : Fragment(),
-    OnRequestPermissionsResultCallback, OnMapClickListener {
+class MapFragment :
+    Fragment(),
+    OnRequestPermissionsResultCallback,
+    OnMapClickListener {
     private lateinit var binding: FragmentMapBinding
     private val viewModel by viewModels<MapViewModel> { getVmFactory() }
 
@@ -131,11 +126,14 @@ class MapFragment : Fragment(),
             binding.cardViewIcon.setImageResource(R.mipmap.icon_go_straight)
             binding.cardViewNextDirectionIcon.visibility = View.VISIBLE
 
-            textToSpeech = TextToSpeech(context, TextToSpeech.OnInitListener { status ->
-                if (status == TextToSpeech.SUCCESS) {
-                    viewModel.startTextToSpeech(textToSpeech)
+            textToSpeech = TextToSpeech(
+                context,
+                TextToSpeech.OnInitListener { status ->
+                    if (status == TextToSpeech.SUCCESS) {
+                        viewModel.startTextToSpeech(textToSpeech)
+                    }
                 }
-            })
+            )
 
             when (viewModel.direction) {
                 DIRECTION_GO_STRAIGHT -> {
@@ -219,9 +217,9 @@ class MapFragment : Fragment(),
                     context,
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+                        context,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
             ) {
                 map.isMyLocationEnabled = true
                 map.uiSettings.isMyLocationButtonEnabled = false
@@ -231,7 +229,8 @@ class MapFragment : Fragment(),
                     arrayOf(
                         Manifest.permission.ACCESS_FINE_LOCATION,
                         Manifest.permission.ACCESS_COARSE_LOCATION
-                    ), LOCATION_PERMISSION_REQUEST_CODE
+                    ),
+                    LOCATION_PERMISSION_REQUEST_CODE
                 )
             }
         }
@@ -265,9 +264,9 @@ class MapFragment : Fragment(),
                         context,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
+                            context,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED
                 ) {
 //                    return
                 } else {
@@ -311,14 +310,13 @@ class MapFragment : Fragment(),
                     searchPlace()
                 }
                 viewModel.currentEventDisplay.removeObservers(viewLifecycleOwner)
-
             } else {
                 // UI
                 map.setOnMapClickListener(null)
                 binding.createEventButton.visibility = View.GONE
 
-                if (viewModel.navigationStatus.value == NAVIGATION_INIT
-                    || viewModel.navigationStatus.value == NAVIGATION_PAUSE
+                if (viewModel.navigationStatus.value == NAVIGATION_INIT ||
+                    viewModel.navigationStatus.value == NAVIGATION_PAUSE
                 ) {
 
                     viewModel.currentEventDisplay.observe(viewLifecycleOwner) { display ->
@@ -394,6 +392,3 @@ class MapFragment : Fragment(),
         viewModel.onPlanningLocation(map, latLng, "")
     }
 }
-
-
-

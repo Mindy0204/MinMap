@@ -12,7 +12,7 @@ import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessViewModel
 
 class ViewModelFactory constructor(
     private val repository: MinMapRepository
-) : ViewModelProvider.NewInstanceFactory(){
+) : ViewModelProvider.NewInstanceFactory() {
 
     override fun <T : ViewModel> create(modelClass: Class<T>) =
         with(modelClass) {

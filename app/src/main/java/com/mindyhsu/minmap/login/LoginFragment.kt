@@ -11,18 +11,17 @@ import androidx.navigation.fragment.findNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.tasks.Task
-import com.mindyhsu.minmap.chat.ChatRoomViewModel
 import com.mindyhsu.minmap.databinding.FragmentLoginBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import com.mindyhsu.minmap.map.MapFragmentDirections
-
 
 class LoginFragment : Fragment() {
     private lateinit var binding: FragmentLoginBinding
     private val viewModel by viewModels<LoginViewModel> { getVmFactory() }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentLoginBinding.inflate(inflater, container, false)

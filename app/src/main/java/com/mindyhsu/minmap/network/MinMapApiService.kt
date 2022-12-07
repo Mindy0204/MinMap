@@ -26,13 +26,15 @@ private val logging: HttpLoggingInterceptor =
             HttpLoggingInterceptor.Level.NONE
         }
     )
-private val client = OkHttpClient.Builder().addInterceptor(Interceptor { chain ->
-    val newRequest = chain.request().newBuilder()
-        .addHeader("Content-Type", "application/json")
-        .build()
+private val client = OkHttpClient.Builder().addInterceptor(
+    Interceptor { chain ->
+        val newRequest = chain.request().newBuilder()
+            .addHeader("Content-Type", "application/json")
+            .build()
 
-    chain.proceed(newRequest)
-}).addInterceptor(logging).build()
+        chain.proceed(newRequest)
+    }
+).addInterceptor(logging).build()
 
 // let Retrofit use Moshi to convert Json into Kotlin Objects
 private val retrofit = Retrofit.Builder().addConverterFactory(MoshiConverterFactory.create(moshi))

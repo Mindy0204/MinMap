@@ -7,7 +7,6 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.speech.tts.TextToSpeech
-import android.speech.tts.Voice
 import android.text.Html
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LiveData
@@ -26,14 +25,12 @@ import com.mindyhsu.minmap.data.*
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
+import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import org.w3c.dom.Text
 import timber.log.Timber
-import java.util.*
-
 
 data class MapUiState(
     val onClick: (friendId: String) -> Unit
@@ -283,7 +280,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                                     LatLng(
                                         legItem.startLocation.lat,
                                         legItem.startLocation.lng
-                                    ), 15F
+                                    ),
+                                    15F
                                 )
                             )
                             routeSteps = legItem.steps
@@ -318,7 +316,6 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 onNavigation()
             }
         }
-
     }
 
     fun startNavigation() {
@@ -389,7 +386,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             }
 
             if (step == routeSteps.size - 1 && instruction.split("Destination will be on the ")
-                    .isNotEmpty()
+                .isNotEmpty()
             ) {
                 instruction = MinMapApplication.instance.getString(
                     R.string.destination,
@@ -425,7 +422,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
             // Last step
             if (step == routeSteps.size - 1 && myLocation.distanceTo(stepEndLocation)
-                    .toInt() <= 20
+                .toInt() <= 20
             ) {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
@@ -515,8 +512,10 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         coroutineScope.launch {
             _isFinishNavigation.value = false
 
-            val chatRoomId = when (val result =
-                repository.getChatRoomByCurrentEventId(getCurrentEventId?.value ?: "")) {
+            val chatRoomId = when (
+                val result =
+                    repository.getChatRoomByCurrentEventId(getCurrentEventId?.value ?: "")
+            ) {
                 is Result.Success -> {
                     error.value = null
                     status.value = LoadApiStatus.DONE
@@ -606,8 +605,10 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         coroutineScope.launch {
             status.value = LoadApiStatus.LOADING
 
-            when (val result =
-                repository.updateUserCurrentEvent(participantIdList, currentEventId)) {
+            when (
+                val result =
+                    repository.updateUserCurrentEvent(participantIdList, currentEventId)
+            ) {
                 is Result.Success -> {
                     error.value = null
                     status.value = LoadApiStatus.DONE
@@ -632,8 +633,10 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         coroutineScope.launch {
             status.value = LoadApiStatus.LOADING
 
-            when (val result =
-                repository.updateChatRoomCurrentEvent(participantIdList, currentEventId)) {
+            when (
+                val result =
+                    repository.updateChatRoomCurrentEvent(participantIdList, currentEventId)
+            ) {
                 is Result.Success -> {
                     error.value = null
                     status.value = LoadApiStatus.DONE

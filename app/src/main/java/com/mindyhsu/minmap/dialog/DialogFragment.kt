@@ -14,7 +14,6 @@ import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.databinding.FragmentDialogBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import com.mindyhsu.minmap.map.MapFragmentDirections
-import java.util.regex.Pattern
 
 class DialogFragment : Fragment() {
 
@@ -28,7 +27,8 @@ class DialogFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentDialogBinding.inflate(inflater, container, false)

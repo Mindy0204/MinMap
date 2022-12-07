@@ -1,6 +1,5 @@
 package com.mindyhsu.minmap
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -10,13 +9,11 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.mindyhsu.minmap.main.KEY_CHAT_ROOM
-import com.mindyhsu.minmap.main.KEY_EVENT
 import com.mindyhsu.minmap.main.KEY_MESSAGE
-import timber.log.Timber
 
 private const val CHAT_ROOM_CHANNEL = "chat room channel"
 private const val MESSAGE_CHANNEL = "message channel"
-//private const val EVENT_CHANNEL = "event channel"
+// private const val EVENT_CHANNEL = "event channel"
 
 class BroadcastReceiverService : Service() {
 

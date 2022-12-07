@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mindyhsu.minmap.bindImage
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.databinding.ItemChatRoomBinding
-import timber.log.Timber
 
 class ChatRoomAdapter(private val uiState: ChatRoomUiState) :
     ListAdapter<ChatRoom, ChatRoomAdapter.ChatRoomViewHolder>(ChatRoomDiffCallback()) {

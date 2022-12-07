@@ -2,7 +2,6 @@ package com.mindyhsu.minmap.dialog
 
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -19,14 +18,13 @@ import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.regex.Pattern
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.regex.Pattern
-
 
 data class DialogUiState(
     val getSenderName: (senderId: String) -> String,
@@ -128,8 +126,10 @@ class DialogViewModel(
 
                 status.value = LoadApiStatus.LOADING
 
-                when (val result =
-                    repository.sendMessage(chatRoomId = chatRoomDetail.id, message = message)) {
+                when (
+                    val result =
+                        repository.sendMessage(chatRoomId = chatRoomDetail.id, message = message)
+                ) {
                     is Result.Success -> {
                         error.value = null
                         status.value = LoadApiStatus.DONE

@@ -59,7 +59,6 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
         auth = Firebase.auth
     }
 
-
     fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
             accountResult = completedTask.getResult(ApiException::class.java)

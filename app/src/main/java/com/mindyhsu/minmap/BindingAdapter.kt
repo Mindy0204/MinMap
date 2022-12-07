@@ -1,12 +1,9 @@
 package com.mindyhsu.minmap
 
-import android.view.View
 import android.widget.ImageView
-import android.widget.ProgressBar
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
-import com.mindyhsu.minmap.network.LoadApiStatus
 
 fun bindImage(imageView: ImageView, imageUrl: String?) {
     imageUrl?.let {

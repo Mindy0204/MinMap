@@ -12,11 +12,11 @@ import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
+import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.util.*
 
 class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var viewModelJob = Job()
@@ -25,7 +25,7 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
     private val status = MutableLiveData<LoadApiStatus>()
     private val error = MutableLiveData<String?>()
 
-    var friendId = ""
+    private var friendId = ""
 
     private val _friend = MutableLiveData<User>()
     val friend: LiveData<User>
@@ -35,13 +35,16 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
     val hasThisFriend: LiveData<Boolean>
         get() = _hasThisFriend
 
+    /**
+     * After scan QR code, check if friend id exists in user friend list
+     * If it not exists -> get fiend's data
+     * */
     fun getUserById(friend: String) {
         coroutineScope.launch {
             friendId = friend
             status.value = LoadApiStatus.LOADING
 
-            // Check if has this friend
-            var friendList =
+            val friendList =
                 when (val myFriendListResult = repository.getFriend(UserManager.id ?: "")) {
                     is Result.Success -> {
                         error.value = null
@@ -101,12 +104,15 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
         }
     }
 
+    /** Set friend to user's friend list */
     fun setFriend() {
         coroutineScope.launch {
             status.value = LoadApiStatus.LOADING
 
-            val newChatRoom = when (val result =
-                _friend.value?.let { repository.setFriend(UserManager.id ?: "", it.id) }) {
+            val newChatRoom = when (
+                val result =
+                    _friend.value?.let { repository.setFriend(UserManager.id ?: "", it.id) }
+            ) {
                 is Result.Success -> {
                     error.value = null
                     status.value = LoadApiStatus.DONE
@@ -135,6 +141,9 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
         }
     }
 
+    /**
+     * Auto create a new chatRoom and message
+     * Sender is friend who user add */
     private fun setFirstMessage(chatRoomId: String) {
         coroutineScope.launch {
             val time = Timestamp(Calendar.getInstance().time)
@@ -146,8 +155,10 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
 
             status.value = LoadApiStatus.LOADING
 
-            when (val result =
-                repository.sendMessage(chatRoomId = chatRoomId, message = message)) {
+            when (
+                val result =
+                    repository.sendMessage(chatRoomId = chatRoomId, message = message)
+            ) {
                 is Result.Success -> {
                     error.value = null
                     status.value = LoadApiStatus.DONE

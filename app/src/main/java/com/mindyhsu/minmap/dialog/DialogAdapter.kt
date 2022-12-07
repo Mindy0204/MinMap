@@ -70,7 +70,6 @@ class DialogAdapter(private val uiState: DialogUiState) :
             }
             binding.dialogText.text = item.message.text
 
-
             val dateFormat = SimpleDateFormat("HH:mm")
             binding.dialogTimeText.text = dateFormat.format(item.time.toDate())
         }

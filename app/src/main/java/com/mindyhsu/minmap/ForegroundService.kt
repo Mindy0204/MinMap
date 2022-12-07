@@ -8,12 +8,9 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
 import com.mindyhsu.minmap.main.MainActivity
 import timber.log.Timber
-
 
 private const val FOREGROUND_SERVICE_CHANNEL = "FOREGROUND SERVICE CHANNEL"
 const val EXIT_NAVIGATION = "EXIT NAVIGATION"
@@ -24,7 +21,6 @@ class ForegroundService : Service() {
     override fun onBind(p0: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-
 
         intent?.extras?.let {
             val title = intent.getStringExtra("instructionTitle")

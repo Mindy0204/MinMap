@@ -3,7 +3,7 @@
     <string name="title_main">MinMap</string>
 
     <!-- login page -->
-    <string name="login_subtitle">Hey, can\'t wait to meet you!</string>
+    <string name="login_subtitle">Hey, can\'t wait to meet you here!</string>
     <string name="login">Sign In with Google</string>
 
     <!-- main page -->
