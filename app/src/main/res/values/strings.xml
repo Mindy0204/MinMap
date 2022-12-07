@@ -25,10 +25,11 @@
     <string name="have_a_nice_day">Have a nice date!</string>
     <string name="done_button">Done</string>
 
-    <!-- send event to friend page -->
+    <!-- send invitation to friend page -->
     <string name="invite_friend">Invite Friends!</string>
     <string name="custom_location">Custom Location</string>
     <string name="send_invitation_fail">You don\'t choose any friend</string>
+    <string name="send_invitation_success_message">Hey, I\'ve sent a activity to you!</string>
 
     <!-- chat room page -->
     <string name="chat_room">Chat Room</string>

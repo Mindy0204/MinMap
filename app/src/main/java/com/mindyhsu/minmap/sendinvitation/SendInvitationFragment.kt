@@ -50,6 +50,10 @@ class SendInvitationFragment : BottomSheetDialogFragment() {
             }
         }
 
+        viewModel.status.observe(viewLifecycleOwner) {
+            Toast.makeText(context, getString(R.string.internet_not_connected), Toast.LENGTH_SHORT).show()
+        }
+
         return binding.root
     }
 }
