@@ -24,9 +24,9 @@ import com.google.zxing.common.BitMatrix
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
-import com.mindyhsu.minmap.bindImage
 import com.mindyhsu.minmap.databinding.FragmentAddFriendBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import com.mindyhsu.minmap.ext.glide
 import com.mindyhsu.minmap.login.UserManager
 import kotlinx.coroutines.Runnable
 
@@ -152,7 +152,7 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
             if (it != null) {
                 binding.addFriendText.text = it.name
                 binding.addFriendImage.visibility = View.VISIBLE
-                bindImage(binding.addFriendImage, it.image)
+                binding.addFriendImage.glide(it.image)
                 binding.surfaceView.visibility = View.GONE
                 binding.addFriendQrcode.visibility = View.GONE
             } else {

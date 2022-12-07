@@ -5,9 +5,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.mindyhsu.minmap.bindImage
 import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.databinding.ItemFriendLocationBinding
+import com.mindyhsu.minmap.ext.glide
 
 class FriendLocationAdapter(private val uiState: MapUiState) :
     ListAdapter<User, FriendLocationAdapter.FriendLocationHolder>(FriendLocationDiffCallback()) {
@@ -18,7 +18,7 @@ class FriendLocationAdapter(private val uiState: MapUiState) :
         fun bind(item: User, uiState: MapUiState) {
             binding.friendImage
             binding.friendNameText.text = item.name
-            bindImage(binding.friendImage, item.image)
+            binding.friendImage.glide(item.image)
             itemView.setOnClickListener {
                 uiState.onClick(item.id)
             }
