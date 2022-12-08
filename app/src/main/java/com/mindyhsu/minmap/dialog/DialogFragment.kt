@@ -15,6 +15,10 @@ import com.mindyhsu.minmap.databinding.FragmentDialogBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import com.mindyhsu.minmap.map.MapFragmentDirections
 
+const val MID_POINT_EVENT_REQUEST_KEY = "midPoint"
+const val MID_POINT_EVENT_LAT_LNG = "latLng"
+const val MID_POINT_EVENT_PARTICIPANTS = "participants"
+
 class DialogFragment : Fragment() {
 
     private lateinit var binding: FragmentDialogBinding
@@ -55,8 +59,8 @@ class DialogFragment : Fragment() {
             viewModel.getMidPoint()
             viewModel.midPoint.observe(viewLifecycleOwner) {
                 setFragmentResult(
-                    "midPoint",
-                    bundleOf("latLng" to it, "participants" to viewModel.participants)
+                    MID_POINT_EVENT_REQUEST_KEY,
+                    bundleOf(MID_POINT_EVENT_LAT_LNG to it, MID_POINT_EVENT_PARTICIPANTS to viewModel.participants)
                 )
                 findNavController().navigate(MapFragmentDirections.navigateToMapFragment())
             }

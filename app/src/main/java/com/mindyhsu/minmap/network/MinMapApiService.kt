@@ -14,6 +14,8 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 private const val DIRECTIONS_URL = "https://maps.googleapis.com/maps/api/directions/"
+private const val HEADER_NAME = "Content-Type"
+private const val HEADER_VALUE = "application/json"
 
 private val moshi = Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
 
@@ -29,7 +31,7 @@ private val logging: HttpLoggingInterceptor =
 private val client = OkHttpClient.Builder().addInterceptor(
     Interceptor { chain ->
         val newRequest = chain.request().newBuilder()
-            .addHeader("Content-Type", "application/json")
+            .addHeader(HEADER_NAME, HEADER_VALUE)
             .build()
 
         chain.proceed(newRequest)

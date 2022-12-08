@@ -13,7 +13,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
@@ -36,16 +35,15 @@ import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.chat.ChatRoomFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentMapBinding
+import com.mindyhsu.minmap.dialog.MID_POINT_EVENT_LAT_LNG
+import com.mindyhsu.minmap.dialog.MID_POINT_EVENT_PARTICIPANTS
+import com.mindyhsu.minmap.dialog.MID_POINT_EVENT_REQUEST_KEY
 import com.mindyhsu.minmap.ext.getVmFactory
 import com.mindyhsu.minmap.main.MainViewModel
 import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessFragmentDirections
-import com.mindyhsu.minmap.network.LoadApiStatus
-import java.util.*
 
-class MapFragment :
-    Fragment(),
-    OnRequestPermissionsResultCallback,
-    OnMapClickListener {
+class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapClickListener {
+
     private lateinit var binding: FragmentMapBinding
     private val viewModel by viewModels<MapViewModel> { getVmFactory() }
 
@@ -57,10 +55,11 @@ class MapFragment :
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setFragmentResultListener("midPoint") { requestKey, bundle ->
+        /** Mid point event passed from chatRoom */
+        setFragmentResultListener(MID_POINT_EVENT_REQUEST_KEY) { _, bundle ->
             viewModel.sendEvent(
-                bundle.get("latLng") as LatLng,
-                bundle.get("participants") as List<String>
+                bundle.get(MID_POINT_EVENT_LAT_LNG) as LatLng,
+                bundle.get(MID_POINT_EVENT_PARTICIPANTS) as List<String>
             )
         }
     }
@@ -113,7 +112,7 @@ class MapFragment :
         viewModel.onFriendsLiveReady.observe(viewLifecycleOwner) { ready ->
             if (ready) {
                 binding.friendsLocationRecyclerView.visibility = View.VISIBLE
-                viewModel.friends.observe(viewLifecycleOwner) {
+                viewModel.friendList.observe(viewLifecycleOwner) {
                     viewModel.markFriendsLocation(map, it)
                     adapter.submitList(it)
                     binding.friendsCardView.visibility = View.VISIBLE
@@ -122,9 +121,9 @@ class MapFragment :
         }
 
         viewModel.navigationInstruction.observe(viewLifecycleOwner) {
-            binding.cardViewText.text = it["direction"]
+            binding.cardViewText.text = it[DIRECTION]
             binding.cardViewText2.visibility = View.VISIBLE
-            binding.cardViewText2.text = it["distanceAndDuration"]
+            binding.cardViewText2.text = it[DISTANCE_DURATION]
             binding.cardViewIcon.setImageResource(R.mipmap.icon_go_straight)
             binding.cardViewNextDirectionIcon.visibility = View.VISIBLE
 
@@ -281,7 +280,7 @@ class MapFragment :
                     enableMyLocation()
                 }
             }
-            service.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            service.getLastKnownLocation(LocationManager.GPS_PROVIDER) // TODO: GPS_PROVIDER, NETWORK_PROVIDER
         }
 
         val latLng = location?.let { LatLng(it.latitude, it.longitude) }

@@ -13,6 +13,7 @@ import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
+import com.mindyhsu.minmap.util.Util.getString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,11 +29,15 @@ class SendInvitationViewModel(
     private val eventLocation: LatLng,
     private var eventLocationName: String
 ) : ViewModel() {
+
     private var viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     private val status = MutableLiveData<LoadApiStatus>()
-    private val error = MutableLiveData<String?>()
+
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?>
+        get() = _error
 
     private val _userList = MutableLiveData<List<User>>()
     val userList: LiveData<List<User>>
@@ -43,6 +48,7 @@ class SendInvitationViewModel(
         get() = _isInvitationSuccess
 
     private val userIdList = mutableListOf<String>()
+
     val sendInvitationUiState = SendInvitationUiState(
         onClick = { userId ->
             userIdList.add(userId)
@@ -56,6 +62,7 @@ class SendInvitationViewModel(
         getFriendList()
     }
 
+    /** Query user's friend list */
     private fun getFriendList() {
         coroutineScope.launch {
 
@@ -65,23 +72,23 @@ class SendInvitationViewModel(
             val result = repository.getFriend(UserManager.id ?: "")
             friendList = when (result) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                     result.data
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
                 else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value =
+                        getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
@@ -90,6 +97,7 @@ class SendInvitationViewModel(
         }
     }
 
+    /** Query information of user's friends */
     private fun getUserById(friendList: List<String>) {
         coroutineScope.launch {
             status.value = LoadApiStatus.LOADING
@@ -97,23 +105,23 @@ class SendInvitationViewModel(
             val result = repository.getUserById(friendList)
             _userList.value = when (result) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                     result.data
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
                 else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value =
+                        getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
@@ -121,6 +129,7 @@ class SendInvitationViewModel(
         }
     }
 
+    /** Create new event to firebase */
     fun sendEvent() {
         coroutineScope.launch {
             status.value = LoadApiStatus.LOADING
@@ -129,7 +138,7 @@ class SendInvitationViewModel(
                 userIdList.add(UserManager.id ?: "")
 
                 if (eventLocationName == "") {
-                    eventLocationName = MinMapApplication.instance.getString(R.string.custom_location)
+                    eventLocationName = getString(R.string.custom_location)
                 }
 
                 val event = Event(
@@ -140,22 +149,22 @@ class SendInvitationViewModel(
 
                 val currentEventId = when (val result = repository.sendEvent(event)) {
                     is Result.Success -> {
-                        error.value = null
+                        _error.value = null
                         status.value = LoadApiStatus.DONE
                         result.data
                     }
                     is Result.Fail -> {
-                        error.value = result.error
+                        _error.value = result.error
                         status.value = LoadApiStatus.ERROR
                         ""
                     }
                     is Result.Error -> {
-                        error.value = result.exception.toString()
+                        _error.value = result.exception.toString()
                         status.value = LoadApiStatus.ERROR
                         ""
                     }
                     else -> {
-                        error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                        _error.value = getString(R.string.firebase_operation_failed)
                         status.value = LoadApiStatus.ERROR
                         ""
                     }
@@ -168,31 +177,36 @@ class SendInvitationViewModel(
         }
     }
 
+    /** Update all participants' current event */
     private fun updateUserCurrentEvent(currentEventId: String) {
         coroutineScope.launch {
             status.value = LoadApiStatus.LOADING
 
             when (val result = repository.updateUserCurrentEvent(userIdList, currentEventId)) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                 }
                 else -> {
-                    error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value = getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                 }
             }
         }
     }
 
+    /**
+     * Group meeting -> create chatRoom if there's no chat chatRoom history
+     * 1 on 1 meeting -> only update chatRoom's current event
+     * */
     private fun updateChatRoomCurrentEvent(currentEventId: String) {
         coroutineScope.launch {
             status.value = LoadApiStatus.LOADING
@@ -206,24 +220,20 @@ class SendInvitationViewModel(
                     repository.updateChatRoomCurrentEvent(userIdList, currentEventId)
             ) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
-                    result.data
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
-                    ""
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
-                    ""
                 }
                 else -> {
-                    error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value = getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
-                    ""
                 }
             }
             _isInvitationSuccess.value = true

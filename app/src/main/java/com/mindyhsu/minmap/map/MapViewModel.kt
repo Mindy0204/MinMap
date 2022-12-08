@@ -42,23 +42,38 @@ const val NAVIGATION_ING = 1
 const val NAVIGATION_PAUSE = 2
 
 /** Navigation mode */
-const val WALKING_MODE = "walking"
+private const val WALKING_MODE = "walking"
 
 /** Navigation instruction */
-const val STEP_END_LOCATION = "stepEndLocation"
+private const val STEP_END_LOCATION = "stepEndLocation"
+private const val FINAL_STEP_LOCATION = "finalStepLocation"
+const val DIRECTION = "direction"
 const val DIRECTION_GO_STRAIGHT = "Go Straight"
 const val DIRECTION_TURN_RIGHT = "Turn Right"
 const val DIRECTION_TURN_LEFT = "Turn Left"
+private const val DIRECTION_RIGHT = "right"
+private const val DIRECTION_LEFT = "left"
+private const val INSTRUCTION_SPLIT_ON = "on "
+private const val INSTRUCTION_SPLIT_ONTO = "onto "
+private const val INSTRUCTION_SPLIT_FINAL_DIRECTION = "Destination will be on the "
+const val DISTANCE_DURATION = "distanceAndDuration"
+private const val METERS_FROM_THE_LAST_STEP = 20
 
 /** Map zoom status */
 const val DEFAULT_ZOOM = 15F
 const val FOCUS_ZOOM = 17F
 
-/** Foreground Service parameter */
-const val INSTRUCTION_TITLE = "instructionTitle"
-const val INSTRUCTION_CONTENT = "instructionContent"
-const val NAVIGATION_COMPLETE = "navigationComplete"
+/** Polyline */
+private const val POLYLINE_WIDTH = 15F
 
+/** Location manager */
+private const val LOCATION_MANAGER_TIME = 0L
+private const val LOCATION_MANAGER_DISTANCE = 0F
+
+/** Text to speech */
+private const val SPEECH_RATE = 0.75F
+private const val REMINDER_DURATION = 20
+private const val TEXT_TO_SPEECH_MESSAGE = "Text to speech: distance="
 
 private const val encodedString = BuildConfig.APIKEY_MAP
 val decodedString: String = String(Base64.getDecoder().decode(encodedString))
@@ -87,11 +102,9 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     val destination: LiveData<String>
         get() = _destination
 
-    private val _userList = MutableLiveData<List<User>>()
-
-    private var _friends = MutableLiveData<List<User>>()
-    val friends: LiveData<List<User>>
-        get() = _friends
+    private var _friendList = MutableLiveData<List<User>>()
+    val friendList: LiveData<List<User>>
+        get() = _friendList
 
     val onFriendsLiveReady = MutableLiveData<Boolean>(false)
 
@@ -255,7 +268,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     }
                     else -> {
                         _error.value =
-                            MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                            getString(R.string.firebase_operation_failed)
                         _status.value = LoadApiStatus.ERROR
                         null
                     }
@@ -320,15 +333,15 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         polyline.startCap = RoundCap()
         polyline.endCap = RoundCap()
         polyline.jointType = JointType.ROUND
-        polyline.width = 15F
+        polyline.width = POLYLINE_WIDTH
     }
 
     /** Open location listener */
     fun startNavigation() {
         locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER,
-            0L,
-            0F,
+            LocationManager.GPS_PROVIDER, // TODO: GPS_PROVIDER, NETWORK_PROVIDER
+            LOCATION_MANAGER_TIME,
+            LOCATION_MANAGER_DISTANCE,
             locationListener
         )
     }
@@ -368,19 +381,23 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
      * */
     private fun showNavigationInstruction(myLocation: Location) {
         if (routeSteps.isNotEmpty()) {
+
             // End location of every step
             val stepEndLocation = Location(STEP_END_LOCATION)
             stepEndLocation.latitude = routeSteps[step].endLocation.lat
             stepEndLocation.longitude = routeSteps[step].endLocation.lng
 
-            // The distance and duration need to show the information of next step
+            /**
+             * Next step instruction
+             * The distance and duration need to show the information of next step
+             * */
             if (step + 1 < routeSteps.size) {
                 routeSteps[step + 1].maneuver?.let {
                     _direction = it
 
-                    _direction = if (direction.contains("right")) {
+                    _direction = if (direction.contains(DIRECTION_RIGHT)) {
                         DIRECTION_TURN_RIGHT
-                    } else if (direction.contains("left")) {
+                    } else if (direction.contains(DIRECTION_LEFT)) {
                         DIRECTION_TURN_LEFT
                     } else {
                         DIRECTION_GO_STRAIGHT
@@ -390,35 +407,44 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 _direction = DIRECTION_GO_STRAIGHT
             }
 
+            /** Road instruction */
             var instruction =
                 Html.fromHtml(routeSteps[step].htmlInstructions).toString().replace("\n", "")
 
-            if (instruction.split("on ").size != 1) {
-                instruction = instruction.split("on ").last()
-            } else if (instruction.split("onto ").size != 1) {
-                instruction = instruction.split("onto ").last()
+            if (instruction.split(INSTRUCTION_SPLIT_ON).size != 1) {
+                instruction = instruction.split(INSTRUCTION_SPLIT_ON).last()
+            } else if (instruction.split(INSTRUCTION_SPLIT_ONTO).size != 1) {
+                instruction = instruction.split(INSTRUCTION_SPLIT_ONTO).last()
             }
 
-            if (step == routeSteps.size - 1 && instruction.split("Destination will be on the ")
+            if (step == routeSteps.size - 1 && instruction.split(INSTRUCTION_SPLIT_FINAL_DIRECTION)
                 .isNotEmpty()
             ) {
                 instruction = MinMapApplication.instance.getString(
                     R.string.destination,
-                    instruction.split("Destination will be on the ").last()
+                    instruction.split(INSTRUCTION_SPLIT_FINAL_DIRECTION).last()
                 )
             }
 
             distance = myLocation.distanceTo(stepEndLocation).toInt()
 
+            /**
+             * Navigation instruction is including:
+             * Road instruction and next step instruction
+             * */
             _navigationInstruction.value = hashMapOf(
-                "direction" to instruction,
-                "distanceAndDuration" to MinMapApplication.instance.getString(
+                DIRECTION to instruction,
+                DISTANCE_DURATION to MinMapApplication.instance.getString(
                     R.string.navigation_distance_and_duration,
                     myLocation.distanceTo(stepEndLocation).toInt().toString(),
                     routeSteps[step].duration.text
                 )
             )
 
+            /**
+             * Foreground service notification is including:
+             * Road instruction and next step instruction
+             * */
             foregroundDistanceAndDuration = MinMapApplication.instance.getString(
                 R.string.navigation_foreground,
                 myLocation.distanceTo(stepEndLocation).toInt().toString(),
@@ -430,24 +456,30 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 foregroundDistanceAndDuration
             )
 
-            val finalStepLocation = Location("finalStepLocation")
+            /**
+             * Last step:
+             * Remove location manager, foreground service
+             * */
+            val finalStepLocation = Location(FINAL_STEP_LOCATION)
             finalStepLocation.latitude = routeSteps[routeSteps.size - 1].endLocation.lat
             finalStepLocation.longitude = routeSteps[routeSteps.size - 1].endLocation.lng
 
-            // Last step
             if (step == routeSteps.size - 1 && myLocation.distanceTo(stepEndLocation)
-                .toInt() <= 20
+                .toInt() <= METERS_FROM_THE_LAST_STEP
             ) {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
                 exitNavigationForegroundService()
-            } else if (myLocation.distanceTo(finalStepLocation).toInt() <= 20) {
+            } else if (myLocation.distanceTo(finalStepLocation).toInt() <= METERS_FROM_THE_LAST_STEP) {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
                 exitNavigationForegroundService()
             }
 
-            // Other steps
+            /**
+             * Other step:
+             * step++ after user arrive the end location of the step
+             * */
             if (myLocation.distanceTo(stepEndLocation).toInt() == 0) {
                 if (step < routeSteps.size - 1) {
                     step++
@@ -456,25 +488,29 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
+    /** Google text to speech */
     fun startTextToSpeech(textToSpeech: TextToSpeech) {
         textToSpeech.stop()
 
-        // Voice reminder every 20 meters
-        if ((distance % 20) == 0) {
+        // Voice reminder every x meters
+        if ((distance % REMINDER_DURATION) == 0) {
+            Timber.d(TEXT_TO_SPEECH_MESSAGE + "$distance")
             textToSpeech.language = Locale.ENGLISH
-            textToSpeech.setSpeechRate(0.75F)
+            textToSpeech.setSpeechRate(SPEECH_RATE)
             textToSpeech.speak(foregroundDistanceAndDuration, TextToSpeech.QUEUE_FLUSH, null)
         }
     }
 
     fun markFriendsLocation(map: GoogleMap, users: List<User>) {
-        if (markerList.size != 0) {
+        /** Remove old marker before draw new */
+        if (markerList.isNotEmpty()) {
             for (i in 0 until markerList.size) {
                 markerList[0].remove()
                 markerList.removeAt(0)
             }
         }
 
+        /** Add bitmap marker on the map */
         for (user in users) {
             user.geoHash?.let {
 
@@ -495,23 +531,24 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                                     )
                             )
 
-                            marker?.let { marker -> markerList.add(marker) }
+                            marker?.let { markerList.add(marker) }
                         }
                     })
             }
         }
     }
 
+    /** Update friends' location */
     fun updateFriendsLocation() {
         currentEventDetail.value?.participants?.let {
-            val friendsList = it.filter { it != UserManager.id }
-            _friends = repository.updateFriendLocation(friendsList)
+            val friendListWithoutMe = it.filter { it != UserManager.id }
+            _friendList = repository.updateFriendLocation(friendListWithoutMe)
             onFriendsLiveReady.value = true
         }
     }
 
     private fun checkFriendsLocation(friendId: String) {
-        _friends.value?.let { users ->
+        _friendList.value?.let { users ->
             for (user in users) {
                 if (user.id == friendId) {
                     user.geoHash?.let {
@@ -522,6 +559,9 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
+    /**
+     * Clear participants' and chatRoom's current event
+     * */
     fun finishEvent() {
         coroutineScope.launch {
             _isFinishNavigation.value = false
@@ -546,7 +586,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     ""
                 }
                 else -> {
-                    _error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value = getString(R.string.firebase_operation_failed)
                     _status.value = LoadApiStatus.ERROR
                     ""
                 }
@@ -556,6 +596,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
+    /** Store planning location and location name in order to pass to send invitation fragment */
     fun onPlanningLocation(map: GoogleMap, latLng: LatLng, placeName: String?) {
         map.addMarker(
             MarkerOptions()
@@ -574,9 +615,13 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             planningLocationName = it
         }
         _isOnInvitation.value = true
-        Timber.d("planningLocation=$planningLocation, planningLocationName=$planningLocationName")
+        Timber.d("Planning location=$planningLocation, name=$planningLocationName")
     }
 
+    /**
+     * Connect with find mid point event from chat room
+     * After receive data -> create new event
+     * */
     fun sendEvent(midPointLocation: LatLng, participantList: List<String>) {
         coroutineScope.launch {
             _status.value = LoadApiStatus.LOADING
@@ -605,7 +650,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     ""
                 }
                 else -> {
-                    _error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value = getString(R.string.firebase_operation_failed)
                     _status.value = LoadApiStatus.ERROR
                     ""
                 }
@@ -615,6 +660,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
+    /** Update all participants' current event */
     private fun updateUserCurrentEvent(currentEventId: String) {
         coroutineScope.launch {
             _status.value = LoadApiStatus.LOADING
@@ -636,13 +682,16 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     _status.value = LoadApiStatus.ERROR
                 }
                 else -> {
-                    _error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value = getString(R.string.firebase_operation_failed)
                     _status.value = LoadApiStatus.ERROR
                 }
             }
         }
     }
 
+    /**
+     * Update known chatRoom's current event
+     * */
     private fun updateChatRoomCurrentEvent(currentEventId: String) {
         coroutineScope.launch {
             _status.value = LoadApiStatus.LOADING
@@ -654,22 +703,18 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 is Result.Success -> {
                     _error.value = null
                     _status.value = LoadApiStatus.DONE
-                    result.data
                 }
                 is Result.Fail -> {
                     _error.value = result.error
                     _status.value = LoadApiStatus.ERROR
-                    ""
                 }
                 is Result.Error -> {
                     _error.value = result.exception.toString()
                     _status.value = LoadApiStatus.ERROR
-                    ""
                 }
                 else -> {
-                    _error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value = getString(R.string.firebase_operation_failed)
                     _status.value = LoadApiStatus.ERROR
-                    ""
                 }
             }
         }

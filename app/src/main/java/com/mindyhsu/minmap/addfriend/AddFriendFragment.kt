@@ -122,7 +122,7 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
     }
 
     /** Generate QR code */
-    private fun qrCodeGenerate() {
+    private fun generateQrCode() {
         val multiFormatWriter = MultiFormatWriter()
         val barcodeEncoder = BarcodeEncoder()
         val bitMatrix: BitMatrix =
@@ -133,7 +133,7 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
 
     /** Show QR code UI*/
     private fun showMyQrCode() {
-        qrCodeGenerate()
+        generateQrCode()
         binding.surfaceView.visibility = View.GONE
         binding.addFriendQrcode.visibility = View.VISIBLE
         binding.addFriendText.text = getString(R.string.show_qrcode_scanner)

@@ -12,30 +12,40 @@ import androidx.core.app.NotificationCompat
 import com.mindyhsu.minmap.main.MainActivity
 import timber.log.Timber
 
-private const val FOREGROUND_SERVICE_CHANNEL = "FOREGROUND SERVICE CHANNEL"
-const val EXIT_NAVIGATION = "EXIT NAVIGATION"
-const val EXIT_NAVIGATION_ACTION = "EXIT ACTION"
+private const val FOREGROUND_SERVICE_CHANNEL = "foregroundServiceChannel"
+private const val FOREGROUND_SERVICE_CHANNEL_ID = -2 // Only decimal id can be used
+const val INSTRUCTION_TITLE = "instructionTitle"
+const val INSTRUCTION_CONTENT = "instructionContent"
+const val NAVIGATION_COMPLETE = "navigationComplete"
+const val EXIT_NAVIGATION = "exitNavigation"
+const val EXIT_NAVIGATION_ACTION = "exitNavigationAction"
+private const val PENDING_INTENT_REQUEST_CODE = 0
+
+/** Timber message */
+private const val FOREGROUND_STATUS = "foreground status: "
 
 class ForegroundService : Service() {
 
-    override fun onBind(p0: Intent?): IBinder? = null
+    override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         intent?.extras?.let {
-            val title = intent.getStringExtra("instructionTitle")
-            val content = intent.getStringExtra("instructionContent")
+            val title = intent.getStringExtra(INSTRUCTION_TITLE)
+            val content = intent.getStringExtra(INSTRUCTION_CONTENT)
 
             val bundle = Bundle()
             bundle.putString(EXIT_NAVIGATION, EXIT_NAVIGATION)
 
-            // Exit navigation status and back to MainActivity
-            // which will restart the entry flow
-            // Need to add "action" that MainActivity can get string from intent
+            /**
+             * Exit navigation status and back to MainActivity
+             * which will restart the entry flow
+             * Need to add "action" that MainActivity can get string from intent
+             * */
             val pendingIntent =
                 PendingIntent.getActivity(
                     this,
-                    -2,
+                    PENDING_INTENT_REQUEST_CODE,
                     Intent(this, MainActivity::class.java).apply {
                         putExtras(bundle)
                         action = EXIT_NAVIGATION_ACTION
@@ -56,30 +66,27 @@ class ForegroundService : Service() {
                     .setSilent(true)
                     .build()
 
-            if (it.getString("navigationComplete") != null) {
+            if (it.getString(NAVIGATION_COMPLETE) != null) {
                 stopForeground(true)
-                Timber.d("status stopForeground")
+                Timber.d(FOREGROUND_STATUS + "stop")
             } else {
                 createNotificationChannel()
-                startForeground(-2, notification)
-                Timber.d("status startForeground")
+                startForeground(FOREGROUND_SERVICE_CHANNEL_ID, notification)
+                Timber.d(FOREGROUND_STATUS + "start")
             }
         }
-
         return super.onStartCommand(intent, flags, startId)
     }
 
     private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val serviceChannel = NotificationChannel(
-                FOREGROUND_SERVICE_CHANNEL,
-                "Foreground Service Channel",
-                NotificationManager.IMPORTANCE_DEFAULT
-            )
-            val manager = getSystemService(
-                NotificationManager::class.java
-            )
-            manager.createNotificationChannel(serviceChannel)
-        }
+        val serviceChannel = NotificationChannel(
+            FOREGROUND_SERVICE_CHANNEL,
+            FOREGROUND_SERVICE_CHANNEL,
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        val manager = getSystemService(
+            NotificationManager::class.java
+        )
+        manager.createNotificationChannel(serviceChannel)
     }
 }
