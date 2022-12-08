@@ -131,7 +131,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                 }
             }
         }
@@ -150,7 +150,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -197,7 +197,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -215,7 +215,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -258,7 +258,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -280,7 +280,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                 }
             }
         }
@@ -304,7 +304,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                     continuation.resume(Result.Error(it))
                     return@addOnCompleteListener
                 }
-                continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
             }
         }
     }
@@ -344,7 +344,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -402,7 +402,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                                 continuation.resume(
                                                     Result.Fail(
                                                         MinMapApplication.instance.getString(
-                                                            R.string.you_know_nothing
+                                                            R.string.firebase_operation_failed
                                                         )
                                                     )
                                                 )
@@ -423,7 +423,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                 continuation.resume(
                                     Result.Fail(
                                         MinMapApplication.instance.getString(
-                                            R.string.you_know_nothing
+                                            R.string.firebase_operation_failed
                                         )
                                     )
                                 )
@@ -435,7 +435,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -459,7 +459,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -482,7 +482,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -563,7 +563,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -644,7 +644,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                 }
             }
 
@@ -665,7 +665,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                 }
             }
         }
@@ -687,7 +687,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                 }
             }
 
@@ -705,7 +705,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                 }
             }
 
@@ -727,7 +727,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
                 }
             }
         }
@@ -743,7 +743,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                     continuation.resume(Result.Error(it))
                     return@addOnCompleteListener
                 }
-                continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.firebase_operation_failed)))
             }
         }
     }

@@ -8,7 +8,6 @@ import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.LoginViewModel
 import com.mindyhsu.minmap.main.MainViewModel
 import com.mindyhsu.minmap.map.MapViewModel
-import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessViewModel
 
 class ViewModelFactory constructor(
     private val repository: MinMapRepository
@@ -25,9 +24,6 @@ class ViewModelFactory constructor(
 
                 isAssignableFrom(MapViewModel::class.java) ->
                     MapViewModel(repository)
-
-                isAssignableFrom(NavigationSuccessViewModel::class.java) ->
-                    NavigationSuccessViewModel(repository)
 
                 isAssignableFrom(ChatRoomViewModel::class.java) ->
                     ChatRoomViewModel(repository)

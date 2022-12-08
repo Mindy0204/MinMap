@@ -12,6 +12,7 @@ import android.speech.tts.TextToSpeech
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
@@ -38,6 +39,7 @@ import com.mindyhsu.minmap.databinding.FragmentMapBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import com.mindyhsu.minmap.main.MainViewModel
 import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessFragmentDirections
+import com.mindyhsu.minmap.network.LoadApiStatus
 import java.util.*
 
 class MapFragment :
@@ -156,7 +158,7 @@ class MapFragment :
             // Move smoothly
             val cameraPosition = CameraPosition.Builder()
                 .target(it)
-                .zoom(15F)
+                .zoom(FOCUS_ZOOM)
                 .build()
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
         }
@@ -208,6 +210,12 @@ class MapFragment :
             findNavController().navigate(ChatRoomFragmentDirections.navigateToChatRoomFragment())
         }
 
+        viewModel.error.observe(viewLifecycleOwner) {
+            if (it != null) {
+                Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
+            }
+        }
+
         return binding.root
     }
 
@@ -217,9 +225,9 @@ class MapFragment :
                     context,
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
+                    context,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
             ) {
                 map.isMyLocationEnabled = true
                 map.uiSettings.isMyLocationButtonEnabled = false
@@ -264,27 +272,30 @@ class MapFragment :
                         context,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.ACCESS_COARSE_LOCATION
-                        ) == PackageManager.PERMISSION_GRANTED
+                        context,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
                 ) {
 //                    return
                 } else {
                     enableMyLocation()
                 }
             }
-            service.getLastKnownLocation(LocationManager.NETWORK_PROVIDER)
+            service.getLastKnownLocation(LocationManager.GPS_PROVIDER)
         }
 
         val latLng = location?.let { LatLng(it.latitude, it.longitude) }
         val cameraUpdate = latLng?.let {
             viewModel.updateMyLocation(GeoPoint(it.latitude, it.longitude))
-            CameraUpdateFactory.newLatLngZoom(it, 15F)
+            CameraUpdateFactory.newLatLngZoom(it, DEFAULT_ZOOM)
         }
         if (cameraUpdate != null) {
             map.animateCamera(cameraUpdate)
         }
-        viewModel.deviceLocation.value = latLng
+        if (latLng != null) {
+            viewModel.setDeviceLocation(latLng)
+        }
+
         return latLng
     }
 
@@ -294,7 +305,7 @@ class MapFragment :
 
     private fun showCurrentEvent() {
         // Main Entry Page
-        viewModel.currentEventId?.observe(viewLifecycleOwner) {
+        viewModel.getCurrentEventId.observe(viewLifecycleOwner) {
             if (it == "") {
                 // UI
                 binding.createEventButton.visibility = View.VISIBLE
@@ -309,7 +320,7 @@ class MapFragment :
                 binding.createEventButton.setOnClickListener {
                     searchPlace()
                 }
-                viewModel.currentEventDisplay.removeObservers(viewLifecycleOwner)
+                viewModel.destination.removeObservers(viewLifecycleOwner)
             } else {
                 // UI
                 map.setOnMapClickListener(null)
@@ -319,7 +330,7 @@ class MapFragment :
                     viewModel.navigationStatus.value == NAVIGATION_PAUSE
                 ) {
 
-                    viewModel.currentEventDisplay.observe(viewLifecycleOwner) { display ->
+                    viewModel.destination.observe(viewLifecycleOwner) { destination ->
                         binding.startNavigationButton.visibility =
                             if (viewModel.navigationStatus.value == NAVIGATION_INIT) {
                                 View.VISIBLE
@@ -329,13 +340,13 @@ class MapFragment :
                         binding.meetingLocationButton.visibility = View.VISIBLE
                         binding.cardViewIcon.visibility = View.VISIBLE
                         binding.cardView.visibility = View.VISIBLE
-                        binding.cardViewText.text = display["place"]
+                        binding.cardViewText.text = destination
                         binding.cardViewText2.visibility = View.GONE
                     }
 
                     // Function
                     viewModel.deviceLocation.observe(viewLifecycleOwner) { myLocation ->
-                        if (myLocation != null && viewModel.currentEventId?.value != "") {
+                        if (myLocation != null && viewModel.getCurrentEventId.value != "") {
                             viewModel.getCurrentEventLocation(map, myLocation)
                         }
                     }
@@ -385,7 +396,7 @@ class MapFragment :
 
         val cameraPosition = CameraPosition.Builder()
             .target(latLng)
-            .zoom(15F)
+            .zoom(FOCUS_ZOOM)
             .build()
         map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 

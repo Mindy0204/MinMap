@@ -112,7 +112,7 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
                 }
                 else -> {
                     error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
@@ -148,7 +148,7 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
                 }
                 else -> {
                     error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     null
                 }

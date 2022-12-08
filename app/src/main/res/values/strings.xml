@@ -60,5 +60,5 @@
     <string name="event_channel_description">You have a new event</string>
 
     <string name="internet_not_connected">Internet is not connected</string>
-    <string name="you_know_nothing">You know nothing</string>
+    <string name="firebase_operation_failed">The operation failed, please try again or check your internet</string>
 </resources>

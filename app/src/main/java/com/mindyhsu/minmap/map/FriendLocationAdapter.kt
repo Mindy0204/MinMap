@@ -20,7 +20,7 @@ class FriendLocationAdapter(private val uiState: MapUiState) :
             binding.friendNameText.text = item.name
             binding.friendImage.glide(item.image)
             itemView.setOnClickListener {
-                uiState.onClick(item.id)
+                uiState.onFriendPicClick(item.id)
             }
         }
     }

@@ -81,7 +81,7 @@ class SendInvitationViewModel(
                 }
                 else -> {
                     error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
@@ -113,7 +113,7 @@ class SendInvitationViewModel(
                 }
                 else -> {
                     error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
@@ -155,7 +155,7 @@ class SendInvitationViewModel(
                         ""
                     }
                     else -> {
-                        error.value = MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                         status.value = LoadApiStatus.ERROR
                         ""
                     }
@@ -186,7 +186,7 @@ class SendInvitationViewModel(
                     status.value = LoadApiStatus.ERROR
                 }
                 else -> {
-                    error.value = MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                 }
             }
@@ -221,7 +221,7 @@ class SendInvitationViewModel(
                     ""
                 }
                 else -> {
-                    error.value = MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    error.value = MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     ""
                 }

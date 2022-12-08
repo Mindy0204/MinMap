@@ -34,8 +34,4 @@ object UserManager {
         get() {
             return sharedPreferencesName.getString("name", null)
         }
-
-//    fun isLogin(): Boolean {
-//        return id != null
-//    }
 }

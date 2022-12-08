@@ -2,7 +2,6 @@ package com.mindyhsu.minmap.dialog
 
 import android.content.Intent
 import android.net.Uri
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -144,7 +143,7 @@ class DialogViewModel(
                     }
                     else -> {
                         error.value =
-                            MinMapApplication.instance.getString(R.string.you_know_nothing)
+                            MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                         status.value = LoadApiStatus.ERROR
                     }
                 }
@@ -174,7 +173,7 @@ class DialogViewModel(
                 }
                 else -> {
                     error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     null
                 }
