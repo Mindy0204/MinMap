@@ -12,6 +12,7 @@ import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
+import com.mindyhsu.minmap.util.Util.getString
 import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +24,10 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     private val status = MutableLiveData<LoadApiStatus>()
-    private val error = MutableLiveData<String?>()
+
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?>
+        get() = _error
 
     private var friendId = ""
 
@@ -47,59 +51,61 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
             val friendList =
                 when (val myFriendListResult = repository.getFriend(UserManager.id ?: "")) {
                     is Result.Success -> {
-                        error.value = null
+                        _error.value = null
                         status.value = LoadApiStatus.DONE
                         myFriendListResult.data
                     }
                     is Result.Fail -> {
-                        error.value = myFriendListResult.error
+                        _error.value = myFriendListResult.error
                         status.value = LoadApiStatus.ERROR
                         emptyList()
                     }
                     is Result.Error -> {
-                        error.value = myFriendListResult.exception.toString()
+                        _error.value = myFriendListResult.exception.toString()
                         status.value = LoadApiStatus.ERROR
                         emptyList()
                     }
                     else -> {
-                        error.value =
-                            MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                        _error.value =
+                            getString(R.string.firebase_operation_failed)
                         status.value = LoadApiStatus.ERROR
                         emptyList()
                     }
                 }
 
-            for (friend in friendList) {
-                if (friend == friendId) {
+            for (friends in friendList) {
+                if (friends == friendId) {
                     _hasThisFriend.value = true
                 }
             }
 
-            if (!_hasThisFriend.value!!) {
-                val user = when (val result = repository.getUserById(listOf(friend))) {
-                    is Result.Success -> {
-                        error.value = null
-                        status.value = LoadApiStatus.DONE
-                        result.data
+            _hasThisFriend.value?.let {
+                if (!it) {
+                    val user = when (val result = repository.getUserById(listOf(friend))) {
+                        is Result.Success -> {
+                            _error.value = null
+                            status.value = LoadApiStatus.DONE
+                            result.data
+                        }
+                        is Result.Fail -> {
+                            _error.value = result.error
+                            status.value = LoadApiStatus.ERROR
+                            emptyList()
+                        }
+                        is Result.Error -> {
+                            _error.value = result.exception.toString()
+                            status.value = LoadApiStatus.ERROR
+                            emptyList()
+                        }
+                        else -> {
+                            _error.value =
+                                getString(R.string.firebase_operation_failed)
+                            status.value = LoadApiStatus.ERROR
+                            emptyList()
+                        }
                     }
-                    is Result.Fail -> {
-                        error.value = result.error
-                        status.value = LoadApiStatus.ERROR
-                        emptyList()
-                    }
-                    is Result.Error -> {
-                        error.value = result.exception.toString()
-                        status.value = LoadApiStatus.ERROR
-                        emptyList()
-                    }
-                    else -> {
-                        error.value =
-                            MinMapApplication.instance.getString(R.string.firebase_operation_failed)
-                        status.value = LoadApiStatus.ERROR
-                        emptyList()
-                    }
+                    _friend.value = user[0]
                 }
-                _friend.value = user[0]
             }
         }
     }
@@ -114,23 +120,23 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
                     _friend.value?.let { repository.setFriend(UserManager.id ?: "", it.id) }
             ) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                     result.data
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
                 else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value =
+                        getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
@@ -149,7 +155,7 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
             val time = Timestamp(Calendar.getInstance().time)
             val message = Message(
                 senderId = friendId,
-                text = MinMapApplication.instance.getString(R.string.add_friend_success_message),
+                text = getString(R.string.add_friend_success_message),
                 time = time
             )
 
@@ -160,19 +166,19 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
                     repository.sendMessage(chatRoomId = chatRoomId, message = message)
             ) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                 }
                 else -> {
-                    error.value =
+                    _error.value =
                         MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                 }

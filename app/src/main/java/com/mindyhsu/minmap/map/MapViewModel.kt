@@ -36,45 +36,6 @@ data class MapUiState(
     val onFriendPicClick: (friendId: String) -> Unit
 )
 
-/** Navigation status */
-const val NAVIGATION_INIT = 0
-const val NAVIGATION_ING = 1
-const val NAVIGATION_PAUSE = 2
-
-/** Navigation mode */
-private const val WALKING_MODE = "walking"
-
-/** Navigation instruction */
-private const val STEP_END_LOCATION = "stepEndLocation"
-private const val FINAL_STEP_LOCATION = "finalStepLocation"
-const val DIRECTION = "direction"
-const val DIRECTION_GO_STRAIGHT = "Go Straight"
-const val DIRECTION_TURN_RIGHT = "Turn Right"
-const val DIRECTION_TURN_LEFT = "Turn Left"
-private const val DIRECTION_RIGHT = "right"
-private const val DIRECTION_LEFT = "left"
-private const val INSTRUCTION_SPLIT_ON = "on "
-private const val INSTRUCTION_SPLIT_ONTO = "onto "
-private const val INSTRUCTION_SPLIT_FINAL_DIRECTION = "Destination will be on the "
-const val DISTANCE_DURATION = "distanceAndDuration"
-private const val METERS_FROM_THE_LAST_STEP = 20
-
-/** Map zoom status */
-const val DEFAULT_ZOOM = 15F
-const val FOCUS_ZOOM = 17F
-
-/** Polyline */
-private const val POLYLINE_WIDTH = 15F
-
-/** Location manager */
-private const val LOCATION_MANAGER_TIME = 0L
-private const val LOCATION_MANAGER_DISTANCE = 0F
-
-/** Text to speech */
-private const val SPEECH_RATE = 0.75F
-private const val REMINDER_DURATION = 20
-private const val TEXT_TO_SPEECH_MESSAGE = "Text to speech: distance="
-
 private const val encodedString = BuildConfig.APIKEY_MAP
 val decodedString: String = String(Base64.getDecoder().decode(encodedString))
 
@@ -339,7 +300,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     /** Open location listener */
     fun startNavigation() {
         locationManager.requestLocationUpdates(
-            LocationManager.GPS_PROVIDER, // TODO: GPS_PROVIDER, NETWORK_PROVIDER
+            LocationManager.NETWORK_PROVIDER,
             LOCATION_MANAGER_TIME,
             LOCATION_MANAGER_DISTANCE,
             locationListener

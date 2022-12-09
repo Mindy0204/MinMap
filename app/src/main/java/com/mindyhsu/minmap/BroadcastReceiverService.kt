@@ -27,11 +27,17 @@ class BroadcastReceiverService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        intent?.extras?.let {
-            if (it.getString(KEY_CHAT_ROOM) != null) {
-                chatRoomNotification(it.getString(KEY_CHAT_ROOM)!!)
-            } else if (it.getString(KEY_MESSAGE) != null) {
-                messageNotification(it.getString(KEY_MESSAGE)!!)
+        intent?.extras?.let { bundle ->
+            if (bundle.getString(KEY_CHAT_ROOM) != null) {
+                bundle.getString(KEY_CHAT_ROOM)?.let {
+                    chatRoomNotification(it)
+                }
+            } else if (bundle.getString(KEY_MESSAGE) != null) {
+                bundle.getString(KEY_MESSAGE)?.let {
+                    messageNotification(it)
+                }
+            } else {
+                Timber.d(BROADCAST_RECEIVER + "unknown")
             }
         }
         return super.onStartCommand(intent, flags, startId)

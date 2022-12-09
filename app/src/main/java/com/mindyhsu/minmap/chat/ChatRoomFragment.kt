@@ -71,6 +71,12 @@ class ChatRoomFragment : Fragment() {
             }
         }
 
+        viewModel.error.observe(viewLifecycleOwner) {
+            if (it != null) {
+                Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
+            }
+        }
+
         return binding.root
     }
 

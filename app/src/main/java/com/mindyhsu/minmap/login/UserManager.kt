@@ -3,11 +3,11 @@ package com.mindyhsu.minmap.login
 import android.content.Context
 import com.mindyhsu.minmap.MinMapApplication
 
-const val ID = "id"
-const val IMAGE = "image"
-const val NAME = "name"
-
 object UserManager {
+    private const val ID = "id"
+    private const val IMAGE = "image"
+    private const val NAME = "name"
+
     private val sharedPreferencesId =
         MinMapApplication.instance.getSharedPreferences(ID, Context.MODE_PRIVATE)
     private val sharedPreferencesImage =

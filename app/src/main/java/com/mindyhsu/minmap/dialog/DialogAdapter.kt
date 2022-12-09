@@ -1,5 +1,6 @@
 package com.mindyhsu.minmap.dialog
 
+import android.annotation.SuppressLint
 import android.graphics.Paint
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -43,6 +44,7 @@ private const val ITEM_VIEW_DIALOG_DATE = 0x00
 private const val ITEM_VIEW_MY_DIALOG = 0x01
 private const val ITEM_VIEW_FRIEND_DIALOG = 0x02
 
+@SuppressLint("SimpleDateFormat")
 class DialogAdapter(private val uiState: DialogUiState) :
     ListAdapter<DialogItem, RecyclerView.ViewHolder>(DialogDiffCallback()) {
 
@@ -50,7 +52,7 @@ class DialogAdapter(private val uiState: DialogUiState) :
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: DialogItem.DialogDate, uiStatue: DialogUiState) {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+            val dateFormat = SimpleDateFormat(DATE_FORMAT)
             binding.dialogDateText.text = dateFormat.format(item.time.toDate())
         }
     }
@@ -70,7 +72,7 @@ class DialogAdapter(private val uiState: DialogUiState) :
             }
             binding.dialogText.text = item.message.text
 
-            val dateFormat = SimpleDateFormat("HH:mm")
+            val dateFormat = SimpleDateFormat(TIME_FORMAT)
             binding.dialogTimeText.text = dateFormat.format(item.time.toDate())
         }
     }
@@ -90,7 +92,7 @@ class DialogAdapter(private val uiState: DialogUiState) :
             }
             binding.dialogText.text = item.message.text
 
-            val dateFormat = SimpleDateFormat("HH:mm")
+            val dateFormat = SimpleDateFormat(TIME_FORMAT)
             binding.dialogTimeText.text = dateFormat.format(item.time.toDate())
         }
     }

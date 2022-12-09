@@ -11,6 +11,7 @@ import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
+import com.mindyhsu.minmap.util.Util.getString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,7 +32,10 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     private val status = MutableLiveData<LoadApiStatus>()
-    private val error = MutableLiveData<String?>()
+
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?>
+        get() = _error
 
     val getLiveChatRoom = repository.getLiveChatRoom(UserManager.id ?: "")
     val liveChatRoom = MutableLiveData<List<ChatRoom>>()
@@ -103,23 +107,23 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
             // Get users by ids
             val userList = when (val result = repository.getUserById(participantsIds)) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                     result.data
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
                 else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
+                    _error.value =
+                        getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     emptyList()
                 }
