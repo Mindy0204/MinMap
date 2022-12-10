@@ -10,6 +10,4 @@ data class Leg(
     @Json(name = "start_address")val startAddress: String,
     @Json(name = "start_location")val startLocation: Direction,
     val steps: List<Step>,
-//    @Json(name = "traffic_speed_entry")val trafficSpeedEntry: List<>,
-//    @Json(name = "via_waypoint")val viaWaypoint: List<>,
 )

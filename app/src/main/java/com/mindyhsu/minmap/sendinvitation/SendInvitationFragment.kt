@@ -27,7 +27,8 @@ class SendInvitationFragment : BottomSheetDialogFragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentSendInvitationBinding.inflate(inflater, container, false)
@@ -47,6 +48,12 @@ class SendInvitationFragment : BottomSheetDialogFragment() {
                 Toast.makeText(context, getString(R.string.send_invitation_fail), Toast.LENGTH_SHORT).show()
             } else {
                 findNavController().navigateUp()
+            }
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) {
+            if (it != null) {
+                Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
             }
         }
 

@@ -62,8 +62,10 @@
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/success_dialog_button"
         style="@style/green_button"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/floating_button_width"
         android:layout_height="@dimen/button_height_size"
+        android:paddingStart="@dimen/floating_button_padding"
+        android:paddingEnd="@dimen/floating_button_padding"
         android:text="@string/done_button"
         app:layout_constraintBottom_toBottomOf="@+id/success_dialog"
         app:layout_constraintEnd_toEndOf="@+id/success_dialog"

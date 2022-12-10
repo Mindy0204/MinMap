@@ -54,7 +54,10 @@ class DefaultMinMapRepository(private val remoteDataSource: MinMapDataSource) :
         return remoteDataSource.updateUserCurrentEvent(userId, currentEventId)
     }
 
-    override suspend fun updateChatRoomCurrentEvent(participants: List<String>, currentEventId: String): Result<String> {
+    override suspend fun updateChatRoomCurrentEvent(
+        participants: List<String>,
+        currentEventId: String
+    ): Result<String> {
         return remoteDataSource.updateChatRoomCurrentEvent(participants, currentEventId)
     }
 

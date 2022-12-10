@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
@@ -14,7 +15,6 @@ import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.databinding.FragmentDialogBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 import com.mindyhsu.minmap.map.MapFragmentDirections
-import java.util.regex.Pattern
 
 class DialogFragment : Fragment() {
 
@@ -28,7 +28,8 @@ class DialogFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentDialogBinding.inflate(inflater, container, false)
@@ -50,13 +51,13 @@ class DialogFragment : Fragment() {
             binding.myMessageEditText.text.clear()
         }
 
-        // Find Mid-Point
+        // Find mid-point
         binding.shareLocation.setOnClickListener {
             viewModel.getMidPoint()
             viewModel.midPoint.observe(viewLifecycleOwner) {
                 setFragmentResult(
-                    "midPoint",
-                    bundleOf("latLng" to it, "participants" to viewModel.participants)
+                    MID_POINT_EVENT_REQUEST_KEY,
+                    bundleOf(MID_POINT_EVENT_LAT_LNG to it, MID_POINT_EVENT_PARTICIPANTS to viewModel.participants)
                 )
                 findNavController().navigate(MapFragmentDirections.navigateToMapFragment())
             }
@@ -79,11 +80,18 @@ class DialogFragment : Fragment() {
             viewModel.sendMessage(getString(R.string.hurry_up_chip))
         }
 
-        binding.myMessageEditText.doOnTextChanged { text, start, before, count ->
+        // Avoid send empty message
+        binding.myMessageEditText.doOnTextChanged { text, _, _, _ ->
             if (text?.trim().toString() == "") {
                 binding.sendMessage.visibility = View.GONE
             } else {
                 binding.sendMessage.visibility = View.VISIBLE
+            }
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) {
+            if (it != null) {
+                Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
             }
         }
 

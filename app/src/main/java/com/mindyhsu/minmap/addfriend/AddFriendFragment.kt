@@ -24,21 +24,19 @@ import com.google.zxing.common.BitMatrix
 import com.journeyapps.barcodescanner.BarcodeEncoder
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
-import com.mindyhsu.minmap.bindImage
 import com.mindyhsu.minmap.databinding.FragmentAddFriendBinding
 import com.mindyhsu.minmap.ext.getVmFactory
+import com.mindyhsu.minmap.ext.glide
 import com.mindyhsu.minmap.login.UserManager
 import kotlinx.coroutines.Runnable
-
 
 class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsResultCallback {
     private lateinit var binding: FragmentAddFriendBinding
     private val viewModel by viewModels<AddFriendViewModel> { getVmFactory() }
 
-    private var qrDisplay = -1
-
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentAddFriendBinding.inflate(inflater, container, false)
@@ -47,16 +45,16 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
 
         buildCodeScanner()
 
+        // Switch QR code and scanner
         binding.addFriendText.setOnClickListener {
-            when (qrDisplay) {
-                -1 -> {
-                    showMyQrCode()
-                    qrDisplay = 0
-                }
-                0 -> {
+            when (binding.surfaceView.visibility) {
+                View.GONE -> {
                     showQrCodeScanner()
-                    qrDisplay = -1
                 }
+                View.VISIBLE -> {
+                    showMyQrCode()
+                }
+                View.INVISIBLE -> {}
             }
         }
 
@@ -76,9 +74,16 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
             }
         }
 
+        viewModel.error.observe(viewLifecycleOwner) {
+            if (it != null) {
+                Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
+            }
+        }
+
         return binding.root
     }
 
+    /** Set up code scanner */
     private fun buildCodeScanner() {
         val barcodeDetector =
             BarcodeDetector.Builder(MinMapApplication.instance).setBarcodeFormats(Barcode.QR_CODE)
@@ -88,8 +93,10 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
 
         binding.surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceChanged(
-                holder: SurfaceHolder, format: Int,
-                width: Int, height: Int
+                holder: SurfaceHolder,
+                format: Int,
+                width: Int,
+                height: Int
             ) {
                 cameraSource.start(holder)
             }
@@ -108,17 +115,20 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
             override fun receiveDetections(detections: Detector.Detections<Barcode>) {
                 val qrCode: SparseArray<Barcode> = detections.detectedItems
                 if (qrCode.size() != 0) {
-                    binding.addFriendText.post(Runnable {
-                        viewModel.getUserById(qrCode.valueAt(0).displayValue)
-                        cameraSource.stop()
-                        showScanResult()
-                    })
+                    binding.addFriendText.post(
+                        Runnable {
+                            viewModel.getUserById(qrCode.valueAt(0).displayValue)
+                            cameraSource.stop()
+                            showScanResult()
+                        }
+                    )
                 }
             }
         })
     }
 
-    private fun qrCodeGenerate() {
+    /** Generate QR code */
+    private fun generateQrCode() {
         val multiFormatWriter = MultiFormatWriter()
         val barcodeEncoder = BarcodeEncoder()
         val bitMatrix: BitMatrix =
@@ -127,13 +137,15 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
         binding.addFriendQrcode.setImageBitmap(bitmap)
     }
 
+    /** Show QR code UI*/
     private fun showMyQrCode() {
-        qrCodeGenerate()
+        generateQrCode()
         binding.surfaceView.visibility = View.GONE
         binding.addFriendQrcode.visibility = View.VISIBLE
         binding.addFriendText.text = getString(R.string.show_qrcode_scanner)
     }
 
+    /** Show QR code scanner UI*/
     private fun showQrCodeScanner() {
         buildCodeScanner()
         binding.surfaceView.visibility = View.VISIBLE
@@ -146,7 +158,7 @@ class AddFriendFragment : DialogFragment(), ActivityCompat.OnRequestPermissionsR
             if (it != null) {
                 binding.addFriendText.text = it.name
                 binding.addFriendImage.visibility = View.VISIBLE
-                bindImage(binding.addFriendImage, it.image)
+                binding.addFriendImage.glide(it.image)
                 binding.surfaceView.visibility = View.GONE
                 binding.addFriendQrcode.visibility = View.GONE
             } else {

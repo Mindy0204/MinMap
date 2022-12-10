@@ -3,7 +3,7 @@
     <string name="title_main">MinMap</string>
 
     <!-- login page -->
-    <string name="login_subtitle">Hey, can\'t wait to meet you!</string>
+    <string name="login_subtitle">Hey, can\'t wait to meet you here!</string>
     <string name="login">Sign In with Google</string>
 
     <!-- main page -->
@@ -13,6 +13,7 @@
     <string name="destination">Destination will be on the %s</string>
     <string name="navigation_foreground">Next\nAfter %s m | %s  %s</string>
     <string name="exit_navigation">Exit Navigation</string>
+    <string name="location_permission">We need your location permission to access navigation operation</string>
 
     <!-- main page button -->
     <string name="continue_button">Continue</string>
@@ -25,10 +26,11 @@
     <string name="have_a_nice_day">Have a nice date!</string>
     <string name="done_button">Done</string>
 
-    <!-- send event to friend page -->
+    <!-- send invitation to friend page -->
     <string name="invite_friend">Invite Friends!</string>
     <string name="custom_location">Custom Location</string>
     <string name="send_invitation_fail">You don\'t choose any friend</string>
+    <string name="send_invitation_success_message">Hey, I\'ve sent a activity to you!</string>
 
     <!-- chat room page -->
     <string name="chat_room">Chat Room</string>
@@ -60,5 +62,5 @@
     <string name="event_channel_description">You have a new event</string>
 
     <string name="internet_not_connected">Internet is not connected</string>
-    <string name="you_know_nothing">You know nothing</string>
+    <string name="firebase_operation_failed">The operation failed, please try again or check your internet</string>
 </resources>

@@ -14,15 +14,11 @@ object ServiceLocator {
 
     fun provideTasksRepository(context: Context): MinMapRepository {
         synchronized(this) {
-            return minMapRepository
-                ?: minMapRepository
-                ?: createMinMapRepository(context)
+            return minMapRepository ?: createMinMapRepository(context)
         }
     }
 
     private fun createMinMapRepository(context: Context): MinMapRepository {
-        return DefaultMinMapRepository(
-            MinMapRemoteDataSource
-        )
+        return DefaultMinMapRepository(MinMapRemoteDataSource)
     }
 }

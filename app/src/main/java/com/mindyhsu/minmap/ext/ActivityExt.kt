@@ -1,8 +1,6 @@
 package com.mindyhsu.minmap.ext
 
 import android.app.Activity
-import androidx.core.content.ContentProviderCompat.requireContext
-import androidx.fragment.app.Fragment
 import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.factory.ViewModelFactory
 

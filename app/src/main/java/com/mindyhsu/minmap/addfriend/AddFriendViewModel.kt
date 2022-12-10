@@ -12,20 +12,24 @@ import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
+import com.mindyhsu.minmap.util.Util.getString
+import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.util.*
 
 class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     private val status = MutableLiveData<LoadApiStatus>()
-    private val error = MutableLiveData<String?>()
 
-    var friendId = ""
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?>
+        get() = _error
+
+    private var friendId = ""
 
     private val _friend = MutableLiveData<User>()
     val friend: LiveData<User>
@@ -35,96 +39,104 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
     val hasThisFriend: LiveData<Boolean>
         get() = _hasThisFriend
 
+    /**
+     * After scan QR code, check if friend id exists in user friend list
+     * If it not exists -> get fiend's data
+     * */
     fun getUserById(friend: String) {
         coroutineScope.launch {
             friendId = friend
             status.value = LoadApiStatus.LOADING
 
-            // Check if has this friend
-            var friendList =
+            val friendList =
                 when (val myFriendListResult = repository.getFriend(UserManager.id ?: "")) {
                     is Result.Success -> {
-                        error.value = null
+                        _error.value = null
                         status.value = LoadApiStatus.DONE
                         myFriendListResult.data
                     }
                     is Result.Fail -> {
-                        error.value = myFriendListResult.error
+                        _error.value = myFriendListResult.error
                         status.value = LoadApiStatus.ERROR
                         emptyList()
                     }
                     is Result.Error -> {
-                        error.value = myFriendListResult.exception.toString()
+                        _error.value = myFriendListResult.exception.toString()
                         status.value = LoadApiStatus.ERROR
                         emptyList()
                     }
                     else -> {
-                        error.value =
-                            MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        _error.value =
+                            getString(R.string.firebase_operation_failed)
                         status.value = LoadApiStatus.ERROR
                         emptyList()
                     }
                 }
 
-            for (friend in friendList) {
-                if (friend == friendId) {
+            for (friends in friendList) {
+                if (friends == friendId) {
                     _hasThisFriend.value = true
                 }
             }
 
-            if (!_hasThisFriend.value!!) {
-                val user = when (val result = repository.getUserById(listOf(friend))) {
-                    is Result.Success -> {
-                        error.value = null
-                        status.value = LoadApiStatus.DONE
-                        result.data
+            _hasThisFriend.value?.let {
+                if (!it) {
+                    val user = when (val result = repository.getUserById(listOf(friend))) {
+                        is Result.Success -> {
+                            _error.value = null
+                            status.value = LoadApiStatus.DONE
+                            result.data
+                        }
+                        is Result.Fail -> {
+                            _error.value = result.error
+                            status.value = LoadApiStatus.ERROR
+                            emptyList()
+                        }
+                        is Result.Error -> {
+                            _error.value = result.exception.toString()
+                            status.value = LoadApiStatus.ERROR
+                            emptyList()
+                        }
+                        else -> {
+                            _error.value =
+                                getString(R.string.firebase_operation_failed)
+                            status.value = LoadApiStatus.ERROR
+                            emptyList()
+                        }
                     }
-                    is Result.Fail -> {
-                        error.value = result.error
-                        status.value = LoadApiStatus.ERROR
-                        emptyList()
-                    }
-                    is Result.Error -> {
-                        error.value = result.exception.toString()
-                        status.value = LoadApiStatus.ERROR
-                        emptyList()
-                    }
-                    else -> {
-                        error.value =
-                            MinMapApplication.instance.getString(R.string.you_know_nothing)
-                        status.value = LoadApiStatus.ERROR
-                        emptyList()
-                    }
+                    _friend.value = user[0]
                 }
-                _friend.value = user[0]
             }
         }
     }
 
+    /** Set friend to user's friend list */
     fun setFriend() {
         coroutineScope.launch {
             status.value = LoadApiStatus.LOADING
 
-            val newChatRoom = when (val result =
-                _friend.value?.let { repository.setFriend(UserManager.id ?: "", it.id) }) {
+            val newChatRoom = when (
+                val result =
+                    _friend.value?.let { repository.setFriend(UserManager.id ?: "", it.id) }
+            ) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                     result.data
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
                 else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    _error.value =
+                        getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
@@ -135,34 +147,39 @@ class AddFriendViewModel(private val repository: MinMapRepository) : ViewModel()
         }
     }
 
+    /**
+     * Auto create a new chatRoom and message
+     * Sender is friend who user add */
     private fun setFirstMessage(chatRoomId: String) {
         coroutineScope.launch {
             val time = Timestamp(Calendar.getInstance().time)
             val message = Message(
                 senderId = friendId,
-                text = MinMapApplication.instance.getString(R.string.add_friend_success_message),
+                text = getString(R.string.add_friend_success_message),
                 time = time
             )
 
             status.value = LoadApiStatus.LOADING
 
-            when (val result =
-                repository.sendMessage(chatRoomId = chatRoomId, message = message)) {
+            when (
+                val result =
+                    repository.sendMessage(chatRoomId = chatRoomId, message = message)
+            ) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                 }
                 else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    _error.value =
+                        MinMapApplication.instance.getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                 }
             }

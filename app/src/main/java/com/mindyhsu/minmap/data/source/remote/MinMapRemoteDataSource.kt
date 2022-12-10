@@ -16,31 +16,33 @@ import com.mindyhsu.minmap.main.*
 import com.mindyhsu.minmap.network.MinMapApi
 import com.mindyhsu.minmap.util.Util.getString
 import com.mindyhsu.minmap.util.Util.isInternetConnected
-import timber.log.Timber
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import timber.log.Timber
 
 object MinMapRemoteDataSource : MinMapDataSource {
 
+    /** Collection */
     private const val PATH_USERS = "users"
     private const val PATH_EVENTS = "events"
     private const val PATH_CHAT_ROOMS = "chatRooms"
 
+    /** Field */
+    private const val FIELD_ID = "id"
+    private const val FIELD_NAME = "name"
     private const val FIELD_CURRENT_EVENT = "currentEvent"
     private const val FIELD_GEO_HASH = "geoHash"
-    private const val FIELD_PARTICIPANTS = "participants"
-    private const val FIELD_ID = "id"
-    private const val FIELD_IMAGE = "image"
-    private const val FIELD_EVENT_ID = "eventId"
-    private const val FIELD_NAME = "name"
     private const val FIELD_FCM_TOKEN = "fcmToken"
     private const val FIELD_FRIENDS = "friends"
-    private const val FIELD_MESSAGES = "messages"
+    private const val FIELD_IMAGE = "image"
+    private const val FIELD_PARTICIPANTS = "participants"
+    private const val FIELD_STATUS = "status"
     private const val FIELD_TIME = "time"
+    private const val FIELD_EVENT_ID = "eventId"
     private const val FIELD_SENDER_ID = "senderId"
     private const val FIELD_LAST_MESSAGES = "lastMessage"
     private const val FIELD_LAST_UPDATE = "lastUpdate"
-    private const val FIELD_STATUS = "status"
+    private const val FIELD_MESSAGES = "messages"
 
     private val sharedPreferencesChatRoom =
         MinMapApplication.instance.getSharedPreferences(KEY_CHAT_ROOM, Context.MODE_PRIVATE)
@@ -131,7 +133,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                 }
             }
         }
@@ -150,7 +152,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -166,14 +168,6 @@ object MinMapRemoteDataSource : MinMapDataSource {
                     liveData.value = ""
                 } else {
                     liveData.value = data?.currentEvent
-
-                    // New event notification
-                    Intent().also { intent ->
-                        intent.action = EVENT_INTENT_FILTER
-                        MinMapApplication.instance.sendBroadcast(
-                            intent.putExtra(KEY_EVENT, KEY_EVENT)
-                        )
-                    }
                 }
 
                 exception?.let {
@@ -197,7 +191,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -215,7 +209,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -258,7 +252,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -280,7 +274,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                 }
             }
         }
@@ -304,11 +298,15 @@ object MinMapRemoteDataSource : MinMapDataSource {
                     continuation.resume(Result.Error(it))
                     return@addOnCompleteListener
                 }
-                continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
             }
         }
     }
 
+    /**
+     * Update chatRoom's current event if chatRoom exist
+     * Create chatRoom and set current event if chatRoom not exist
+     * */
     override suspend fun updateChatRoomCurrentEvent(
         participants: List<String>,
         currentEventId: String
@@ -344,7 +342,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -399,13 +397,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                                     continuation.resume(Result.Error(it))
                                                     return@addOnCompleteListener
                                                 }
-                                                continuation.resume(
-                                                    Result.Fail(
-                                                        MinMapApplication.instance.getString(
-                                                            R.string.you_know_nothing
-                                                        )
-                                                    )
-                                                )
+                                                continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                                             }
                                         }
                                 }
@@ -414,35 +406,24 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             if (task.isSuccessful) {
                                 Timber.i("finishEvent => Finish update event status")
                                 continuation.resume(Result.Success(true))
-
                             } else {
                                 task.exception?.let {
                                     Timber.d("finishEvent => Update event status error=${it.message}")
                                     continuation.resume(Result.Error(it))
                                     return@addOnCompleteListener
                                 }
-                                continuation.resume(
-                                    Result.Fail(
-                                        MinMapApplication.instance.getString(
-                                            R.string.you_know_nothing
-                                        )
-                                    )
-                                )
+                                continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                             }
                         }
-
-
                     } else {
                         task.exception?.let {
                             Timber.d("finishEvent => Update user current event error=${it.message}")
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                     }
                 }
-
-
         }
 
     override suspend fun getChatRoom(userId: String): Result<List<ChatRoom>> =
@@ -464,7 +445,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -487,7 +468,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -560,7 +541,6 @@ object MinMapRemoteDataSource : MinMapDataSource {
                                     userList.add(users)
                                 }
                             }
-
                         }
                         continuation.resume(Result.Success(userList))
                     } else {
@@ -569,7 +549,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                             continuation.resume(Result.Error(it))
                             return@addOnCompleteListener
                         }
-                        continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                        continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                     }
                 }
         }
@@ -650,7 +630,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                 }
             }
 
@@ -671,7 +651,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                 }
             }
         }
@@ -693,7 +673,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                 }
             }
 
@@ -711,7 +691,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                 }
             }
 
@@ -733,7 +713,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                         continuation.resume(Result.Error(it))
                         return@addOnCompleteListener
                     }
-                    continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                    continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
                 }
             }
         }
@@ -749,7 +729,7 @@ object MinMapRemoteDataSource : MinMapDataSource {
                     continuation.resume(Result.Error(it))
                     return@addOnCompleteListener
                 }
-                continuation.resume(Result.Fail(MinMapApplication.instance.getString(R.string.you_know_nothing)))
+                continuation.resume(Result.Fail(getString(R.string.firebase_operation_failed)))
             }
         }
     }
