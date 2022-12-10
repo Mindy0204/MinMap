@@ -18,6 +18,7 @@ import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.Result
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.network.LoadApiStatus
+import com.mindyhsu.minmap.util.Util.getString
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -28,7 +29,6 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     lateinit var googleSignInClient: GoogleSignInClient
     private lateinit var auth: FirebaseAuth
-    val GOOGLE_SING_IN_RESULT = 1
     private lateinit var accountResult: GoogleSignInAccount
     private var hasUserData = MutableLiveData<Boolean>()
 
@@ -40,7 +40,10 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     private val status = MutableLiveData<LoadApiStatus>()
-    private val error = MutableLiveData<String?>()
+
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?>
+        get() = _error
 
     init {
         initGoogleSignInAndFirebaseAuth()
@@ -48,17 +51,18 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     private fun initGoogleSignInAndFirebaseAuth() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(MinMapApplication.instance.getString(R.string.default_web_client_id))
+            .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
             .build()
         googleSignInClient = GoogleSignIn.getClient(MinMapApplication.instance, gso)
 
         val account = GoogleSignIn.getLastSignedInAccount(MinMapApplication.instance)
+
+        // Don't need to login again if already know user's account
 //        _isSignIn.value = account != null
 
         auth = Firebase.auth
     }
-
 
     fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
@@ -67,7 +71,7 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
             // Set Firebase auth
             accountResult.idToken?.let { signInGoogleWithFirebaseAuth(it) }
         } catch (e: ApiException) {
-            Timber.i("sing in exception=${e.message}")
+            Timber.i("Sing in exception=${e.message}")
         }
     }
 
@@ -97,23 +101,22 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
         coroutineScope.launch {
             val fcmToken = when (val result = repository.getFCMToken()) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                     result.data
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
                 else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    _error.value = getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     ""
                 }
@@ -133,23 +136,22 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
 
             hasUserData.value = when (result) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                     result.data
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                     null
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                     null
                 }
                 else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    _error.value = getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     null
                 }

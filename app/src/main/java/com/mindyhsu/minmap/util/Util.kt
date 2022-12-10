@@ -7,9 +7,9 @@ import com.mindyhsu.minmap.MinMapApplication
 
 object Util {
     fun isInternetConnected(): Boolean {
-        val cm = MinMapApplication.instance
+        val connectivityManager = MinMapApplication.instance
             .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        val activeNetwork: NetworkInfo? = cm.activeNetworkInfo
+        val activeNetwork: NetworkInfo? = connectivityManager.activeNetworkInfo
         return activeNetwork?.isConnectedOrConnecting == true
     }
 

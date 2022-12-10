@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.mindyhsu.minmap.bindImage
 import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.databinding.ItemSendInvitationBinding
+import com.mindyhsu.minmap.ext.glide
 
 class SendInvitationAdapter(private val uiState: SendInvitationUiState) :
     ListAdapter<User, SendInvitationAdapter.SendInvitationViewHolder>(SendInvitationDiffCallback()) {
@@ -18,7 +18,7 @@ class SendInvitationAdapter(private val uiState: SendInvitationUiState) :
 
         fun bind(item: User, uiState: SendInvitationUiState) {
             binding.sendInvitationFriendNameText.text = item.name
-            bindImage(binding.sendInvitationFriendImage, item.image)
+            binding.sendInvitationFriendImage.glide(item.image)
 
             itemView.setOnClickListener {
                 if (binding.sendInvitationChose.visibility == View.GONE) {

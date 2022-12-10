@@ -1,9 +1,8 @@
 package com.mindyhsu.minmap.dialog
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
-import android.os.Bundle
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
@@ -19,14 +18,14 @@ import com.mindyhsu.minmap.data.User
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
+import com.mindyhsu.minmap.util.Util.getString
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.regex.Pattern
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.regex.Pattern
-
 
 data class DialogUiState(
     val getSenderName: (senderId: String) -> String,
@@ -42,12 +41,18 @@ class DialogViewModel(
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
     private val status = MutableLiveData<LoadApiStatus>()
-    private val error = MutableLiveData<String?>()
+
+    private val _error = MutableLiveData<String?>()
+    val error: LiveData<String?>
+        get() = _error
 
     private val selfName = UserManager.name
     private val users = chatRoomDetail.users.filter { it.name != selfName }
     private val usersDistinct = users.distinct()
-    var roomTitle = ""
+
+    private var _roomTitle: String = ""
+    val roomTitle: String
+        get() = _roomTitle
 
     private val getLiveMessages =
         UserManager.id?.let { repository.getMessage(chatRoomDetail.id, it) }
@@ -84,20 +89,24 @@ class DialogViewModel(
             for (participant in chatRoomDetail.participants) {
                 if (user.id == participant) {
                     if (index != 0) {
-                        roomTitle += ", "
+                        _roomTitle += ", "
                     }
                 }
             }
-            roomTitle += user.name
+            _roomTitle += user.name
         }
     }
 
+    /** Get messages with text, senderId and time */
+    @SuppressLint("SimpleDateFormat")
     private fun getMessages(messages: List<Message>): List<DialogItem> {
         val dataList = mutableListOf<DialogItem>()
         messages.let {
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd")
+            val dateFormat = SimpleDateFormat(DATE_FORMAT)
             var lastDate = "2022-11-11"
             for (message in it) {
+
+                // Show date
                 val getDate = message.time?.toDate()?.let { date -> dateFormat.format(date) }
                 if (getDate != lastDate) {
                     dataList.add(DialogItem.DialogDate(message))
@@ -128,23 +137,25 @@ class DialogViewModel(
 
                 status.value = LoadApiStatus.LOADING
 
-                when (val result =
-                    repository.sendMessage(chatRoomId = chatRoomDetail.id, message = message)) {
+                when (
+                    val result =
+                        repository.sendMessage(chatRoomId = chatRoomDetail.id, message = message)
+                ) {
                     is Result.Success -> {
-                        error.value = null
+                        _error.value = null
                         status.value = LoadApiStatus.DONE
                     }
                     is Result.Fail -> {
-                        error.value = result.error
+                        _error.value = result.error
                         status.value = LoadApiStatus.ERROR
                     }
                     is Result.Error -> {
-                        error.value = result.exception.toString()
+                        _error.value = result.exception.toString()
                         status.value = LoadApiStatus.ERROR
                     }
                     else -> {
-                        error.value =
-                            MinMapApplication.instance.getString(R.string.you_know_nothing)
+                        _error.value =
+                            getString(R.string.firebase_operation_failed)
                         status.value = LoadApiStatus.ERROR
                     }
                 }
@@ -152,34 +163,36 @@ class DialogViewModel(
         }
     }
 
+    /** Query every participants' geo */
     fun getMidPoint() {
         coroutineScope.launch {
             val result = repository.getUserById(chatRoomDetail.participants)
             val userList = MutableLiveData<List<User>>()
             userList.value = when (result) {
                 is Result.Success -> {
-                    error.value = null
+                    _error.value = null
                     status.value = LoadApiStatus.DONE
                     result.data
                 }
                 is Result.Fail -> {
-                    error.value = result.error
+                    _error.value = result.error
                     status.value = LoadApiStatus.ERROR
                     null
                 }
                 is Result.Error -> {
-                    error.value = result.exception.toString()
+                    _error.value = result.exception.toString()
                     status.value = LoadApiStatus.ERROR
                     null
                 }
                 else -> {
-                    error.value =
-                        MinMapApplication.instance.getString(R.string.you_know_nothing)
+                    _error.value =
+                        getString(R.string.firebase_operation_failed)
                     status.value = LoadApiStatus.ERROR
                     null
                 }
             }
 
+            // Participants' location
             val locationList = mutableListOf<LatLng>()
             userList.value?.let {
                 for (user in it) {
@@ -188,20 +201,23 @@ class DialogViewModel(
                     }
                 }
             }
-
-            var totalLat = 0.0
-            var totalLon = 0.0
-            val listSize = locationList.size
-            for (location in locationList) {
-                totalLat += location.latitude
-                totalLon += location.longitude
-            }
-            _midPoint.value = LatLng(totalLat / listSize, totalLon / listSize)
+            calculateMidPoint(locationList)
         }
     }
 
+    private fun calculateMidPoint(locationList: List<LatLng>) {
+        var totalLat = 0.0
+        var totalLon = 0.0
+        val listSize = locationList.size
+        for (location in locationList) {
+            totalLat += location.latitude
+            totalLon += location.longitude
+        }
+        _midPoint.value = LatLng(totalLat / listSize, totalLon / listSize)
+    }
+
     private fun showUrl(url: String): Boolean {
-        val urlFormat = "^((https?|ftp)://|(www|ftp)\\.)?[a-z0-9-]+(\\.[a-z0-9-]+)+([/?].*)?$"
+        val urlFormat = URL_FORMAT
         val pattern = Pattern.compile(urlFormat)
         val matcher = pattern.matcher(url)
         return matcher.find()

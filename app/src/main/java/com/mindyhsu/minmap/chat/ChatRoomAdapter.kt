@@ -6,10 +6,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.mindyhsu.minmap.bindImage
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.databinding.ItemChatRoomBinding
-import timber.log.Timber
+import com.mindyhsu.minmap.ext.glide
 
 class ChatRoomAdapter(private val uiState: ChatRoomUiState) :
     ListAdapter<ChatRoom, ChatRoomAdapter.ChatRoomViewHolder>(ChatRoomDiffCallback()) {
@@ -21,7 +20,7 @@ class ChatRoomAdapter(private val uiState: ChatRoomUiState) :
             val participants = uiState.roomTitleDisplay(item.participants)
             binding.friendName.text = participants
             binding.lastMessage.text = uiState.roomMessageDisplay(item.lastMessage)
-            bindImage(binding.friendPic, uiState.roomPicDisplay(item.users))
+            binding.friendPic.glide(uiState.roomPicDisplay(item.users))
 
             if (item.eventId.isNotEmpty()) {
                 binding.eventReminder.visibility = View.VISIBLE

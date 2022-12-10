@@ -17,16 +17,14 @@ import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.addfriend.AddFriendFragmentDirections
 import com.mindyhsu.minmap.databinding.FragmentChatRoomBinding
 import com.mindyhsu.minmap.ext.getVmFactory
-import com.mindyhsu.minmap.network.LoadApiStatus
-import timber.log.Timber
-
 
 class ChatRoomFragment : Fragment() {
     private lateinit var binding: FragmentChatRoomBinding
     private val viewModel by viewModels<ChatRoomViewModel> { getVmFactory() }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentChatRoomBinding.inflate(inflater, container, false)
@@ -42,6 +40,9 @@ class ChatRoomFragment : Fragment() {
                     )
                 )
                 viewModel.completeNavigateToDialog()
+
+                // Reset search bar
+                binding.chatRoomSearchBar.setText("")
             }
         }
 
@@ -49,12 +50,11 @@ class ChatRoomFragment : Fragment() {
             cameraCheckPermission()
         }
 
-        // Check if there's any new user, then get the user data
         viewModel.getLiveChatRoom.observe(viewLifecycleOwner) {
-            viewModel.checkUsersExist(it)
+            viewModel.addUsersIntoChatRoom(it)
         }
 
-        // Final chat room with participants data
+        /** Final chat room with participants data */
         viewModel.liveChatRoom.observe(viewLifecycleOwner) {
             Handler().postDelayed({
                 adapter.submitList(it)
@@ -63,10 +63,17 @@ class ChatRoomFragment : Fragment() {
             adapter.notifyDataSetChanged()
         }
 
+        // Show search result when input text change
         binding.chatRoomSearchBar.doOnTextChanged { text, _, _, _ ->
             viewModel.search(text.toString())
             viewModel.searchResult.observe(viewLifecycleOwner) {
                 adapter.submitList(it)
+            }
+        }
+
+        viewModel.error.observe(viewLifecycleOwner) {
+            if (it != null) {
+                Toast.makeText(context, it.toString(), Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -83,7 +90,8 @@ class ChatRoomFragment : Fragment() {
                 requestPermissions(
                     arrayOf(
                         Manifest.permission.CAMERA
-                    ), CAMERA_PERMISSION_REQUEST_CODE
+                    ),
+                    CAMERA_PERMISSION_REQUEST_CODE
                 )
             }
         }

@@ -3,18 +3,9 @@ package com.mindyhsu.minmap.main
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.mindyhsu.minmap.MinMapApplication
-import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.ChatRoom
-import com.mindyhsu.minmap.data.Result
 import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
-import com.mindyhsu.minmap.network.LoadApiStatus
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
-import timber.log.Timber
 
 class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
 
@@ -30,6 +21,7 @@ class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
     val foregroundStop: LiveData<Boolean?>
         get() = _foregroundStop
 
+    /** Implement new chat room location notification */
     fun getChatRoomIds(chatRooms: List<ChatRoom>) {
         val chatRoomIds = mutableListOf<String>()
         getLiveChatRoom.value?.let {
@@ -40,6 +32,7 @@ class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
+    /** Implement new message location notification */
     fun getLiveMessage(chatRoomIds: List<String>) {
         for (chatRoomId in chatRoomIds) {
             repository.getMessage(chatRoomId, UserManager.id ?: "")

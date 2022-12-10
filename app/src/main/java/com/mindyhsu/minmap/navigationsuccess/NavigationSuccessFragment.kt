@@ -13,10 +13,10 @@ import com.mindyhsu.minmap.databinding.FragmentNavigationSuccessBinding
 import com.mindyhsu.minmap.ext.getVmFactory
 
 class NavigationSuccessFragment : DialogFragment() {
-    private val viewModel by viewModels<NavigationSuccessViewModel> { getVmFactory() }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
         val binding = FragmentNavigationSuccessBinding.inflate(inflater, container, false)

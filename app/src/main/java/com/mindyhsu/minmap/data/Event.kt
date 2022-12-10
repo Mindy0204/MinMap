@@ -16,4 +16,4 @@ data class Event(
     val geoHash: @RawValue GeoPoint? = null,
     val place: String = MinMapApplication.instance.getString(R.string.custom_location),
     val time: Timestamp? = null
-): Parcelable
+) : Parcelable
