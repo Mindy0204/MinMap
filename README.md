@@ -1,5 +1,5 @@
 # Min Map - Meet up with friends
-![](https://img.shields.io/badge/Version-1.0.7-blue) ![](https://img.shields.io/badge/Platform-Android-green) ![](https://img.shields.io/badge/Language-Kotlin-purple)
+![](https://img.shields.io/badge/Version-1.0.7-blue) ![](https://img.shields.io/badge/Platform-Android-green) ![](https://img.shields.io/badge/Language-Kotlin-purple) ![](https://img.shields.io/badge/License-MIT-white)
 
 Min Map is an app that helps everyone meet up with friends easier. Mainly use the map to select the meeting point, send invitations, and combine with route planning and navigation, track participants’ location and chat room.
 
@@ -62,10 +62,7 @@ Welcome to download. Can't wait to meet you here!
 - [ZXing Android Embedded](https://github.com/journeyapps/zxing-android-embedded)
 
 ## Requirement
-SDK version 26+
-Gradle version 7.3.3
-Android Studio version Chipmunk | 2021.2.1 Patch 2
+SDK version 26+</br>Gradle version 7.3.3</br>Android Studio version Chipmunk | 2021.2.1 Patch 2
 
 ## Contact
-Mindy Hsu
-mindy840204@gmail.com
+Mindy Hsu</br>mindy840204@gmail.com
