@@ -92,6 +92,15 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
         }
     )
 
+    /**
+     * When the [ViewModel] is finished, we cancel our coroutine [viewModelJob], which tells the
+     * Retrofit service to stop.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
+
     /** Add users' data into chatRooms */
     fun addUsersIntoChatRoom(chatRooms: List<ChatRoom>) {
 

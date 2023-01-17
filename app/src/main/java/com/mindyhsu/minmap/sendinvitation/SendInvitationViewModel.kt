@@ -65,6 +65,15 @@ class SendInvitationViewModel(
         getFriendList()
     }
 
+    /**
+     * When the [ViewModel] is finished, we cancel our coroutine [viewModelJob], which tells the
+     * Retrofit service to stop.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
+
     /** Query user's friend list */
     private fun getFriendList() {
         coroutineScope.launch {

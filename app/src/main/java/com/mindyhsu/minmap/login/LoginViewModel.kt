@@ -49,6 +49,15 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
         initGoogleSignInAndFirebaseAuth()
     }
 
+    /**
+     * When the [ViewModel] is finished, we cancel our coroutine [viewModelJob], which tells the
+     * Retrofit service to stop.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
+
     private fun initGoogleSignInAndFirebaseAuth() {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
@@ -59,7 +68,7 @@ class LoginViewModel(private val repository: MinMapRepository) : ViewModel() {
         val account = GoogleSignIn.getLastSignedInAccount(MinMapApplication.instance)
 
         // Don't need to login again if already know user's account
-//        _isSignIn.value = account != null
+        _isSignIn.value = account != null
 
         auth = Firebase.auth
     }

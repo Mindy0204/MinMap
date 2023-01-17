@@ -84,6 +84,15 @@ class DialogViewModel(
         getTitleName()
     }
 
+    /**
+     * When the [ViewModel] is finished, we cancel our coroutine [viewModelJob], which tells the
+     * Retrofit service to stop.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
+
     private fun getTitleName() {
         for ((index, user) in usersDistinct.withIndex()) {
             for (participant in chatRoomDetail.participants) {

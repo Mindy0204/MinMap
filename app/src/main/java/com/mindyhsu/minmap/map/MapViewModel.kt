@@ -43,6 +43,10 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
+    private val _isMapAsync = MutableLiveData<Boolean>()
+    val isMapAsync: LiveData<Boolean>
+        get() = _isMapAsync
+
     private val _status = MutableLiveData<LoadApiStatus>()
     val status: LiveData<LoadApiStatus>
         get() = _status
@@ -70,6 +74,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     val onFriendsLiveReady = MutableLiveData<Boolean>(false)
 
     private val _checkFriendLocation = MutableLiveData<LatLng>()
+
     val checkFriendLocation: LiveData<LatLng>
         get() = _checkFriendLocation
 
@@ -119,6 +124,25 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             checkFriendsLocation(friendId)
         }
     )
+
+    /**
+     * When the [ViewModel] is finished, we cancel our coroutine [viewModelJob], which tells the
+     * Retrofit service to stop.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
+
+    fun onMapAsync() {
+        _isMapAsync.value = true
+        Timber.i("onMapAsync")
+    }
+
+    fun cancelMapAsync() {
+        _isMapAsync.value = false
+        Timber.i("cancelMapAsync")
+    }
 
     /**
      * Set device location after getting device location
