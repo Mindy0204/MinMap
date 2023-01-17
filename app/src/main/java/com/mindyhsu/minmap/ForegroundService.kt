@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
@@ -19,7 +18,7 @@ const val INSTRUCTION_CONTENT = "instructionContent"
 const val NAVIGATION_COMPLETE = "navigationComplete"
 const val EXIT_NAVIGATION = "exitNavigation"
 const val EXIT_NAVIGATION_ACTION = "exitNavigationAction"
-private const val PENDING_INTENT_REQUEST_CODE = 0
+const val PENDING_INTENT_REQUEST_CODE = 0
 
 /** Timber message */
 private const val FOREGROUND_STATUS = "foreground status: "

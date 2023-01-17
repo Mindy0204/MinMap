@@ -255,9 +255,9 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapClickLi
                     context,
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+                        context,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
             ) {
                 map.isMyLocationEnabled = true
                 map.uiSettings.isMyLocationButtonEnabled = false
@@ -308,9 +308,9 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapClickLi
                         context,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
+                            context,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED
                 ) {
 //                    return
                 } else {

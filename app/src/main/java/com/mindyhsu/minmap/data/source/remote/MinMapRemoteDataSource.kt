@@ -44,18 +44,6 @@ object MinMapRemoteDataSource : MinMapDataSource {
     private const val FIELD_LAST_UPDATE = "lastUpdate"
     private const val FIELD_MESSAGES = "messages"
 
-    private val sharedPreferencesChatRoom =
-        MinMapApplication.instance.getSharedPreferences(KEY_CHAT_ROOM, Context.MODE_PRIVATE)
-    private var chatRoomNum: Int?
-        set(value) {
-            if (value != null) {
-                sharedPreferencesChatRoom.edit().putInt(KEY_CHAT_ROOM, value).apply()
-            }
-        }
-        get() {
-            return sharedPreferencesChatRoom.getInt(KEY_CHAT_ROOM, 0)
-        }
-
     private var keyChatRoomId = ""
     private val sharedPreferencesMessage =
         MinMapApplication.instance.getSharedPreferences(KEY_MESSAGE, Context.MODE_PRIVATE)
@@ -480,25 +468,6 @@ object MinMapRemoteDataSource : MinMapDataSource {
             .whereArrayContains(FIELD_PARTICIPANTS, userId)
             .addSnapshotListener { documents, exception ->
                 Timber.i("getLiveChatRoom addSnapshotListener detect")
-
-                if (chatRoomNum == 0) {
-                    chatRoomNum = documents?.size()
-                } else {
-                    // There's new chat room
-                    if (chatRoomNum != documents?.size() && chatRoomNum!! < documents?.size()!!) {
-                        Intent().also { intent ->
-                            intent.action = CHAT_ROOM_INTENT_FILTER
-                            MinMapApplication.instance.sendBroadcast(
-                                intent.putExtra(
-                                    KEY_CHAT_ROOM,
-                                    (documents.size().minus(chatRoomNum!!)).toString()
-                                )
-                            )
-                        }
-                        chatRoomNum = documents.size()
-                    }
-                }
-
                 documents?.let {
                     chatRoomList.clear()
                     for (document in it.documents) {
