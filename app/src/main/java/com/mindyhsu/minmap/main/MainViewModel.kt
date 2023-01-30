@@ -21,10 +21,9 @@ class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
     val foregroundStop: LiveData<Boolean?>
         get() = _foregroundStop
 
-    /** Implement new chat room location notification */
     fun getChatRoomIds(chatRooms: List<ChatRoom>) {
         val chatRoomIds = mutableListOf<String>()
-        getLiveChatRoom.value?.let {
+        _getLiveChatRoom.value?.let {
             for (chatRoom in chatRooms) {
                 chatRoomIds.add(chatRoom.id)
             }
@@ -32,7 +31,6 @@ class MainViewModel(private val repository: MinMapRepository) : ViewModel() {
         }
     }
 
-    /** Implement new message location notification */
     fun getLiveMessage(chatRoomIds: List<String>) {
         for (chatRoomId in chatRoomIds) {
             repository.getMessage(chatRoomId, UserManager.id ?: "")

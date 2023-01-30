@@ -29,7 +29,6 @@ import kotlinx.coroutines.launch
 
 data class DialogUiState(
     val getSenderName: (senderId: String) -> String,
-    val showUrlUnderLine: (String) -> Boolean,
     val clickUrl: (String) -> Unit
 )
 
@@ -69,19 +68,27 @@ class DialogViewModel(
             val sender = (chatRoomDetail.users.filter { it.id == senderId }).distinct()
             sender[0].name
         },
-        showUrlUnderLine = { url ->
-            showUrl(url)
-        },
         clickUrl = { url ->
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse(url)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            MinMapApplication.instance.startActivity(intent)
+            if (showUrl(url)) {
+                val intent = Intent(Intent.ACTION_VIEW)
+                intent.data = Uri.parse(url)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                MinMapApplication.instance.startActivity(intent)
+            }
         }
     )
 
     init {
         getTitleName()
+    }
+
+    /**
+     * When the [ViewModel] is finished, we cancel our coroutine [viewModelJob], which tells the
+     * Retrofit service to stop.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
     }
 
     private fun getTitleName() {

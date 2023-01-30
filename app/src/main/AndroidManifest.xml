@@ -22,7 +22,6 @@
         android:theme="@style/Theme.MinMap"
         tools:targetApi="31">
 
-        <service android:name=".BroadcastReceiverService"/>
         <service android:name=".ForegroundService"/>
         <service
             android:name=".FCMService"

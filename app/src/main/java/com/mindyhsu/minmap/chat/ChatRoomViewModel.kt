@@ -3,7 +3,6 @@ package com.mindyhsu.minmap.chat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.ChatRoom
 import com.mindyhsu.minmap.data.Result
@@ -91,6 +90,15 @@ class ChatRoomViewModel(private val repository: MinMapRepository) : ViewModel() 
             }
         }
     )
+
+    /**
+     * When the [ViewModel] is finished, we cancel our coroutine [viewModelJob], which tells the
+     * Retrofit service to stop.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
+    }
 
     /** Add users' data into chatRooms */
     fun addUsersIntoChatRoom(chatRooms: List<ChatRoom>) {

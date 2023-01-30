@@ -62,13 +62,8 @@ class DialogAdapter(private val uiState: DialogUiState) :
 
         fun bind(item: DialogItem.MyDialog, uiStatue: DialogUiState) {
 
-            // If text is a URL -> draw under line
-            if (uiStatue.showUrlUnderLine(item.message.text)) {
-                binding.dialogText.paint.flags = Paint.UNDERLINE_TEXT_FLAG
-                binding.dialogText.setOnClickListener {
-
-                    uiStatue.clickUrl(item.message.text)
-                }
+            binding.dialogText.setOnClickListener {
+                uiStatue.clickUrl(item.message.text)
             }
             binding.dialogText.text = item.message.text
 
@@ -83,12 +78,8 @@ class DialogAdapter(private val uiState: DialogUiState) :
         fun bind(item: DialogItem.FriendDialog, uiStatue: DialogUiState) {
             binding.dialogNameText.text = uiStatue.getSenderName(item.senderId)
 
-            // If text is a URL -> draw under line
-            if (uiStatue.showUrlUnderLine(item.message.text)) {
-                binding.dialogText.paint.flags = Paint.UNDERLINE_TEXT_FLAG
-                binding.dialogText.setOnClickListener {
-                    uiStatue.clickUrl(item.message.text)
-                }
+            binding.dialogText.setOnClickListener {
+                uiStatue.clickUrl(item.message.text)
             }
             binding.dialogText.text = item.message.text
 

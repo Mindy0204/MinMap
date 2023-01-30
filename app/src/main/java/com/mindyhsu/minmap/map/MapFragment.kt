@@ -57,10 +57,15 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapClickLi
 
         /** Mid point event passed from chatRoom */
         setFragmentResultListener(MID_POINT_EVENT_REQUEST_KEY) { _, bundle ->
-            viewModel.sendEvent(
-                bundle.get(MID_POINT_EVENT_LAT_LNG) as LatLng,
-                bundle.get(MID_POINT_EVENT_PARTICIPANTS) as List<String>
-            )
+            viewModel.isMapAsync.observe(viewLifecycleOwner) {
+                Timber.i("isMapAsync = $it")
+                if (it) {
+                    viewModel.sendEvent(
+                        bundle.get(MID_POINT_EVENT_LAT_LNG) as LatLng,
+                        bundle.get(MID_POINT_EVENT_PARTICIPANTS) as List<String>
+                    )
+                }
+            }
         }
     }
 
@@ -86,6 +91,8 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapClickLi
             map = googleMap
             map.uiSettings.setAllGesturesEnabled(true)
             map.uiSettings.isMapToolbarEnabled = false
+            viewModel.onMapAsync()
+
             binding.sendInvitationButton.visibility = View.GONE
 
             enableMyLocation()
@@ -237,15 +244,20 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapClickLi
         return binding.root
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.cancelMapAsync()
+    }
+
     private fun enableMyLocation() {
         context?.let { context ->
             if (ContextCompat.checkSelfPermission(
                     context,
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) == PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(
-                    context,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                ) == PackageManager.PERMISSION_GRANTED
+                        context,
+                        Manifest.permission.ACCESS_COARSE_LOCATION
+                    ) == PackageManager.PERMISSION_GRANTED
             ) {
                 map.isMyLocationEnabled = true
                 map.uiSettings.isMyLocationButtonEnabled = false
@@ -296,9 +308,9 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapClickLi
                         context,
                         Manifest.permission.ACCESS_FINE_LOCATION
                     ) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
+                            context,
+                            Manifest.permission.ACCESS_COARSE_LOCATION
+                        ) == PackageManager.PERMISSION_GRANTED
                 ) {
 //                    return
                 } else {

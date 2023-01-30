@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.GeoPoint
-import com.mindyhsu.minmap.MinMapApplication
 import com.mindyhsu.minmap.R
 import com.mindyhsu.minmap.data.Event
 import com.mindyhsu.minmap.data.Message
@@ -16,11 +15,11 @@ import com.mindyhsu.minmap.data.source.MinMapRepository
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
 import com.mindyhsu.minmap.util.Util.getString
+import java.util.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import java.util.*
 
 data class SendInvitationUiState(
     val onClick: (userId: String) -> Unit,
@@ -63,6 +62,15 @@ class SendInvitationViewModel(
 
     init {
         getFriendList()
+    }
+
+    /**
+     * When the [ViewModel] is finished, we cancel our coroutine [viewModelJob], which tells the
+     * Retrofit service to stop.
+     */
+    override fun onCleared() {
+        super.onCleared()
+        viewModelJob.cancel()
     }
 
     /** Query user's friend list */
@@ -217,29 +225,28 @@ class SendInvitationViewModel(
             }
 
             val chatRoomId =
-                when (val result = repository.updateChatRoomCurrentEvent(userIdList, currentEventId))
-            {
-                is Result.Success -> {
-                    _error.value = null
-                    status.value = LoadApiStatus.DONE
-                    result.data
+                when (val result = repository.updateChatRoomCurrentEvent(userIdList, currentEventId)) {
+                    is Result.Success -> {
+                        _error.value = null
+                        status.value = LoadApiStatus.DONE
+                        result.data
+                    }
+                    is Result.Fail -> {
+                        _error.value = result.error
+                        status.value = LoadApiStatus.ERROR
+                        ""
+                    }
+                    is Result.Error -> {
+                        _error.value = result.exception.toString()
+                        status.value = LoadApiStatus.ERROR
+                        ""
+                    }
+                    else -> {
+                        _error.value = getString(R.string.firebase_operation_failed)
+                        status.value = LoadApiStatus.ERROR
+                        ""
+                    }
                 }
-                is Result.Fail -> {
-                    _error.value = result.error
-                    status.value = LoadApiStatus.ERROR
-                    ""
-                }
-                is Result.Error -> {
-                    _error.value = result.exception.toString()
-                    status.value = LoadApiStatus.ERROR
-                    ""
-                }
-                else -> {
-                    _error.value = getString(R.string.firebase_operation_failed)
-                    status.value = LoadApiStatus.ERROR
-                    ""
-                }
-            }
             sendEventMessage(chatRoomId)
         }
     }
@@ -256,8 +263,10 @@ class SendInvitationViewModel(
 
             status.value = LoadApiStatus.LOADING
 
-            when (val result =
-                repository.sendMessage(chatRoomId = chatRoomId, message = message)) {
+            when (
+                val result =
+                    repository.sendMessage(chatRoomId = chatRoomId, message = message)
+            ) {
                 is Result.Success -> {
                     _error.value = null
                     status.value = LoadApiStatus.DONE
