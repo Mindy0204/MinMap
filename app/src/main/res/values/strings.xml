@@ -13,7 +13,12 @@
     <string name="destination">Destination will be on the %s</string>
     <string name="navigation_foreground">Next\nAfter %s m | %s  %s</string>
     <string name="exit_navigation">Exit Navigation</string>
-    <string name="location_permission">We need your location permission to access navigation operation</string>
+
+    <!-- permission -->
+    <string name="request_location_permission_title">Request Location Permission</string>
+    <string name="request_location_permission_description">We need your location permission to access navigation operation\nPlease click OK button to open location permission in app setting</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
 
     <!-- main page button -->
     <string name="continue_button">Continue</string>

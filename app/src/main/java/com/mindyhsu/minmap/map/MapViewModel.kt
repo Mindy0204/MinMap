@@ -43,10 +43,6 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     private var viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
 
-    private val _isMapAsync = MutableLiveData<Boolean>()
-    val isMapAsync: LiveData<Boolean>
-        get() = _isMapAsync
-
     private val _status = MutableLiveData<LoadApiStatus>()
     val status: LiveData<LoadApiStatus>
         get() = _status
@@ -110,6 +106,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     var planningLocation = LatLng(0.0, 0.0)
     var planningLocationName = ""
+    private var midPointEventLatLng: LatLng? = null
+    private var midPointEventParticipants = emptyList<String>()
 
     private val locationManager = MinMapApplication.instance
         .getSystemService(Context.LOCATION_SERVICE) as LocationManager
@@ -132,16 +130,6 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     override fun onCleared() {
         super.onCleared()
         viewModelJob.cancel()
-    }
-
-    fun onMapAsync() {
-        _isMapAsync.value = true
-        Timber.i("onMapAsync")
-    }
-
-    fun cancelMapAsync() {
-        _isMapAsync.value = false
-        Timber.i("cancelMapAsync")
     }
 
     /**
@@ -549,6 +537,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
      * */
     fun finishEvent() {
         coroutineScope.launch {
+            setMidPointEventInfo(null, emptyList())
             _isFinishNavigation.value = false
 
             val chatRoomId = when (
@@ -603,45 +592,54 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         Timber.d("Planning location=$planningLocation, name=$planningLocationName")
     }
 
+    fun setMidPointEventInfo(latLng: LatLng?, participants: List<String>) {
+        midPointEventLatLng = latLng
+        midPointEventParticipants = participants
+    }
+
+    fun getMidPointEventLatLng() = midPointEventLatLng
+
     /**
-     * Connect with find mid point event from chat room
+     * Mid-point event is parsed from chat room
      * After receive data -> create new event
      * */
-    fun sendEvent(midPointLocation: LatLng, participantList: List<String>) {
+    fun sendMidPointEvent() {
         coroutineScope.launch {
             _status.value = LoadApiStatus.LOADING
 
-            participantIdList = participantList
+            participantIdList = midPointEventParticipants
 
-            val event = Event(
-                participants = participantList,
-                geoHash = GeoPoint(midPointLocation.latitude, midPointLocation.longitude)
-            )
+            midPointEventLatLng?.apply {
+                val event = Event(
+                    participants = midPointEventParticipants,
+                    geoHash = GeoPoint(latitude, longitude)
+                )
 
-            val currentEventId = when (val result = repository.sendEvent(event)) {
-                is Result.Success -> {
-                    _error.value = null
-                    _status.value = LoadApiStatus.DONE
-                    result.data
+                val currentEventId = when (val result = repository.sendEvent(event)) {
+                    is Result.Success -> {
+                        _error.value = null
+                        _status.value = LoadApiStatus.DONE
+                        result.data
+                    }
+                    is Result.Fail -> {
+                        _error.value = result.error
+                        _status.value = LoadApiStatus.ERROR
+                        ""
+                    }
+                    is Result.Error -> {
+                        _error.value = result.exception.toString()
+                        _status.value = LoadApiStatus.ERROR
+                        ""
+                    }
+                    else -> {
+                        _error.value = getString(R.string.firebase_operation_failed)
+                        _status.value = LoadApiStatus.ERROR
+                        ""
+                    }
                 }
-                is Result.Fail -> {
-                    _error.value = result.error
-                    _status.value = LoadApiStatus.ERROR
-                    ""
-                }
-                is Result.Error -> {
-                    _error.value = result.exception.toString()
-                    _status.value = LoadApiStatus.ERROR
-                    ""
-                }
-                else -> {
-                    _error.value = getString(R.string.firebase_operation_failed)
-                    _status.value = LoadApiStatus.ERROR
-                    ""
-                }
-            }
-            updateUserCurrentEvent(currentEventId)
-            updateChatRoomCurrentEvent(currentEventId)
+                updateUserCurrentEvent(currentEventId)
+                updateChatRoomCurrentEvent(currentEventId)
+            } ?: Timber.d("[sendMidPointEvent] midPointEventLatLng is null")
         }
     }
 

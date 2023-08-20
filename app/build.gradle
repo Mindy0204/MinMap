@@ -14,12 +14,12 @@ ktlint {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         applicationId "com.mindyhsu.minmap"
         minSdk 26
-        targetSdk 32
+        targetSdk 33
         versionCode 17
         versionName "1.0.8"
 
