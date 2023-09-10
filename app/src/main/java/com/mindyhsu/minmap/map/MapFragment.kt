@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
@@ -45,7 +46,6 @@ import com.mindyhsu.minmap.ext.getVmFactory
 import com.mindyhsu.minmap.main.MainViewModel
 import com.mindyhsu.minmap.navigationsuccess.NavigationSuccessFragmentDirections
 import timber.log.Timber
-import java.util.HashMap
 
 class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCallback,
     OnMapClickListener {
@@ -54,6 +54,7 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
     private val viewModel by viewModels<MapViewModel> { getVmFactory() }
     private var map: GoogleMap? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var myLocation: LatLng? = null
     private lateinit var textToSpeech: TextToSpeech
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -72,14 +73,6 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
         mapFragment?.getMapAsync(this)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireContext())
-
-        /**
-         * After click navigation button, the status will be changed to NAVIGATION_ING
-         * When user operate back from chat room, UI and flow need to stay as same as NAVIGATION_ING status
-         * */
-        if (viewModel.navigationStatus.value != NAVIGATION_INIT) {
-            viewModel.onNavigationPause()
-        }
 
         return binding.root
     }
@@ -109,7 +102,10 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
     private fun handleMidPointEventResult() {
         setFragmentResultListener(MID_POINT_EVENT_REQUEST_KEY) { _, bundle ->
             (bundle.get(MID_POINT_EVENT_LAT_LNG) as? LatLng)?.let { latLng ->
+                Timber.d("[handleMidPointEventResult] MID_POINT_EVENT_LAT_LNG = $latLng")
                 (bundle.get(MID_POINT_EVENT_PARTICIPANTS) as? List<*>)?.let { participants ->
+                    Timber.d("[handleMidPointEventResult] MID_POINT_EVENT_PARTICIPANTS = $participants")
+
                     viewModel.setMidPointEventInfo(
                         latLng = latLng,
                         participants = mutableListOf<String>().apply {
@@ -121,58 +117,88 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
     }
 
     private fun initView() {
-        showCurrentEvent()
         binding.apply {
-            sendInvitationButton.visibility = View.GONE
+            viewModel.apply {
+                createEventButton.setOnClickListener {
+                    if (myLocation != null) {
+                        searchPlace()
+                    } else {
+                        enableMyLocation()
+                    }
+                }
 
-            createEventButton.setOnClickListener {
-                if (viewModel.deviceLocation.value != null) {
-                    searchPlace()
-                } else {
+                backToPositionButton.setOnClickListener {
                     enableMyLocation()
                 }
-            }
 
-            backToPositionButton.setOnClickListener {
-                enableMyLocation()
-            }
-
-            /**
-             * Start navigation:
-             * update UI, change navigation status, update user's and friends' location
-             * */
-            startNavigationButton.setOnClickListener {
-                it.visibility = View.GONE
-                cardViewText.text = getString(R.string.start_navigation_button)
-                viewModel.apply {
-                    startNavigation()
-                    onNavigation()
-                    updateFriendsLocation()
+                startNavigationButton.setOnClickListener {
+                    it.visibility = View.GONE
+                    cardViewText.text = getString(R.string.start_navigation_button)
+                    viewModel.apply {
+                        startNavigation()
+                        onNavigation()
+                        updateFriendsLocation()
+                    }
                 }
-            }
 
-            meetingLocationButton.setOnClickListener {
-                map?.let { map -> viewModel.focusOnMeetingPoint(map) }
-            }
+                meetingLocationButton.setOnClickListener {
+                    moveCameraToLocation(currentEventDetail.value?.geoHash)
+                }
 
-            sendInvitationButton.setOnClickListener {
-                findNavController().navigate(
-                    NavigationSuccessFragmentDirections.navigateToSendEventToFriendFragment(
-                        viewModel.planningLocation,
-                        viewModel.planningLocationName
+                sendInvitationButton.setOnClickListener {
+                    findNavController().navigate(
+                        NavigationSuccessFragmentDirections.navigateToSendEventToFriendFragment(
+                            viewModel.planningLocation,
+                            viewModel.planningLocationName
+                        )
                     )
-                )
-            }
+                }
 
-            chatButton.setOnClickListener {
-                findNavController().navigate(ChatRoomFragmentDirections.navigateToChatRoomFragment())
+                chatButton.setOnClickListener {
+                    viewModel.apply {
+                        if (getOperationStatus() == OperationStatus.NAVI_ING) onNavigationPause()
+                    }
+                    findNavController().navigate(ChatRoomFragmentDirections.navigateToChatRoomFragment())
+                }
             }
         }
     }
 
     private fun initObserver() {
         viewModel.apply {
+            currentEventId.observe(viewLifecycleOwner) {
+                Timber.d("[initObserver] observe currentEventId = $it")
+                Timber.d("[initObserver] getOperationStatus= ${getOperationStatus()}")
+
+                if (it.isNotEmpty()) {
+                    when (getOperationStatus()) {
+                        OperationStatus.NAVI_ING,
+                        OperationStatus.NAVI_PAUSE -> onNavigation()
+                        else -> {
+                            onNavigationInit()
+                            getCurrentEventLocation()
+                        }
+                    }
+                } else {
+                    onResetStatus()
+                    map?.clear()
+                }
+
+                setupView(
+                    hasCurrentEvent = it.isNotEmpty(),
+                    currentNavigationStatus = viewModel.getOperationStatus()
+                )
+            }
+
+            currentEventDetail.observe(viewLifecycleOwner) { event ->
+                Timber.d("[initObserver] observe currentEventDetail = $event")
+                binding.cardViewText.text = event.place
+                moveCameraToLocation(event.geoHash)
+                map?.let { getDirection(it, myLocation) }
+            }
+
             navigationInstruction.observe(viewLifecycleOwner) {
+                Timber.d("[initObserver] observe navigationInstruction = $it")
                 setupNavigationInstruction(
                     direction = it[DIRECTION] ?: emptyString(),
                     distanceDuration = it[DISTANCE_DURATION] ?: emptyString()
@@ -180,24 +206,20 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
             }
 
             checkFriendLocation.observe(viewLifecycleOwner) {
-                val cameraPosition = CameraPosition.Builder()
-                    .target(it)
-                    .zoom(FOCUS_ZOOM)
-                    .build()
-                map?.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
+                Timber.d("[initObserver] observe checkFriendLocation = $it")
+                moveCameraToLocation(it)
             }
 
             isFinishNavigation.observe(viewLifecycleOwner) {
+                Timber.d("[initObserver] observe isFinishNavigation = $it")
                 if (it == true) {
-                    finishEvent()
-                    onNavigationInit()
-                    binding.friendsCardView.visibility = View.GONE
-                    map?.clear()
+                    setFinishEvent()
                     findNavController().navigate(NavigationSuccessFragmentDirections.navigateToNavigationSuccessFragment())
                 }
             }
 
             isOnInvitation.observe(viewLifecycleOwner) {
+                Timber.d("[initObserver] observe isOnInvitation = $it")
                 if (it) {
                     binding.sendInvitationButton.visibility = View.VISIBLE
                 } else {
@@ -206,9 +228,9 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
                 }
             }
 
-            // Every time navigation status change, check UI and flow
-            navigationStatus.observe(viewLifecycleOwner) {
-                showCurrentEvent()
+            operationStatus.observe(viewLifecycleOwner) {
+                Timber.d("[initObserver] observe operationStatus = $it")
+                setupView(hasCurrentEvent = hasCurrentEvent(), currentNavigationStatus = it)
             }
 
             error.observe(viewLifecycleOwner) {
@@ -234,66 +256,44 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
 
     /** Friends' location show on the map and recyclerView */
     private fun initFriendLocationRecyclerView() {
-        val adapter = FriendLocationAdapter(viewModel.uiState)
-        binding.friendsLocationRecyclerView.adapter = adapter
-        viewModel.onFriendsLiveReady.observe(viewLifecycleOwner) { ready ->
-            if (ready) {
-                binding.friendsLocationRecyclerView.visibility = View.VISIBLE
-                viewModel.friendList.observe(viewLifecycleOwner) {
-                    map?.let { map ->
-                        viewModel.markFriendsLocation(map, it)
+        viewModel.apply {
+            val adapter = FriendLocationAdapter(uiState)
+            binding.friendsLocationRecyclerView.adapter = adapter
+
+            onFriendsLiveReady.observe(viewLifecycleOwner) { ready ->
+                if (ready) {
+                    friendList.observe(viewLifecycleOwner) { participants ->
+                        map?.let { markFriendsLocation(it, participants) }
+                        adapter.submitList(participants)
+                        binding.friendsCardView.visibility = View.VISIBLE
                     }
-                    adapter.submitList(it)
-                    binding.friendsCardView.visibility = View.VISIBLE
                 }
             }
         }
     }
 
-    /** Main entry UI and flow */
-    private fun showCurrentEvent() {
-        Timber.d("[showCurrentEvent]")
-        viewModel.getCurrentEventId.observe(viewLifecycleOwner) {
-            if (it == "") {
-                binding.createEventButton.visibility = View.VISIBLE
-                binding.cardView.visibility = View.GONE
-                binding.startNavigationButton.visibility = View.GONE
-                binding.meetingLocationButton.visibility = View.GONE
-                binding.friendsCardView.visibility = View.GONE
-                binding.friendsLocationRecyclerView.visibility = View.GONE
-                map?.setOnMapClickListener(this)
-                viewModel.destination.removeObservers(viewLifecycleOwner)
-            } else {
-                map?.setOnMapClickListener(null)
-                binding.createEventButton.visibility = View.GONE
-
-                if (viewModel.navigationStatus.value == NAVIGATION_INIT ||
-                    viewModel.navigationStatus.value == NAVIGATION_PAUSE
-                ) {
-                    viewModel.destination.observe(viewLifecycleOwner) { destination ->
-                        binding.startNavigationButton.visibility =
-                            if (viewModel.navigationStatus.value == NAVIGATION_INIT) {
-                                View.VISIBLE
-                            } else {
-                                View.GONE
-                            }
-                        binding.meetingLocationButton.visibility = View.VISIBLE
-                        binding.cardViewIcon.visibility = View.VISIBLE
-                        binding.cardViewIcon.setImageResource(R.mipmap.icon_meeting_point_color)
-                        binding.cardView.visibility = View.VISIBLE
-                        binding.cardViewText.text = destination
-                        binding.cardViewText2.visibility = View.GONE
-                        binding.cardViewNextDirectionIcon.visibility = View.GONE
-                    }
-
-                    /** According to user's location to draw the route */
-                    viewModel.deviceLocation.observe(viewLifecycleOwner) { myLocation ->
-                        if (myLocation != null && viewModel.getCurrentEventId.value != "") {
-                            map?.let { map -> viewModel.getCurrentEventLocation(map, myLocation) }
-                        }
-                    }
-                }
+    private fun setupView(
+        hasCurrentEvent: Boolean,
+        currentNavigationStatus: OperationStatus
+    ) {
+        Timber.d("[setupView]")
+        map?.setOnMapClickListener(if (hasCurrentEvent) null else this)
+        binding.apply {
+            createEventButton.isVisible = !hasCurrentEvent
+            meetingLocationButton.isVisible = hasCurrentEvent
+            sendInvitationButton.isVisible = currentNavigationStatus == OperationStatus.ON_INVITE
+            startNavigationButton.isVisible = currentNavigationStatus == OperationStatus.NAVI_INIT
+            cardView.isVisible = hasCurrentEvent
+            cardViewIcon.apply {
+                isVisible = hasCurrentEvent
+                setImageResource(if (currentNavigationStatus == OperationStatus.NAVI_ING) R.mipmap.icon_go_straight else R.mipmap.icon_meeting_point_color)
             }
+            cardViewText.isVisible = hasCurrentEvent
+            cardViewText2.isVisible = currentNavigationStatus == OperationStatus.NAVI_ING
+            cardViewNextDirectionIcon.isVisible =
+                currentNavigationStatus == OperationStatus.NAVI_ING
+            friendsCardView.isVisible =
+                hasCurrentEvent && currentNavigationStatus == OperationStatus.NAVI_ING
         }
     }
 
@@ -336,6 +336,13 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
         }
     }
 
+    private fun setFinishEvent() {
+        viewModel.finishEvent()
+        viewModel.onResetStatus()
+        binding.friendsCardView.visibility = View.GONE
+        map?.clear()
+    }
+
     /** Initialize Google Map Places SDK */
     private fun searchPlace() {
         context?.let {
@@ -362,6 +369,7 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
                                 viewModel.onPlanningLocation(map, latLng, place.name)
                             }
                             Timber.i("AutoComplete search place=${place.name}")
+                            viewModel.onInvite()
                         }
                     }
                 }
@@ -454,8 +462,20 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
             val cameraUpdate =
                 CameraUpdateFactory.newLatLngZoom(LatLng(latitude, longitude), DEFAULT_ZOOM)
             viewModel.updateMyLocation(GeoPoint(latitude, longitude))
-            viewModel.setDeviceLocation(LatLng(latitude, longitude))
+
+            myLocation = LatLng(latitude, longitude)
             map?.animateCamera(cameraUpdate)
+        }
+    }
+
+    private fun moveCameraToLocation(location: GeoPoint?) {
+        location?.apply {
+            val locationLatLng = LatLng(latitude, longitude)
+            val cameraPosition = CameraPosition.Builder()
+                .target(locationLatLng)
+                .zoom(DEFAULT_ZOOM) // TODO: optimize with user operation zoom scale
+                .build()
+            map?.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
         }
     }
 
@@ -474,7 +494,8 @@ class MapFragment : Fragment(), OnRequestPermissionsResultCallback, OnMapReadyCa
                 .build()
             map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
 
-            viewModel.onPlanningLocation(map, latLng, "")
+            viewModel.onInvite()
+            viewModel.onPlanningLocation(map, latLng, emptyString())
         }
     }
 

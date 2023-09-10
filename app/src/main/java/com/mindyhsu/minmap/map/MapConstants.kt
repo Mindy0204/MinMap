@@ -1,9 +1,20 @@
 package com.mindyhsu.minmap.map
 
-/** Navigation status */
-const val NAVIGATION_INIT = 0
-const val NAVIGATION_ING = 1
-const val NAVIGATION_PAUSE = 2
+/**
+ * Navigation status
+ * [NAVI_INIT] User has current event but not start navigation yet
+ * [NAVI_ING] Doing navigation
+ * [NAVI_PAUSE] MapFragment is not onResume ?
+ * [ON_INVITE] User is creating event
+ * [ON_RESET] There's no current event
+ * */
+enum class OperationStatus {
+    NAVI_INIT,
+    NAVI_ING,
+    NAVI_PAUSE,
+    ON_INVITE,
+    ON_RESET
+}
 
 /** Navigation mode */
 const val WALKING_MODE = "walking"

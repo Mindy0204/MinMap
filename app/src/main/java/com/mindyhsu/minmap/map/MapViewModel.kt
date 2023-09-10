@@ -22,6 +22,7 @@ import com.google.firebase.firestore.GeoPoint
 import com.mindyhsu.minmap.*
 import com.mindyhsu.minmap.data.*
 import com.mindyhsu.minmap.data.source.MinMapRepository
+import com.mindyhsu.minmap.ext.emptyString
 import com.mindyhsu.minmap.login.UserManager
 import com.mindyhsu.minmap.network.LoadApiStatus
 import com.mindyhsu.minmap.util.Util.getString
@@ -51,17 +52,12 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     val error: LiveData<String?>
         get() = _error
 
-    val getCurrentEventId = repository.getLiveEventId(UserManager.id ?: "")
+    val currentEventId = repository.getLiveEventId(UserManager.id ?: emptyString())
+    fun hasCurrentEvent() = !currentEventId.value.isNullOrEmpty()
 
-    private val _deviceLocation = MutableLiveData<LatLng>()
-    val deviceLocation: LiveData<LatLng>
-        get() = _deviceLocation
-
-    private val currentEventDetail = MutableLiveData<Event>()
-
-    private val _destination = MutableLiveData<String>()
-    val destination: LiveData<String>
-        get() = _destination
+    private val _currentEventDetail = MutableLiveData<Event>()
+    val currentEventDetail: LiveData<Event>
+        get() = _currentEventDetail
 
     private var _friendList = MutableLiveData<List<User>>()
     val friendList: LiveData<List<User>>
@@ -69,18 +65,17 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     val onFriendsLiveReady = MutableLiveData<Boolean>(false)
 
-    private val _checkFriendLocation = MutableLiveData<LatLng>()
-
-    val checkFriendLocation: LiveData<LatLng>
+    private val _checkFriendLocation = MutableLiveData<GeoPoint>()
+    val checkFriendLocation: LiveData<GeoPoint>
         get() = _checkFriendLocation
 
     private val markerList = mutableListOf<Marker>()
 
     private var participantIdList = emptyList<String>()
 
-    private val _navigationStatus = MutableLiveData<Int>(NAVIGATION_INIT)
-    val navigationStatus: LiveData<Int>
-        get() = _navigationStatus
+    private val _operationStatus = MutableLiveData<OperationStatus>()
+    val operationStatus: LiveData<OperationStatus>
+        get() = _operationStatus
 
     private var routeSteps = listOf<Step>()
     private var step = 0
@@ -93,7 +88,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     val navigationInstruction: LiveData<HashMap<String, String>>
         get() = _navigationInstruction
 
-    private var foregroundDistanceAndDuration = ""
+    private var foregroundDistanceAndDuration = emptyString()
     private var distance = -1
 
     private var _isFinishNavigation = MutableLiveData<Boolean>()
@@ -105,7 +100,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         get() = _isOnInvitation
 
     var planningLocation = LatLng(0.0, 0.0)
-    var planningLocationName = ""
+    var planningLocationName = emptyString()
     private var midPointEventLatLng: LatLng? = null
     private var midPointEventParticipants = emptyList<String>()
 
@@ -132,20 +127,12 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
         viewModelJob.cancel()
     }
 
-    /**
-     * Set device location after getting device location
-     * When observe this location -> use this parameter to query Google Map Direction Api
-     * */
-    fun setDeviceLocation(latLng: LatLng) {
-        _deviceLocation.value = latLng
-    }
-
     /** Query current event information */
-    fun getCurrentEventLocation(map: GoogleMap, myLocation: LatLng) {
+    fun getCurrentEventLocation() {
         coroutineScope.launch {
-            getCurrentEventId.value?.let {
+            currentEventId.value?.let {
                 val result = repository.getCurrentEvent(it)
-                currentEventDetail.value = when (result) {
+                _currentEventDetail.value = when (result) {
                     is Result.Success -> {
                         _error.value = null
                         _status.value = LoadApiStatus.DONE
@@ -169,92 +156,72 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     }
                 }
 
-                // Move camera to destination
-                currentEventDetail.value?.geoHash?.let { destinationGeo ->
-                    val location = LatLng(destinationGeo.latitude, destinationGeo.longitude)
-                    map.addMarker(MarkerOptions().position(location))
-                    map.moveCamera(CameraUpdateFactory.newLatLngZoom(location, DEFAULT_ZOOM))
-                }
-
-                // When status is ing or pause -> continue to update friends' location
-                if (_navigationStatus.value != NAVIGATION_INIT) {
+                // When status is ing -> continue to update friends' location
+                if (getOperationStatus() == OperationStatus.NAVI_ING) {
                     updateFriendsLocation()
                 }
 
                 // Finish invite process
                 _isOnInvitation.value = false
-
-                _destination.value = currentEventDetail.value?.place
-                getDirection(map, myLocation)
             }
-        }
-    }
-
-    /** Move camera focus to meeting point */
-    fun focusOnMeetingPoint(map: GoogleMap) {
-        currentEventDetail.value?.geoHash?.let { geo ->
-            val location = LatLng(geo.latitude, geo.longitude)
-            val cameraPosition = CameraPosition.Builder()
-                .target(location)
-                .zoom(FOCUS_ZOOM)
-                .build()
-            map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition))
         }
     }
 
     /** Query Google Map Direction Api */
-    private fun getDirection(map: GoogleMap, myLocation: LatLng) {
+    fun getDirection(map: GoogleMap, myLocation: LatLng?) {
         coroutineScope.launch {
-            currentEventDetail.value?.geoHash?.let {
-                val eventLocationLat = it.latitude
-                val eventLocationLng = it.longitude
+            _currentEventDetail.value?.geoHash?.let { eventLocation ->
+                myLocation?.let {
+                    val eventLocationLat = eventLocation.latitude
+                    val eventLocationLng = eventLocation.longitude
 
-                val result = repository.getDirection(
-                    startLocation = "${myLocation.latitude}, ${myLocation.longitude}",
-                    endLocation = "$eventLocationLat, $eventLocationLng",
-                    apiKey = decodedString,
-                    mode = WALKING_MODE
-                )
+                    val result = repository.getDirection(
+                        startLocation = "${myLocation.latitude}, ${myLocation.longitude}",
+                        endLocation = "$eventLocationLat, $eventLocationLng",
+                        apiKey = decodedString,
+                        mode = WALKING_MODE
+                    )
 
-                // Mark meeting point
-                map.addMarker(
-                    MarkerOptions()
-                        .position(LatLng(eventLocationLat, eventLocationLng))
-                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point_color))
-                )
+                    // Mark meeting point
+                    map.addMarker(
+                        MarkerOptions()
+                            .position(LatLng(eventLocationLat, eventLocationLng))
+                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.icon_meeting_point_color))
+                    )
 
-                val directionResult = when (result) {
-                    is Result.Success -> {
-                        _error.value = null
-                        _status.value = LoadApiStatus.DONE
-                        result.data
+                    val directionResult = when (result) {
+                        is Result.Success -> {
+                            _error.value = null
+                            _status.value = LoadApiStatus.DONE
+                            result.data
+                        }
+                        is Result.Fail -> {
+                            _error.value = result.error
+                            _status.value = LoadApiStatus.ERROR
+                            null
+                        }
+                        is Result.Error -> {
+                            _error.value = result.exception.toString()
+                            _status.value = LoadApiStatus.ERROR
+                            null
+                        }
+                        else -> {
+                            _error.value =
+                                getString(R.string.firebase_operation_failed)
+                            _status.value = LoadApiStatus.ERROR
+                            null
+                        }
                     }
-                    is Result.Fail -> {
-                        _error.value = result.error
-                        _status.value = LoadApiStatus.ERROR
-                        null
-                    }
-                    is Result.Error -> {
-                        _error.value = result.exception.toString()
-                        _status.value = LoadApiStatus.ERROR
-                        null
-                    }
-                    else -> {
-                        _error.value =
-                            getString(R.string.firebase_operation_failed)
-                        _status.value = LoadApiStatus.ERROR
-                        null
-                    }
-                }
 
-                // draw the route
-                if (directionResult != null) {
-                    drawRoute(map, directionResult)
+                    // draw the route
+                    if (directionResult != null) {
+                        drawRoute(map, directionResult)
+                    }
                 }
             }
 
             // Set navigation status to ing
-            if (_navigationStatus.value != NAVIGATION_INIT) {
+            if (getOperationStatus() == OperationStatus.NAVI_PAUSE) {
                 onNavigation()
             }
         }
@@ -382,7 +349,8 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
             /** Road instruction */
             var instruction =
-                Html.fromHtml(routeSteps[step].htmlInstructions).toString().replace("\n", "")
+                Html.fromHtml(routeSteps[step].htmlInstructions).toString()
+                    .replace("\n", emptyString())
 
             if (instruction.split(INSTRUCTION_SPLIT_ON).size != 1) {
                 instruction = instruction.split(INSTRUCTION_SPLIT_ON).last()
@@ -391,7 +359,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             }
 
             if (step == routeSteps.size - 1 && instruction.split(INSTRUCTION_SPLIT_FINAL_DIRECTION)
-                .isNotEmpty()
+                    .isNotEmpty()
             ) {
                 instruction = MinMapApplication.instance.getString(
                     R.string.destination,
@@ -438,12 +406,14 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             finalStepLocation.longitude = routeSteps[routeSteps.size - 1].endLocation.lng
 
             if (step == routeSteps.size - 1 && myLocation.distanceTo(stepEndLocation)
-                .toInt() <= METERS_FROM_THE_LAST_STEP
+                    .toInt() <= METERS_FROM_THE_LAST_STEP
             ) {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
                 exitNavigationForegroundService()
-            } else if (myLocation.distanceTo(finalStepLocation).toInt() <= METERS_FROM_THE_LAST_STEP) {
+            } else if (myLocation.distanceTo(finalStepLocation)
+                    .toInt() <= METERS_FROM_THE_LAST_STEP
+            ) {
                 locationManager.removeUpdates(locationListener)
                 _isFinishNavigation.value = true
                 exitNavigationForegroundService()
@@ -513,7 +483,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
     /** Update friends' location */
     fun updateFriendsLocation() {
-        currentEventDetail.value?.participants?.let {
+        _currentEventDetail.value?.participants?.let {
             val friendListWithoutMe = it.filter { it != UserManager.id }
             _friendList = repository.updateFriendLocation(friendListWithoutMe)
             onFriendsLiveReady.value = true
@@ -525,7 +495,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
             for (user in users) {
                 if (user.id == friendId) {
                     user.geoHash?.let {
-                        _checkFriendLocation.value = LatLng(it.latitude, it.longitude)
+                        _checkFriendLocation.value = it
                     }
                 }
             }
@@ -542,7 +512,7 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
 
             val chatRoomId = when (
                 val result =
-                    repository.getChatRoomByCurrentEventId(getCurrentEventId.value ?: "")
+                    repository.getChatRoomByCurrentEventId(currentEventId.value ?: emptyString())
             ) {
                 is Result.Success -> {
                     _error.value = null
@@ -552,21 +522,25 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                 is Result.Fail -> {
                     _error.value = result.error
                     _status.value = LoadApiStatus.ERROR
-                    ""
+                    emptyString()
                 }
                 is Result.Error -> {
                     _error.value = result.exception.toString()
                     _status.value = LoadApiStatus.ERROR
-                    ""
+                    emptyString()
                 }
                 else -> {
                     _error.value = getString(R.string.firebase_operation_failed)
                     _status.value = LoadApiStatus.ERROR
-                    ""
+                    emptyString()
                 }
             }
 
-            repository.finishEvent(UserManager.id ?: "", getCurrentEventId.value ?: "", chatRoomId)
+            repository.finishEvent(
+                UserManager.id ?: emptyString(),
+                currentEventId.value ?: emptyString(),
+                chatRoomId
+            )
         }
     }
 
@@ -624,17 +598,17 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
                     is Result.Fail -> {
                         _error.value = result.error
                         _status.value = LoadApiStatus.ERROR
-                        ""
+                        emptyString()
                     }
                     is Result.Error -> {
                         _error.value = result.exception.toString()
                         _status.value = LoadApiStatus.ERROR
-                        ""
+                        emptyString()
                     }
                     else -> {
                         _error.value = getString(R.string.firebase_operation_failed)
                         _status.value = LoadApiStatus.ERROR
-                        ""
+                        emptyString()
                     }
                 }
                 updateUserCurrentEvent(currentEventId)
@@ -704,12 +678,25 @@ class MapViewModel(private val repository: MinMapRepository) : ViewModel() {
     }
 
     fun onNavigationInit() {
-        _navigationStatus.value = NAVIGATION_INIT
+        _operationStatus.postValue(OperationStatus.NAVI_INIT)
     }
+
     fun onNavigation() {
-        _navigationStatus.value = NAVIGATION_ING
+        _operationStatus.postValue(OperationStatus.NAVI_ING)
     }
+
     fun onNavigationPause() {
-        _navigationStatus.value = NAVIGATION_PAUSE
+        _operationStatus.postValue(OperationStatus.NAVI_PAUSE)
     }
+
+    fun onInvite() {
+        _operationStatus.postValue(OperationStatus.ON_INVITE)
+    }
+
+    fun onResetStatus() {
+        _operationStatus.postValue(OperationStatus.ON_RESET)
+        locationManager.removeUpdates(locationListener)
+    }
+
+    fun getOperationStatus() = _operationStatus.value ?: OperationStatus.ON_RESET
 }
